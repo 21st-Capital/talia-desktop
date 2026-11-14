@@ -46,7 +46,7 @@ impl From<&Error> for WarningMessage {
                 }
             },
             Error::Unexpected(_) => WarningMessage("Unknown error".to_string()),
-            Error::HardwareWallet(_) => WarningMessage("Hardware wallet error".to_string()),
+            Error::HardwareWallet(_) => WarningMessage("Signing device error".to_string()),
             Error::Desc(e) => WarningMessage(format!("Descriptor analysis error: '{e}'.")),
             Error::Spend(e) => WarningMessage(format!("Spend creation error: '{e}'.")),
             Error::ImportExport(e) => WarningMessage(format!("{e}")),

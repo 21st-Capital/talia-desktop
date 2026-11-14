@@ -1300,8 +1300,8 @@ installer-create-random-key
 => "Ou créez une nouvelle clé aléatoire :";;
 
 installer-custom-template-description-1
-=> "For this setup you will need to define your primary and recovery spending paths. For security reasons, we suggest you use a separate signing device, commonly known as a hardware wallet, for each key belonging to them."
-=> "Pour cette configuration, vous devrez définir vos chemins de dépense primaire et de récupération. Pour des raisons de sécurité, nous vous suggérons d'utiliser un appareil de signature distinct, communément appelé hardware wallet, pour chaque clé qui leur appartient.";;
+=> "For this setup you will need to define your primary and recovery spending paths. For security reasons, we suggest you use a separate signing device for each key belonging to them."
+=> "Pour cette configuration, vous devrez définir vos chemins de dépense primaire et de récupération. Pour des raisons de sécurité, nous vous suggérons d'utiliser un appareil de signature distinct pour chaque clé qui leur appartient.";;
 
 installer-custom-template-description-2
 => "The keys belonging to your primary path can always spend. Those belonging to the recovery paths will be able to spend only after a defined time of wallet inactivity, allowing for secure recovery and advanced spending policies."
@@ -1448,8 +1448,8 @@ installer-imported-key-already-used
 => "Clé importée déjà utilisée";;
 
 installer-inheritance-description-1
-=> "For this setup you will need 2 keys: your primary key (for yourself) and an inheritance key (for your heir). For security reasons, we suggest you use a separate signing device, commonly known as a hardware wallet, for each key."
-=> "Pour cette configuration, vous aurez besoin de 2 clés : votre clé primaire (pour vous) et une clé d'héritage (pour votre héritier). Pour des raisons de sécurité, nous vous suggérons d'utiliser un appareil de signature distinct, communément appelé hardware wallet, pour chaque clé.";;
+=> "For this setup you will need 2 keys: your primary key (for yourself) and an inheritance key (for your heir). For security reasons, we suggest you use a separate signing device for each key."
+=> "Pour cette configuration, vous aurez besoin de 2 clés : votre clé primaire (pour vous) et une clé d'héritage (pour votre héritier). Pour des raisons de sécurité, nous vous suggérons d'utiliser un appareil de signature distinct pour chaque clé.";;
 
 installer-inheritance-description-2
 => "You will always be able to spend using your primary key. After a period of inactivity (but not before that) your inheritance key will become able to recover your funds."
@@ -1556,8 +1556,8 @@ installer-mnemonic-recovery-help
 => "Si vous utilisiez une clé chaude (une clé stockée sur l'ordinateur) dans votre portefeuille, vous devrez la récupérer à partir de sa phrase mnémonique pour pouvoir signer à nouveau des transactions. Sinon, vous pouvez passer directement à l'étape suivante.";;
 
 installer-multisig-description-1
-=> "For this setup you will need 3 keys: two primary keys and a recovery key. For security reasons, we suggest you use a separate signing device, commonly known as a hardware wallet, for each key."
-=> "Pour cette configuration, vous aurez besoin de 3 clés : deux clés primaires et une clé de récupération. Pour des raisons de sécurité, nous vous suggérons d'utiliser un appareil de signature distinct, communément appelé hardware wallet, pour chaque clé.";;
+=> "For this setup you will need 3 keys: two primary keys and a recovery key. For security reasons, we suggest you use a separate signing device for each key."
+=> "Pour cette configuration, vous aurez besoin de 3 clés : deux clés primaires et une clé de récupération. Pour des raisons de sécurité, nous vous suggérons d'utiliser un appareil de signature distinct pour chaque clé.";;
 
 installer-multisig-description-2
 => "The primary keys will compose a 2-of-2 multisig which will always be able to spend. In case one of your keys becomes unavailable, after a period of inactivity you will be able to recover your funds using the recovery key together with one of your primary keys (2-of-3 multisig):"

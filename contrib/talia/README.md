@@ -19,7 +19,9 @@ is kept in `LICENCE`, next to ours.
 | `liana-gui/src/main.rs` | Window title "Talia Desktop vX.Y" |
 | `liana-gui/src/app/view/settings/about.rs` | About: Talia Desktop version and "Based on Liana by Wizardsardine" |
 | `liana-gui/src/app/mod.rs`, `liana-gui/src/export.rs` | Two sentences that named the app |
-| `liana-i18n/i18n/*.lang` | Sentences that name the app say "Talia Desktop" (all languages) |
+| `liana-i18n/i18n/*.lang` | Sentences that name the app say "Talia Desktop"; the "hardware wallet" aside is dropped (our wording says "signing device") (all languages) |
+| `liana-gui/src/app/view/warning.rs`, `liana-gui/src/installer/mod.rs` | Two error titles say "Signing device" |
+| `liana-ui/src/font.rs`, `liana-ui/static/fonts/` | Talia iPhone app type: Figtree for text, Bricolage Grotesque for headings and bold (SIL OFL, licences beside the fonts) |
 | `LICENCE` | Our copyright line under Wizardsardine's |
 
 Kept on purpose: "Liana Connect" (Wizardsardine's own online service), "Liana descriptor"

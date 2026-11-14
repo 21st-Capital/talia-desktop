@@ -1284,8 +1284,8 @@ installer-create-random-key
 => "Ou crie uma nova chave aleatória:";;
 
 installer-custom-template-description-1
-=> "For this setup you will need to define your primary and recovery spending paths. For security reasons, we suggest you use a separate signing device, commonly known as a hardware wallet, for each key belonging to them."
-=> "Para esta configuração, você precisará especificar os caminhos de gasto principal e de recuperação. Por segurança, recomendamos usar um dispositivo de assinatura separado (também conhecido como carteira de hardware) para cada chave que pertença a eles.";;
+=> "For this setup you will need to define your primary and recovery spending paths. For security reasons, we suggest you use a separate signing device for each key belonging to them."
+=> "Para esta configuração, você precisará especificar os caminhos de gasto principal e de recuperação. Por segurança, recomendamos usar um dispositivo de assinatura separado para cada chave que pertença a eles.";;
 
 installer-custom-template-description-2
 => "The keys belonging to your primary path can always spend. Those belonging to the recovery paths will be able to spend only after a defined time of wallet inactivity, allowing for secure recovery and advanced spending policies."
@@ -1428,8 +1428,8 @@ installer-imported-key-already-used
 => "Chave importada já usada";;
 
 installer-inheritance-description-1
-=> "For this setup you will need 2 keys: your primary key (for yourself) and an inheritance key (for your heir). For security reasons, we suggest you use a separate signing device, commonly known as a hardware wallet, for each key."
-=> "Para esta configuração você vai precisar de 2 chaves: sua chave principal (para você) e uma chave de herança (para o seu herdeiro). Por motivos de segurança, sugerimos que você use um dispositivo de assinatura separado, comumente chamado de hardware wallet, para cada chave.";;
+=> "For this setup you will need 2 keys: your primary key (for yourself) and an inheritance key (for your heir). For security reasons, we suggest you use a separate signing device for each key."
+=> "Para esta configuração você vai precisar de 2 chaves: sua chave principal (para você) e uma chave de herança (para o seu herdeiro). Por motivos de segurança, sugerimos que você use um dispositivo de assinatura separado para cada chave.";;
 
 installer-inheritance-description-2
 => "You will always be able to spend using your primary key. After a period of inactivity (but not before that) your inheritance key will become able to recover your funds."
@@ -1536,8 +1536,8 @@ installer-mnemonic-recovery-help
 => "Se você estava usando uma chave local (uma chave armazenada no computador) na sua carteira, vai precisar recuperá-la a partir da frase-semente dela para poder assinar transações novamente. Caso contrário, você pode ir direto para a próxima etapa.";;
 
 installer-multisig-description-1
-=> "For this setup you will need 3 keys: two primary keys and a recovery key. For security reasons, we suggest you use a separate signing device, commonly known as a hardware wallet, for each key."
-=> "Para esta configuração você vai precisar de 3 chaves: duas chaves principais e uma chave de recuperação. Por motivos de segurança, sugerimos que você use um dispositivo de assinatura separado, comumente chamado de carteira de hardware, para cada chave.";;
+=> "For this setup you will need 3 keys: two primary keys and a recovery key. For security reasons, we suggest you use a separate signing device for each key."
+=> "Para esta configuração você vai precisar de 3 chaves: duas chaves principais e uma chave de recuperação. Por motivos de segurança, sugerimos que você use um dispositivo de assinatura separado para cada chave.";;
 
 installer-multisig-description-2
 => "The primary keys will compose a 2-of-2 multisig which will always be able to spend. In case one of your keys becomes unavailable, after a period of inactivity you will be able to recover your funds using the recovery key together with one of your primary keys (2-of-3 multisig):"

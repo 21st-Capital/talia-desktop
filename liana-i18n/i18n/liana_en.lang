@@ -970,7 +970,7 @@ installer-create-datadir-path-failed => "Failed to create datadir path: {$error}
 installer-create-random-key => "Or create a new random key:"
 
 installer-custom-template-description-1
-=> "For this setup you will need to define your primary and recovery spending paths. For security reasons, we suggest you use a separate signing device, commonly known as a hardware wallet, for each key belonging to them.";;
+=> "For this setup you will need to define your primary and recovery spending paths. For security reasons, we suggest you use a separate signing device for each key belonging to them.";;
 
 installer-custom-template-description-2
 => "The keys belonging to your primary path can always spend. Those belonging to the recovery paths will be able to spend only after a defined time of wallet inactivity, allowing for secure recovery and advanced spending policies.";;
@@ -1071,7 +1071,7 @@ installer-import-xpub-device
 installer-imported-key-already-used => "Imported key already used"
 
 installer-inheritance-description-1
-=> "For this setup you will need 2 keys: your primary key (for yourself) and an inheritance key (for your heir). For security reasons, we suggest you use a separate signing device, commonly known as a hardware wallet, for each key.";;
+=> "For this setup you will need 2 keys: your primary key (for yourself) and an inheritance key (for your heir). For security reasons, we suggest you use a separate signing device for each key.";;
 
 installer-inheritance-description-2
 => "You will always be able to spend using your primary key. After a period of inactivity (but not before that) your inheritance key will become able to recover your funds.";;
@@ -1146,7 +1146,7 @@ installer-mnemonic-recovery-help
 => "If you were using a hot key (a key stored on the computer) in your wallet, you will need to recover it from its seed phrase to be able to sign transactions again. Otherwise you can directly go the next step.";;
 
 installer-multisig-description-1
-=> "For this setup you will need 3 keys: two primary keys and a recovery key. For security reasons, we suggest you use a separate signing device, commonly known as a hardware wallet, for each key.";;
+=> "For this setup you will need 3 keys: two primary keys and a recovery key. For security reasons, we suggest you use a separate signing device for each key.";;
 
 installer-multisig-description-2
 => "The primary keys will compose a 2-of-2 multisig which will always be able to spend. In case one of your keys becomes unavailable, after a period of inactivity you will be able to recover your funds using the recovery key together with one of your primary keys (2-of-3 multisig):";;

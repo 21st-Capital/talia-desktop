@@ -42,7 +42,26 @@ def rebrand(line: str) -> str:
     return re.sub(r"(?:(?<=\\n)|\b)Liana\b(?![- ]Connect)", "Talia Desktop", line)
 
 
+# 21st Capital wording rule: client text says "signing device", never
+# "hardware wallet". Liana's sentences already say "signing device" and add
+# the other name as an aside, so the aside is dropped (every language).
+WORDING = [
+    (", commonly known as a hardware wallet,", ""),
+    (", communément appelé hardware wallet,", ""),
+    (", comunemente noto come hardware wallet,", ""),
+    (" (também conhecido como carteira de hardware)", ""),
+    (", vulgarmente chamado carteira de hardware,", ""),
+    (", comumente chamado de hardware wallet,", ""),
+    (", comumente chamado de carteira de hardware,", ""),
+]
+
+
 def main(folder: Path) -> None:
+    for path in sorted(folder.glob("*.lang")):
+        text = path.read_text()
+        for old, new in WORDING:
+            text = text.replace(old, new)
+        path.write_text(text)
     seen = {}
     for path in sorted(folder.glob("*.lang")):
         current = None
