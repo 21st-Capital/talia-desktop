@@ -1083,7 +1083,7 @@ impl std::fmt::Display for Error {
             Self::CannotWriteToFile(e) => write!(f, "Failed to write to file: {e}"),
             Self::CannotCreateFile(e) => write!(f, "Failed to create file: {e}"),
             Self::Unexpected(e) => write!(f, "Unexpected: {e}"),
-            Self::HardwareWallet(e) => write!(f, "Hardware Wallet: {e}"),
+            Self::HardwareWallet(e) => write!(f, "Signing device: {e}"),
             Self::Backup(e) => write!(f, "Backup: {e:?}"),
         }
     }
