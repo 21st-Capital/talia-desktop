@@ -120,16 +120,26 @@ pub fn truncate(str: &str, len: usize) -> String {
     truncated
 }
 
-/// Format a date in local time as "Mar 12, 2026".
-pub fn format_date(time: DateTime<Utc>) -> String {
-    time.with_timezone(&Local).format("%b %-d, %Y").to_string()
+/// German dates read "12.03.2026", not "Mar 12, 2026".
+fn german_dates() -> bool {
+    liana_i18n::current_locale() == liana_i18n::SupportedLocale::De
 }
 
-/// Format a date in local time as "Mar 12, 2026 - 17:00:49".
+/// Format a date in local time as "Mar 12, 2026" (German: "12.03.2026").
+pub fn format_date(time: DateTime<Utc>) -> String {
+    let format = if german_dates() { "%d.%m.%Y" } else { "%b %-d, %Y" };
+    time.with_timezone(&Local).format(format).to_string()
+}
+
+/// Format a date in local time as "Mar 12, 2026 - 17:00:49" (German:
+/// "12.03.2026, 17:00:49").
 pub fn format_datetime(time: DateTime<Utc>) -> String {
-    time.with_timezone(&Local)
-        .format("%b %-d, %Y - %H:%M:%S")
-        .to_string()
+    let format = if german_dates() {
+        "%d.%m.%Y, %H:%M:%S"
+    } else {
+        "%b %-d, %Y - %H:%M:%S"
+    };
+    time.with_timezone(&Local).format(format).to_string()
 }
 
 const SHORT_MARKER: &str = "[...]";

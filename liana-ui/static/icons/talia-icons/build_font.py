@@ -3,8 +3,9 @@
 
 The icons are the Talia iPhone app's: the Tabler outline set (MIT, stroke 2 on
 a 24 grid; see LICENSE-tabler-icons.txt), cut down to the glyphs icon.rs uses,
-plus the app's own drawn marks (the key, the vault, and the refresh arrow with
-its head at the top left) and three solid Tabler glyphs.
+plus the app's own drawn marks (the key, the vault, the refresh arrow with its
+head at the top left, and the recovery mark: three arrows chasing round a
+circle) and three solid Tabler glyphs.
 
     python3 build_font.py <unpacked @tabler/icons-webfont package> [out.ttf]
 
@@ -42,7 +43,7 @@ circle-check circle-x scale
 FILLED = {"clock": 0xE010, "alert-triangle": 0xE011}
 
 # Our own marks.
-KEY, VAULT, REFRESH, DOT = 0xE000, 0xE001, 0xE002, 0xE003
+KEY, VAULT, REFRESH, DOT, RECOVERY = 0xE000, 0xE001, 0xE002, 0xE003, 0xE004
 
 
 def codepoints(css):
@@ -122,6 +123,32 @@ class Draw:
         else:
             self.rect(x + half, y, w - width, h)
 
+    def polygon(self, pts):
+        """A straight-edged shape, turned clockwise on screen whatever its order."""
+        area = sum(x1 * y2 - x2 * y1 for (x1, y1), (x2, y2) in zip(pts, pts[1:] + pts[:1]))
+        if area < 0:
+            pts = pts[::-1]
+        self._path([("L", x, y) for x, y in pts], False)
+
+    def stroke(self, x1, y1, x2, y2, width):
+        """A straight stroke in any direction, with round caps."""
+        length = math.hypot(x2 - x1, y2 - y1)
+        nx, ny = -(y2 - y1) / length * width / 2, (x2 - x1) / length * width / 2
+        self.polygon([(x1 + nx, y1 + ny), (x2 + nx, y2 + ny), (x2 - nx, y2 - ny), (x1 - nx, y1 - ny)])
+        self.disc(x1, y1, width / 2)
+        self.disc(x2, y2, width / 2)
+
+    def arc_stroke(self, cx, cy, r, width, a0, a1):
+        """A stroke along a circle from angle a0 to a1 (radians, clockwise on
+        screen), with a round cap at its start."""
+        ro, ri = r + width / 2, r - width / 2
+        pts = [("L", cx + ro * math.cos(a0), cy + ro * math.sin(a0))]
+        pts += self._arc(cx, cy, ro, a0, a1, 4)
+        pts += [("L", cx + ri * math.cos(a1), cy + ri * math.sin(a1))]
+        pts += self._arc(cx, cy, ri, a1, a0, 4)
+        self._path(pts, False)
+        self.disc(cx + r * math.cos(a0), cy + r * math.sin(a0), width / 2)
+
     def glyph(self):
         g = self.pen.glyph()
         g.program = ttProgram.Program()
@@ -155,6 +182,24 @@ def vault_glyph():
     d.line(37, 17, 37, 27, 3, round_caps=True)
     d.rect(10, 38, 7, 4)
     d.rect(31, 38, 7, 4)
+    return d.glyph()
+
+
+def recovery_glyph():
+    """Recovery: three arrows chasing round a circle (RK 2026-11-14: arrows
+    like the "process" mark, without the gear in the middle)."""
+    d = Draw(24)
+    cx = cy = 12
+    r, width, arm = 8.4, 2.0, 3.6
+    for start in (190, 310, 70):
+        a0, a1 = math.radians(start), math.radians(start + 92)
+        d.arc_stroke(cx, cy, r, width, a0, a1)
+        tip = (cx + r * math.cos(a1), cy + r * math.sin(a1))
+        back = (math.sin(a1), -math.cos(a1))  # against the clockwise motion
+        for turn in (math.radians(45), math.radians(-45)):
+            bx = back[0] * math.cos(turn) - back[1] * math.sin(turn)
+            by = back[0] * math.sin(turn) + back[1] * math.cos(turn)
+            d.stroke(tip[0], tip[1], tip[0] + arm * bx, tip[1] + arm * by, width)
     return d.glyph()
 
 
@@ -223,7 +268,8 @@ def main():
 
     add(font, "talia-key", key_glyph(), KEY)
     add(font, "talia-vault", vault_glyph(), VAULT)
-    for name in ("talia-key", "talia-vault"):
+    add(font, "talia-recovery", recovery_glyph(), RECOVERY)
+    for name in ("talia-key", "talia-vault", "talia-recovery"):
         glyph = glyf[name]
         glyph.coordinates.translate((-MID[0], -MID[1]))
         glyph.coordinates.scale((SCALE, SCALE))

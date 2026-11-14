@@ -1023,7 +1023,7 @@ home-payment-history => "Payment history" => "Zahlungsverlauf"
 
 home-recovery-left
 => "≈ {$units} left before first recovery path becomes available."
-=> "≈ {$units} bis der erste Wiederherstellungspfad verfügbar ist.";;
+=> "≈ noch {$units}, bis der erste Wiederherstellungspfad verfügbar ist.";;
 
 home-recovery-warning
 => "Recovery path is or will soon be available for {$count} coin(s)."
@@ -2121,7 +2121,7 @@ pill-draft => "Draft" => "Entwurf"
 
 pill-first-recovery-in
 => "First recovery path available in {$units}"
-=> "Erster Wiederherstellungspfad verfügbar in {$units}";;
+=> "Noch {$units} bis zum ersten Wiederherstellungspfad";;
 
 pill-first-recovery-today
 => "First recovery path available today"
@@ -2219,13 +2219,13 @@ policy-by => "by" => "von"
 
 policy-inactive-for
 => "can spend coins inactive for"
-=> "kann Coins ausgeben, die unbewegt sind seit";;
+=> "→ Coins ausgeben, die so lange unbewegt sind:";;
 
 policy-out-of-by => "out of {$count} by" => "von {$count} durch"
 
 policy-primary-path
 => "can always spend this wallet's funds (primary path)"
-=> "kann die Coins dieser Wallet jederzeit ausgeben (Hauptpfad)";;
+=> "→ jederzeit ausgeben (Hauptpfad)";;
 
 policy-recovery-path
 => "(recovery path #{$number})"

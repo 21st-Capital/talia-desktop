@@ -75,8 +75,9 @@ pub fn chevron_right() -> Text<'static> {
     talia_icon('\u{EA61}')
 }
 
+/// Our own mark: three arrows chasing round a circle.
 pub fn recovery_icon() -> Text<'static> {
-    talia_icon(KEY)
+    talia_icon('\u{E004}')
 }
 
 /// Tabler: plug.

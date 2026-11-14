@@ -106,7 +106,7 @@ fn content_menu<'a, T: 'a>(
         None => container(t),
         Some(i) => container(
             row![i.size(MENU_ICON_SIZE), t]
-                .spacing(10)
+                .spacing(16)
                 .align_y(Vertical::Center),
         ),
     }
