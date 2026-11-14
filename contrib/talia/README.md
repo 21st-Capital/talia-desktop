@@ -60,7 +60,11 @@ macOS itself make it (`background_bookmark.py`).
 1. Mac: build (`build-macos-app.sh`), then `release-macos.sh "<app>" talia-desktop-mac.dmg`
    on the Mac that holds the team's "Developer ID Application" certificate and the
    `talia-notary` notarytool profile (both backed up in the company password manager).
-   It signs, notarises and staples the app and the .dmg.
+   It signs, notarises and staples the app and the .dmg. Keep the Mac unlocked while it
+   runs: a locked screen hides the signing key and the notarytool profile. Apple's first
+   checks for a new team can take many hours; if the wait runs out, the script keeps the
+   signed app (`talia-desktop-mac-signed.app`). Once `xcrun stapler staple` on it works,
+   run the script again on that app: it skips straight to the .dmg.
 2. Windows: GitHub > Actions > "Talia Desktop for Windows" > Run workflow; rename the
    artifact to `talia-desktop-windows.exe`. Not code-signed (decided 2026-11-14).
 3. Publish a GitHub release with `talia-desktop-mac.dmg`, `talia-desktop-windows.exe` and

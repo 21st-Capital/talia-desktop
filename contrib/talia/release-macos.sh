@@ -7,6 +7,13 @@
 #
 # Usage: contrib/talia/release-macos.sh <built Talia Desktop.app> <out.dmg>
 #
+# An app that already carries Apple's ticket (stapled) skips steps 1 and 2, so
+# a run that stopped while Apple was still checking can resume from the signed
+# app it kept.
+#
+# Keep the Mac unlocked while this runs: the keychain items below (signing key
+# and notarytool profile) cannot be read while the screen is locked.
+#
 # Needs, in this Mac's keychain:
 #   - the "Developer ID Application" certificate of team 8SMBP8KCWZ
 #     (SIGN_ID overrides the name below)
@@ -24,7 +31,18 @@ SIGN_ID="${SIGN_ID:-Developer ID Application: Twenty First Capital Cyber Securit
 NOTARY_PROFILE="${NOTARY_PROFILE:-talia-notary}"
 
 WORK="$(mktemp -d)"
-trap 'rm -rf "$WORK"' EXIT
+KEEP="${OUT%.dmg}-signed.app"
+cleanup() {
+    local code=$?
+    # Apple may still be checking the app: keep the signed copy, whose ticket
+    # can be stapled later (xcrun stapler staple) without signing it again.
+    if [ "$code" -ne 0 ] && [ ! -e "$KEEP" ] \
+        && codesign --verify --strict "$WORK/Talia Desktop.app" 2>/dev/null; then
+        ditto "$WORK/Talia Desktop.app" "$KEEP" && echo "kept the signed app: $KEEP" >&2
+    fi
+    rm -rf "$WORK"
+}
+trap cleanup EXIT
 APP="$WORK/Talia Desktop.app"
 ditto "$SRC" "$APP"
 
@@ -40,14 +58,19 @@ notarise() {
     fi
 }
 
-echo "== 1. sign the app"
-codesign --force --options runtime --timestamp --sign "$SIGN_ID" "$APP"
-codesign --verify --deep --strict "$APP"
+if xcrun stapler validate "$APP" >/dev/null 2>&1; then
+    echo "== 1-2. the app is already signed and notarised: skipping"
+    codesign --verify --deep --strict "$APP"
+else
+    echo "== 1. sign the app"
+    codesign --force --options runtime --timestamp --sign "$SIGN_ID" "$APP"
+    codesign --verify --deep --strict "$APP"
 
-echo "== 2. notarise the app"
-ditto -c -k --keepParent "$APP" "$WORK/app.zip"
-notarise "$WORK/app.zip"
-xcrun stapler staple "$APP"
+    echo "== 2. notarise the app"
+    ditto -c -k --keepParent "$APP" "$WORK/app.zip"
+    notarise "$WORK/app.zip"
+    xcrun stapler staple "$APP"
+fi
 
 echo "== 3. pack the install window"
 "$ROOT/contrib/talia/make-dmg.sh" "$APP" "$OUT"
