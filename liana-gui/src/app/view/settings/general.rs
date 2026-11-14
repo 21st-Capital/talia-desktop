@@ -44,10 +44,10 @@ pub fn general_section<'a>(
         Some(SettingsMessage::GeneralSection.into()),
     );
 
-    let language = language();
+    // English only: no language setting.
     let fiat_price = fiat_price(new_price_setting, currencies_list);
 
-    let content = column![header, language, fiat_price].spacing(VSpacing::L);
+    let content = column![header, fiat_price].spacing(VSpacing::L);
 
     dashboard(&Menu::Settings, cache, warning, content)
 }

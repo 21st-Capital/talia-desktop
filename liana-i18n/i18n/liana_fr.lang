@@ -1704,23 +1704,23 @@ installer-talia-event-heir => "After 8 to 15 months*" => NONE
 installer-talia-event-rescue => "After 15 months*" => NONE
 
 installer-talia-explain-2-2
-=> "Both keys are needed to spend, so losing either one would lock the coins. Heirs with their own key and the 21st Capital Rescue Key are the way back, and a vault always keeps at least one of them."
+=> "Both keys are needed to spend, so losing one would lock your coins. A backup gets them back: an heir's key or the 21st Capital Rescue Key. Every vault needs at least one."
 => NONE;;
 
 installer-talia-explain-multi
-=> "You can add heirs, each with their own key and a path that opens after 8 to 15 months, and the 21st Capital Rescue Key, whose path opens after 15 months. A vault always keeps at least one of them as its way back."
+=> "You can add heirs, each with their own key that works after 8 to 15 months, and the 21st Capital Rescue Key, which works after 15 months. Every vault needs at least one of them as a backup."
 => NONE;;
 
 installer-talia-explain-single
-=> "The Rescue Key's path opens after 15 months. You can also add heirs, each with their own key and a path that opens after 8 to 15 months."
+=> "The Rescue Key works after 15 months. You can also add heirs, each with their own key that works after 8 to 15 months."
 => NONE;;
 
 installer-talia-footnote-multi
-=> "*Of untouched coins: every coin has its own clock, and moving a coin starts it again. Heirs and the Rescue Key are chosen in the next step."
+=> "*Counted for each coin from the day it last moved. Heirs and the Rescue Key are chosen in the next step."
 => NONE;;
 
 installer-talia-footnote-single
-=> "*Of untouched coins: every coin has its own clock, and moving a coin starts it again. Heirs are chosen in the next step."
+=> "*Counted for each coin from the day it last moved. Heirs are chosen in the next step."
 => NONE;;
 
 installer-talia-get-keys => "Get my 21st Capital keys" => NONE
@@ -1731,12 +1731,12 @@ installer-talia-heir-key-number => "Heir {$number} key" => NONE
 
 installer-talia-heir-number => "Heir {$number}" => NONE
 
-installer-talia-heir-wait => "Opens for a coin untouched for" => NONE
+installer-talia-heir-wait => "Works after" => NONE
 
 installer-talia-heirs => "Heirs" => NONE
 
 installer-talia-heirs-caption
-=> "Each heir holds their own key. Their path opens only for a coin left untouched for the months you choose."
+=> "Each heir has their own key. It works only for coins you have not moved for the months you choose."
 => NONE;;
 
 installer-talia-holder-21c => "21st Capital" => NONE
@@ -1840,7 +1840,7 @@ installer-talia-multi-2-3-description
 installer-talia-primary-keys => "Primary keys" => NONE
 
 installer-talia-rescue-caption
-=> "21st Capital holds the Rescue Key. We never have your vault's descriptor, so we can use it only when you ask for a rescue and share the descriptor with us."
+=> "21st Capital holds the Rescue Key. We can use it only when you ask for a rescue and send us your vault's backup file."
 => NONE;;
 
 installer-talia-rescue-key => "21st Capital Rescue Key" => NONE
@@ -1848,21 +1848,21 @@ installer-talia-rescue-key => "21st Capital Rescue Key" => NONE
 installer-talia-rescue-no => "No, skip the Rescue Key" => NONE
 
 installer-talia-rescue-opens
-=> "Its path opens only for a coin left untouched for {$months} months."
+=> "It works only for coins you have not moved for {$months} months."
 => NONE;;
 
 installer-talia-rescue-required => "Rescue Key required" => NONE
 
 installer-talia-rescue-required-2-2
-=> "Both keys are needed to spend, so losing either one would lock the coins for good. With no heir holding a key, the 21st Capital Rescue Key is the way back. Add an heir to make it optional."
+=> "Both keys are needed to spend. If you lose one, a backup gets your coins back. Without an heir, that backup is the 21st Capital Rescue Key. Add an heir to make it optional."
 => NONE;;
 
 installer-talia-rescue-required-2-3
-=> "A vault always keeps a way back. With no heir holding a key, the 21st Capital Rescue Key is that way back. Add an heir to make it optional."
+=> "Every vault needs a backup in case keys are lost. Without an heir, that backup is the 21st Capital Rescue Key. Add an heir to make it optional."
 => NONE;;
 
 installer-talia-rescue-single
-=> "Your one key spends on its own. The 21st Capital Rescue Key can bring the vault back if that key is ever lost."
+=> "Your one key spends on its own. If you lose it, the 21st Capital Rescue Key gets your coins back."
 => NONE;;
 
 installer-talia-rescue-yes => "Yes, include the Rescue Key" => NONE
@@ -1870,7 +1870,7 @@ installer-talia-rescue-yes => "Yes, include the Rescue Key" => NONE
 installer-talia-single => "Single Signature with rescue" => NONE
 
 installer-talia-single-description
-=> "Your one key spends on its own. The 21st Capital Rescue Key can bring the vault back if that key is ever lost. Its path opens only for a coin left untouched for 15 months."
+=> "Your one key spends on its own. If you lose it, the 21st Capital Rescue Key gets your coins back. It works only for coins you have not moved for 15 months."
 => NONE;;
 
 installer-talia-slot-pending => "Comes with Get my 21st Capital keys" => NONE
