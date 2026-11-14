@@ -39,11 +39,11 @@ btn-approve => "Approve" => "Freigeben"
 
 btn-back => "Back" => "Zurück"
 
-btn-back-up-descriptor => "Back up descriptor" => "Deskriptor sichern"
+btn-back-up-descriptor => "Back up descriptor" => "Descriptor sichern"
 
 btn-backup-encrypted-descriptor
 => "Back up encrypted descriptor"
-=> "Verschlüsselten Deskriptor sichern";;
+=> "Verschlüsselten Descriptor sichern";;
 
 btn-broadcast => "Broadcast" => "Senden"
 
@@ -667,9 +667,9 @@ common-connection-failed => "Connection failed" => "Verbindung fehlgeschlagen"
 
 common-copy => "Copy" => "Kopieren"
 
-common-descriptor => "Descriptor" => "Deskriptor"
+common-descriptor => "Descriptor" => "Descriptor"
 
-common-descriptor-label => "Descriptor:" => "Deskriptor:"
+common-descriptor-label => "Descriptor:" => "Descriptor:"
 
 common-email => "Email" => "E-Mail"
 
@@ -757,7 +757,7 @@ decrypt-enter-mnemonic-warning
 
 decrypt-invalid-descriptor
 => "The file has been decrypted but the descriptor is not a valid Liana descriptor."
-=> "Die Datei wurde entschlüsselt, aber der Deskriptor ist kein gültiger Liana-Deskriptor.";;
+=> "Die Datei wurde entschlüsselt, aber der Descriptor ist kein gültiger Liana-Descriptor.";;
 
 decrypt-invalid-encoding
 => "The file cannot be decoded properly, it seems not to be an encrypted backup."
@@ -945,11 +945,11 @@ export-timeout
 
 export-title-export-backup => "Export backup" => "Backup exportieren"
 
-export-title-export-descriptor => "Export descriptor" => "Deskriptor exportieren"
+export-title-export-descriptor => "Export descriptor" => "Descriptor exportieren"
 
 export-title-export-encrypted-descriptor
 => "Export encrypted descriptor"
-=> "Verschlüsselten Deskriptor exportieren";;
+=> "Verschlüsselten Descriptor exportieren";;
 
 export-title-export-labels => "Export labels" => "Labels exportieren"
 
@@ -959,7 +959,7 @@ export-title-export-xpub
 => "Export extended public key (xpub)"
 => "Erweiterten öffentlichen Schlüssel (xpub) exportieren";;
 
-export-title-import-descriptor => "Import descriptor" => "Deskriptor importieren"
+export-title-import-descriptor => "Import descriptor" => "Descriptor importieren"
 
 export-title-import-psbt => "Import PSBT" => "PSBT importieren"
 
@@ -1035,7 +1035,7 @@ home-rescan-warning-backup
 
 home-rescan-warning-descriptor
 => "As this wallet was imported from a descriptor, you may need to rescan the blockchain to see past transactions."
-=> "Da diese Wallet aus einem Deskriptor importiert wurde, müssen Sie die Blockchain eventuell erneut scannen, um frühere Transaktionen zu sehen.";;
+=> "Da diese Wallet aus einem Descriptor importiert wurde, müssen Sie die Blockchain eventuell erneut scannen, um frühere Transaktionen zu sehen.";;
 
 home-syncing => "Syncing" => "Synchronisierung"
 
@@ -1045,7 +1045,7 @@ home-syncing-blockchain
 
 hw-descriptor-not-registered
 => "The wallet descriptor is not registered on the device.\n You can register it in the settings."
-=> "Der Wallet-Deskriptor ist nicht auf dem Gerät registriert.\n Sie können ihn in den Einstellungen registrieren.";;
+=> "Der Wallet-Descriptor ist nicht auf dem Gerät registriert.\n Sie können ihn in den Einstellungen registrieren.";;
 
 hw-display-address-unavailable
 => "Talia Desktop cannot request the device to display the address. \n Verify it with the QR code in the options below."
@@ -1113,7 +1113,7 @@ installer-available-ports-failed
 
 installer-backed-up-descriptor-checkbox
 => "I have backed up my descriptor"
-=> "Ich habe meinen Deskriptor gesichert";;
+=> "Ich habe meinen Descriptor gesichert";;
 
 installer-backed-up-mnemonic-checkbox
 => "I have backed up my seed phrase"
@@ -1125,19 +1125,19 @@ installer-backed-up-mnemonic-show-xpub
 
 installer-backup-descriptor-help
 => "In Bitcoin, to spend from a wallet that isn't a standard single-key setup, you need both your private keys (usually stored as seed phrases) to sign transactions, and your wallet descriptor to locate your coins - like a map of your addresses.\nWithout the descriptor, your wallet may not find your coins - even if you still have the keys.\nWhen you click \"Back up descriptor\", Talia Desktop creates an encrypted file that can only be decrypted using one of your wallet's extended public keys.\nTalia Desktop handles this automatically during the restore of a wallet process by asking you to connect a device or enter a key.\nThis file is safer and more private than copying the descriptor manually."
-=> "Um bei Bitcoin aus einer Wallet auszugeben, die kein einfaches Ein-Schlüssel-Setup ist, brauchen Sie zwei Dinge: Ihre privaten Schlüssel (meist als Seed-Phrasen gespeichert), um Transaktionen zu signieren, und Ihren Wallet-Deskriptor, um Ihre Coins zu finden. Er ist wie eine Karte Ihrer Adressen.\nOhne den Deskriptor findet Ihre Wallet Ihre Coins womöglich nicht, selbst wenn Sie die Schlüssel noch haben.\nWenn Sie auf „Deskriptor sichern“ klicken, erstellt Talia Desktop eine verschlüsselte Datei, die sich nur mit einem der erweiterten öffentlichen Schlüssel Ihrer Wallet entschlüsseln lässt.\nTalia Desktop erledigt das beim Wiederherstellen einer Wallet automatisch, indem es Sie bittet, ein Gerät anzuschließen oder einen Schlüssel einzugeben.\nDiese Datei ist sicherer und privater, als den Deskriptor von Hand zu kopieren.";;
+=> "Um bei Bitcoin aus einer Wallet auszugeben, die kein einfaches Ein-Schlüssel-Setup ist, brauchen Sie zwei Dinge: Ihre privaten Schlüssel (meist als Seed-Phrasen gespeichert), um Transaktionen zu signieren, und Ihren Wallet-Descriptor, um Ihre Coins zu finden. Er ist wie eine Karte Ihrer Adressen.\nOhne den Descriptor findet Ihre Wallet Ihre Coins womöglich nicht, selbst wenn Sie die Schlüssel noch haben.\nWenn Sie auf „Descriptor sichern“ klicken, erstellt Talia Desktop eine verschlüsselte Datei, die sich nur mit einem der erweiterten öffentlichen Schlüssel Ihrer Wallet entschlüsseln lässt.\nTalia Desktop erledigt das beim Wiederherstellen einer Wallet automatisch, indem es Sie bittet, ein Gerät anzuschließen oder einen Schlüssel einzugeben.\nDiese Datei ist sicherer und privater, als den Descriptor von Hand zu kopieren.";;
 
 installer-backup-descriptor-message
 => "This backup is required to recover your funds.\nClick \"Back up descriptor\" to download an encrypted file of your wallet configuration and store it in safe, accessible places.\nYou can also copy the plain-text descriptor string, but it's less private.\nWARNING: This file does not include your seed phrase(s). Back those up separately."
-=> "Dieses Backup brauchen Sie, um Ihre Coins wiederherzustellen.\nKlicken Sie auf „Deskriptor sichern“, um eine verschlüsselte Datei Ihrer Wallet-Konfiguration herunterzuladen, und bewahren Sie sie an sicheren, erreichbaren Orten auf.\nSie können auch den Deskriptor als Klartext kopieren, das ist aber weniger privat.\nACHTUNG: Diese Datei enthält Ihre Seed-Phrase(n) nicht. Sichern Sie diese separat.";;
+=> "Dieses Backup brauchen Sie, um Ihre Coins wiederherzustellen.\nKlicken Sie auf „Descriptor sichern“, um eine verschlüsselte Datei Ihrer Wallet-Konfiguration herunterzuladen, und bewahren Sie sie an sicheren, erreichbaren Orten auf.\nSie können auch den Descriptor als Klartext kopieren, das ist aber weniger privat.\nACHTUNG: Diese Datei enthält Ihre Seed-Phrase(n) nicht. Sichern Sie diese separat.";;
 
 installer-backup-descriptor-missing
 => "Backup imported but descriptor missing!"
-=> "Backup importiert, aber der Deskriptor fehlt!";;
+=> "Backup importiert, aber der Descriptor fehlt!";;
 
 installer-backup-descriptor-title
 => "Back up your wallet configuration (descriptor)"
-=> "Sichern Sie Ihre Wallet-Konfiguration (Deskriptor)";;
+=> "Sichern Sie Ihre Wallet-Konfiguration (Descriptor)";;
 
 installer-backup-imported
 => "Backup successfully imported!"
@@ -1241,21 +1241,21 @@ installer-custom-template-description-2
 
 installer-descriptor-generating
 => "Generating and validating your wallet descriptor. This can take a few seconds."
-=> "Ihr Wallet-Deskriptor wird erstellt und geprüft. Das kann einige Sekunden dauern.";;
+=> "Ihr Wallet-Descriptor wird erstellt und geprüft. Das kann einige Sekunden dauern.";;
 
 installer-descriptor-invalid
 => "Either descriptor is invalid or incompatible with network"
-=> "Der Deskriptor ist ungültig oder passt nicht zum Netzwerk";;
+=> "Der Descriptor ist ungültig oder passt nicht zum Netzwerk";;
 
-installer-descriptor-missing => "Descriptor missing" => "Deskriptor fehlt"
+installer-descriptor-missing => "Descriptor missing" => "Descriptor fehlt"
 
 installer-descriptor-read-failed
 => "Failed to read the descriptor"
-=> "Der Deskriptor konnte nicht gelesen werden";;
+=> "Der Descriptor konnte nicht gelesen werden";;
 
-installer-descriptor-template => "Descriptor template" => "Deskriptor-Vorlage"
+installer-descriptor-template => "Descriptor template" => "Descriptor-Vorlage"
 
-installer-descriptor-type => "Descriptor type" => "Deskriptor-Typ"
+installer-descriptor-type => "Descriptor type" => "Descriptor-Typ"
 
 installer-descriptor-type-segwit => "Segwit" => "Segwit"
 
@@ -1267,7 +1267,7 @@ installer-descriptor-type-tooltip
 
 installer-descriptor-wrong-network
 => "The descriptor is for another network"
-=> "Der Deskriptor ist für ein anderes Netzwerk";;
+=> "Der Descriptor ist für ein anderes Netzwerk";;
 
 installer-detected-hardware => "Detected devices" => "Erkannte Geräte"
 
@@ -1345,7 +1345,7 @@ installer-hot-signer => "Hot signer" => "Hot Signer"
 
 installer-import-backup => "Import a backup" => "Backup importieren"
 
-installer-import-descriptor => "Import a descriptor" => "Deskriptor importieren"
+installer-import-descriptor => "Import a descriptor" => "Descriptor importieren"
 
 installer-import-mnemonic => "Import seed phrase" => "Seed-Phrase importieren"
 
@@ -1383,7 +1383,7 @@ installer-installing-bitcoind
 
 installer-introduction => "Introduction" => "Einführung"
 
-installer-invalid-descriptor => "Invalid descriptor" => "Ungültiger Deskriptor"
+installer-invalid-descriptor => "Invalid descriptor" => "Ungültiger Descriptor"
 
 installer-invalid-token => "Invalid token!" => "Ungültiger Code!"
 
@@ -1449,7 +1449,7 @@ installer-load-shared-wallet
 
 installer-local-wallet-description
 => "Use your already existing Bitcoin node or automatically install one. The Talia Desktop wallet will not connect to any external server.\n\nThis is the most private option, but the data is locally stored on this computer, only. You must perform your own backups, and share the descriptor with other people you want to be able to access the wallet."
-=> "Nutzen Sie Ihren bestehenden Bitcoin-Node oder lassen Sie automatisch einen installieren. Die Talia-Desktop-Wallet verbindet sich mit keinem externen Server.\n\nDas ist die privateste Option, aber die Daten liegen nur auf diesem Computer. Sie müssen selbst Backups erstellen und den Deskriptor mit allen teilen, die auf die Wallet zugreifen sollen.";;
+=> "Nutzen Sie Ihren bestehenden Bitcoin-Node oder lassen Sie automatisch einen installieren. Die Talia-Desktop-Wallet verbindet sich mit keinem externen Server.\n\nDas ist die privateste Option, aber die Daten liegen nur auf diesem Computer. Sie müssen selbst Backups erstellen und den Descriptor mit allen teilen, die auf die Wallet zugreifen sollen.";;
 
 installer-managed-node-description
 => "Talia Desktop will install a pruned node on your computer. You won't need to do anything except have some disk space available (~30GB required on mainnet) and wait for the initial synchronization with the network (it can take some days depending on your internet connection speed)."
@@ -1479,11 +1479,11 @@ installer-node-type => "Node type:" => "Node-Typ:"
 
 installer-password => "Password" => "Passwort"
 
-installer-paste-descriptor => "Paste a descriptor" => "Deskriptor einfügen"
+installer-paste-descriptor => "Paste a descriptor" => "Descriptor einfügen"
 
 installer-paste-descriptor-description
 => "Creates a new wallet from the pasted descriptor"
-=> "Erstellt eine neue Wallet aus dem eingefügten Deskriptor";;
+=> "Erstellt eine neue Wallet aus dem eingefügten Descriptor";;
 
 installer-path-duplicate-sequence
 => "No two recovery paths may become available at the very same date."
@@ -1519,11 +1519,11 @@ installer-recovery-option
 
 installer-register-descriptor-failed
 => "Failed to register descriptor"
-=> "Deskriptor konnte nicht registriert werden";;
+=> "Descriptor konnte nicht registriert werden";;
 
 installer-register-descriptor-help
 => "To be used with the wallet, a signing device needs the descriptor. If the descriptor contains one or more keys imported from an external signing device, the descriptor must be registered on it. Registration confirms that the device is able to handle the policy. Registration on a device is not a substitute for backing up the descriptor."
-=> "Ein Signiergerät braucht den Deskriptor, um mit der Wallet zu arbeiten. Enthält der Deskriptor Schlüssel von einem externen Signiergerät, muss er darauf registriert werden. Die Registrierung bestätigt, dass das Gerät mit dem Setup umgehen kann. Sie ersetzt nicht das Backup des Deskriptors.";;
+=> "Ein Signiergerät braucht den Descriptor, um mit der Wallet zu arbeiten. Enthält der Descriptor Schlüssel von einem externen Signiergerät, muss er darauf registriert werden. Die Registrierung bestätigt, dass das Gerät mit dem Setup umgehen kann. Sie ersetzt nicht das Backup des Descriptors.";;
 
 installer-register-descriptor-optional
 => "This step is only necessary if you are using a signing device."
@@ -1531,21 +1531,21 @@ installer-register-descriptor-optional
 
 installer-register-descriptor-title
 => "Register descriptor"
-=> "Deskriptor registrieren";;
+=> "Descriptor registrieren";;
 
 installer-registered-descriptor-checkbox
 => "I have registered the descriptor on my device(s)"
-=> "Ich habe den Deskriptor auf meinen Geräten registriert";;
+=> "Ich habe den Descriptor auf meinen Geräten registriert";;
 
 installer-remote-backend-description
 => "Use our service to instantly be ready to transact. Wizardsardine runs the infrastructure, allowing multiple computers or participants to connect and synchronize.\n\nThis is a simpler and safer option for people who want Wizardsardine to keep a backup of their descriptor. You are still in control of your keys, and Wizardsardine does not have any control over your funds, but it will be able to see your wallet's information, associated to an email address. Privacy focused users should run their own infrastructure instead."
-=> "Nutzen Sie unseren Dienst und sind Sie sofort bereit für Transaktionen. Wizardsardine betreibt die Infrastruktur, sodass sich mehrere Computer oder Beteiligte verbinden und synchronisieren können.\n\nDas ist eine einfachere und sicherere Option für alle, die möchten, dass Wizardsardine ein Backup ihres Deskriptors aufbewahrt. Sie behalten die Kontrolle über Ihre Schlüssel, und Wizardsardine hat keine Kontrolle über Ihre Coins, kann aber die Informationen Ihrer Wallet sehen, verknüpft mit einer E-Mail-Adresse. Wer viel Wert auf Privatsphäre legt, sollte eine eigene Infrastruktur betreiben.";;
+=> "Nutzen Sie unseren Dienst und sind Sie sofort bereit für Transaktionen. Wizardsardine betreibt die Infrastruktur, sodass sich mehrere Computer oder Beteiligte verbinden und synchronisieren können.\n\nDas ist eine einfachere und sicherere Option für alle, die möchten, dass Wizardsardine ein Backup ihres Descriptors aufbewahrt. Sie behalten die Kontrolle über Ihre Schlüssel, und Wizardsardine hat keine Kontrolle über Ihre Coins, kann aber die Informationen Ihrer Wallet sehen, verknüpft mit einer E-Mail-Adresse. Wer viel Wert auf Privatsphäre legt, sollte eine eigene Infrastruktur betreiben.";;
 
 installer-remote-bitcoin-node-warning
 => "Connection to a remote Bitcoin node is not supported. Insert an IP address bound to the same machine running Talia Desktop (ignore this warning if that's already the case)"
 => "Eine Verbindung zu einem entfernten Bitcoin-Node wird nicht unterstützt. Geben Sie eine IP-Adresse des Rechners ein, auf dem Talia Desktop läuft (ignorieren Sie diesen Hinweis, wenn das bereits der Fall ist)";;
 
-installer-rpc-auth => "RPC authentication:" => "RPC-Authentifizierung:"
+installer-rpc-auth => "RPC authentication:" => "RPC-Anmeldung:"
 
 installer-rpc-user-password => "User and password" => "Benutzer und Passwort"
 
@@ -1563,15 +1563,15 @@ installer-safety-net-token-disallowed
 
 installer-seed-key-not-in-descriptor
 => "The descriptor does not use a key derived from this seed phrase"
-=> "Der Deskriptor nutzt keinen Schlüssel aus dieser Seed-Phrase";;
+=> "Der Descriptor nutzt keinen Schlüssel aus dieser Seed-Phrase";;
 
 installer-select-device-register
 => "Select signing device to register descriptor on:"
-=> "Wählen Sie das Signiergerät, auf dem der Deskriptor registriert werden soll:";;
+=> "Wählen Sie das Signiergerät, auf dem der Descriptor registriert werden soll:";;
 
 installer-select-device-register-if-needed
 => "If necessary, please select the signing device to register descriptor on:"
-=> "Wählen Sie bei Bedarf das Signiergerät, auf dem der Deskriptor registriert werden soll:";;
+=> "Wählen Sie bei Bedarf das Signiergerät, auf dem der Descriptor registriert werden soll:";;
 
 installer-select-key-source => "Select key source" => "Schlüsselquelle wählen"
 
@@ -1867,9 +1867,9 @@ installer-template-policy-recovery
 => "Recovery spending path"
 => "Wiederherstellungspfad zum Ausgeben";;
 
-installer-the-descriptor => "The descriptor" => "Der Deskriptor"
+installer-the-descriptor => "The descriptor" => "Der Descriptor"
 
-installer-the-descriptor-label => "The descriptor:" => "Der Deskriptor:"
+installer-the-descriptor-label => "The descriptor:" => "Der Descriptor:"
 
 installer-threshold => "Threshold:" => "Schwelle:"
 
@@ -1943,7 +1943,7 @@ launcher-add-existing-wallet
 
 launcher-config-descriptor-origin-error
 => "There is an issue with the configuration for this network. You most likely use a descriptor containing one or more extended public key(s) without origin. Liana v0.2 and later only support extended public keys with origins. Please migrate your funds using Liana v0.1."
-=> "Mit der Konfiguration für dieses Netzwerk stimmt etwas nicht. Wahrscheinlich nutzen Sie einen Deskriptor mit erweiterten öffentlichen Schlüsseln ohne Herkunft. Liana ab v0.2 unterstützt nur erweiterte öffentliche Schlüssel mit Herkunft. Bitte übertragen Sie Ihre Coins mit Liana v0.1.";;
+=> "Mit der Konfiguration für dieses Netzwerk stimmt etwas nicht. Wahrscheinlich nutzen Sie einen Descriptor mit erweiterten öffentlichen Schlüsseln ohne Herkunft. Liana ab v0.2 unterstützt nur erweiterte öffentliche Schlüssel mit Herkunft. Bitte übertragen Sie Ihre Coins mit Liana v0.1.";;
 
 launcher-create-new-wallet
 => "Create a new Talia Desktop wallet"
@@ -2029,7 +2029,7 @@ lianalite-token-invalid => "Token is not valid" => "Der Code ist ungültig"
 
 lianalite-wallet-deleted
 => "This wallet was deleted by its creator for all participants and cannot be opened. To access it again, restore it using a backup file or the wallet descriptor."
-=> "Diese Wallet wurde von ihrem Ersteller für alle Beteiligten gelöscht und lässt sich nicht öffnen. Um wieder darauf zuzugreifen, stellen Sie sie aus einer Backup-Datei oder dem Wallet-Deskriptor wieder her.";;
+=> "Diese Wallet wurde von ihrem Ersteller für alle Beteiligten gelöscht und lässt sich nicht öffnen. Um wieder darauf zuzugreifen, stellen Sie sie aus einer Backup-Datei oder dem Wallet-Descriptor wieder her.";;
 
 loader-connecting-daemon => "Connecting to daemon..." => "Verbindung zum Daemon..."
 
@@ -2367,7 +2367,7 @@ settings-alias-too-long
 
 settings-backup-encrypted-descriptor-tooltip
 => "An encrypted descriptor file (.bip138) you can store anywhere. To decrypt it, you need one of your signing devices or extended public keys."
-=> "Eine verschlüsselte Deskriptor-Datei (.bip138), die Sie überall aufbewahren können. Zum Entschlüsseln brauchen Sie eines Ihrer Signiergeräte oder einen erweiterten öffentlichen Schlüssel.";;
+=> "Eine verschlüsselte Descriptor-Datei (.bip138), die Sie überall aufbewahren können. Zum Entschlüsseln brauchen Sie eines Ihrer Signiergeräte oder einen erweiterten öffentlichen Schlüssel.";;
 
 settings-block-height => "Block height:" => "Blockhöhe:"
 
@@ -2409,15 +2409,15 @@ settings-exchange-rate-source
 
 settings-export-descriptor
 => "Descriptor only - plain-text"
-=> "Nur Deskriptor, Klartext";;
+=> "Nur Descriptor, Klartext";;
 
 settings-export-descriptor-description
 => "Plain-text (not encrypted) descriptor file only, to use with other wallets."
-=> "Nur die Deskriptor-Datei als Klartext (nicht verschlüsselt), für andere Wallets.";;
+=> "Nur die Descriptor-Datei als Klartext (nicht verschlüsselt), für andere Wallets.";;
 
 settings-export-encrypted-descriptor
 => "Encrypted descriptor"
-=> "Verschlüsselter Deskriptor";;
+=> "Verschlüsselter Descriptor";;
 
 settings-export-encrypted-descriptor-description
 => ".bip138 file, can be decrypted with one of your signing devices or extended public keys."
@@ -2527,7 +2527,7 @@ settings-version => "Version" => "Version"
 
 settings-wallet-alias => "Wallet alias:" => "Name der Wallet:"
 
-settings-wallet-descriptor => "Wallet descriptor:" => "Wallet-Deskriptor:"
+settings-wallet-descriptor => "Wallet descriptor:" => "Wallet-Descriptor:"
 
 settings-year => "Year:" => "Jahr:"
 
@@ -2753,7 +2753,7 @@ warning-daemon-unsupported
 
 warning-descriptor-analysis
 => "Descriptor analysis error: '{$error}'."
-=> "Fehler bei der Analyse des Deskriptors: „{$error}“.";;
+=> "Fehler bei der Analyse des Descriptors: „{$error}“.";;
 
 warning-fiat-price
 => "Fiat price error: {$error}"
