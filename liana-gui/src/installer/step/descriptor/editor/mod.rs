@@ -1330,7 +1330,7 @@ mod tests {
         step.keys_attempt = attempt;
         step.keys_flow = KeysFlow::Waiting {
             attempt,
-            url: "https://www.21stcapital.com/desktop/keys".to_string(),
+            url: "https://21stcapital.com/desktop/keys".to_string(),
             _abort: handle,
         };
     }

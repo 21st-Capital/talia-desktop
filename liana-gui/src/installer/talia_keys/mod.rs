@@ -37,8 +37,10 @@ use proof::{issued_keys_problem, IssuedKey, Pin, ProofNet};
 
 /// The backend the code is exchanged with.
 pub const DEFAULT_API: &str = "https://backend.21stcapital.com";
-/// The website the client signs in on.
-pub const DEFAULT_SITE: &str = "https://www.21stcapital.com";
+/// The website the client signs in on. The bare host, never "www.": the
+/// website answers on both, a browser keeps each one's sign-in apart, and our
+/// sign-in e-mails (and so the client's session) use the bare host.
+pub const DEFAULT_SITE: &str = "https://21stcapital.com";
 /// Overrides [`DEFAULT_API`], for testing against another backend.
 pub const API_ENV: &str = "TALIA_KEYS_API";
 /// Overrides [`DEFAULT_SITE`], for testing against another website.
@@ -501,7 +503,7 @@ mod tests {
         assert_eq!(
             website_url(DEFAULT_SITE, ProofNet::Mainnet, &shape, &pkce, 50123),
             format!(
-                "https://www.21stcapital.com/desktop/keys?v=1&network=mainnet&config=multi-2-3\
+                "https://21stcapital.com/desktop/keys?v=1&network=mainnet&config=multi-2-3\
                  &cosigner=1&rescue=1&heirs=9,14&challenge={}&state={}&port=50123",
                 pkce.challenge, pkce.state
             )
@@ -930,7 +932,7 @@ mod tests {
 
         // The website's side: it reads the challenge, the state and the port.
         let url = started.url.clone();
-        assert!(url.starts_with("https://www.21stcapital.com/desktop/keys?v=1&network=testnet4"));
+        assert!(url.starts_with("https://21stcapital.com/desktop/keys?v=1&network=testnet4"));
         assert_eq!(query(&url, "config"), "multi-2-3");
         assert_eq!(query(&url, "heirs"), "12");
         let challenge = query(&url, "challenge");
