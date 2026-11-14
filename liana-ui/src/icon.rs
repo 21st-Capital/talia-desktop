@@ -6,10 +6,20 @@ pub const ICON_SIZE_L: u16 = 32;
 pub const ICON_SIZE_M: u16 = 24;
 pub const ICON_SIZE_S: u16 = 16;
 
-const BOOTSTRAP_ICONS: Font = Font::with_name("bootstrap-icons");
-const ICONEX_ICONS: Font = Font::with_name("Untitled1");
-const LIANA_ICONS: Font = Font::with_name("liana-icons");
+// Talia Desktop: the Talia iPhone app's icons (decided 2026-11-14). One font,
+// static/icons/talia-icons: the Tabler outline set the app draws (MIT), cut
+// down to the glyphs below, plus the app's own key, vault and refresh marks.
+// Every function keeps Liana's name, so no caller changes; the glyph behind
+// it is ours. static/icons/talia-icons/build_font.py rebuilds the font.
+const TALIA_ICONS: Font = Font::with_name("talia-icons");
 pub(crate) const FONT_ICON_WIDTH: f32 = 20.0;
+
+/// The app's own drawn key (KeyIcon), the one key icon everywhere.
+const KEY: char = '\u{E000}';
+/// The app's Vault tab icon (VaultIcon): a safe.
+const VAULT: char = '\u{E001}';
+/// The app's refresh arrow, its head at the top left.
+const REFRESH: char = '\u{E002}';
 
 fn font_icon<'a>(font: Font, unicode: char) -> Text<'a> {
     Text::new(unicode.to_string())
@@ -27,270 +37,320 @@ fn font_icon_no_padding<'a>(font: Font, unicode: char) -> Text<'a> {
         .line_height(LineHeight::Relative(1.0))
 }
 
-fn bootstrap_icon<'a>(unicode: char) -> Text<'a> {
-    font_icon(BOOTSTRAP_ICONS, unicode)
+fn talia_icon<'a>(unicode: char) -> Text<'a> {
+    font_icon(TALIA_ICONS, unicode)
 }
 
-fn bootstrap_icon_no_padding<'a>(unicode: char) -> Text<'a> {
-    font_icon_no_padding(BOOTSTRAP_ICONS, unicode)
+fn talia_icon_no_padding<'a>(unicode: char) -> Text<'a> {
+    font_icon_no_padding(TALIA_ICONS, unicode)
 }
 
-fn iconex_icon<'a>(unicode: char) -> Text<'a> {
-    font_icon(ICONEX_ICONS, unicode)
-}
-
-fn liana_icon<'a>(unicode: char) -> Text<'a> {
-    font_icon(LIANA_ICONS, unicode)
-}
-
+/// Tabler: x.
 pub fn cross_icon<'a>() -> Text<'a> {
-    bootstrap_icon_no_padding('\u{F62A}')
+    talia_icon_no_padding('\u{EB55}')
 }
 
+/// Tabler: x.
 pub fn big_cross_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F623}')
+    talia_icon('\u{EB55}')
 }
 
+/// Tabler: arrow-down.
 pub fn arrow_down() -> Text<'static> {
-    bootstrap_icon('\u{F128}')
+    talia_icon('\u{EA16}')
 }
 
+/// Tabler: arrow-right.
 pub fn arrow_right() -> Text<'static> {
-    bootstrap_icon('\u{F138}')
+    talia_icon('\u{EA1F}')
 }
 
+/// Tabler: corner-down-right.
 pub fn arrow_return_right() -> Text<'static> {
-    bootstrap_icon('\u{F132}')
+    talia_icon('\u{EA7D}')
 }
 
+/// Tabler: chevron-right.
 pub fn chevron_right() -> Text<'static> {
-    bootstrap_icon('\u{F285}')
+    talia_icon('\u{EA61}')
 }
 
 pub fn recovery_icon() -> Text<'static> {
-    bootstrap_icon('\u{F44F}')
+    talia_icon(KEY)
 }
 
+/// Tabler: plug.
 pub fn plug_icon() -> Text<'static> {
-    bootstrap_icon('\u{F4F6}')
+    talia_icon('\u{EBD9}')
 }
 
 pub fn reload_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F130}')
+    talia_icon(REFRESH)
 }
 
+/// Tabler: download.
 pub fn import_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F30A}')
+    talia_icon('\u{EA96}')
 }
 
+/// Tabler: wallet.
 pub fn wallet_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F615}')
+    talia_icon('\u{EB75}')
 }
 
+/// Tabler: currency-bitcoin.
 pub fn bitcoin_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F635}')
+    talia_icon('\u{EBAB}')
 }
 
+/// Tabler: box.
 pub fn block_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F1C8}')
+    talia_icon('\u{EA45}')
 }
 
+/// A solid dot, drawn for this font.
 pub fn dot_icon() -> Text<'static> {
-    bootstrap_icon('\u{F287}')
+    talia_icon('\u{E003}')
 }
 
+/// Tabler: user.
 pub fn person_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F4DA}')
+    talia_icon('\u{EB4D}')
 }
 
+/// Tabler: info-circle.
 pub fn tooltip_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F431}')
+    talia_icon('\u{EAC5}')
 }
 
+/// Tabler: plus.
 pub fn plus_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F4FE}')
+    talia_icon('\u{EB0B}')
 }
 
+/// Tabler: minus.
 pub fn minus_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F63B}')
+    talia_icon('\u{EAF2}')
 }
 
+/// Tabler: alert-triangle.
 pub fn warning_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F33B}')
+    talia_icon('\u{EA06}')
 }
 
+/// Tabler: shield.
 pub fn shield_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F53F}')
+    talia_icon('\u{EB24}')
 }
 
+/// Tabler: lock.
 pub fn lock_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F47B}')
+    talia_icon('\u{EAE2}')
 }
 
+/// Tabler: alert-triangle, solid.
 pub fn warning_fill_icon() -> Text<'static> {
-    bootstrap_icon('\u{F33A}')
+    talia_icon('\u{E011}')
 }
 
+/// Tabler: cpu.
 pub fn chip_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F2D6}')
+    talia_icon('\u{EF8E}')
 }
 
+/// Tabler: trash.
 pub fn trash_icon() -> Text<'static> {
-    bootstrap_icon('\u{F5DE}')
+    talia_icon('\u{EB41}')
 }
 
+/// Tabler: chevron-right.
 pub fn collapse_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F285}')
+    talia_icon('\u{EA61}')
 }
 
+/// Tabler: chevron-down.
 pub fn collapsed_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F282}')
+    talia_icon('\u{EA5F}')
 }
 
+/// Tabler: chevron-down.
 pub fn down_icon() -> Text<'static> {
-    bootstrap_icon('\u{F279}')
+    talia_icon('\u{EA5F}')
 }
 
+/// Tabler: chevron-up.
 pub fn up_icon() -> Text<'static> {
-    bootstrap_icon('\u{F27C}')
+    talia_icon('\u{EA62}')
 }
 
+/// Tabler: network.
 pub fn network_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F40D}')
+    talia_icon('\u{F09F}')
 }
 
+/// Tabler: chevron-left.
 pub fn previous_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F284}')
+    talia_icon('\u{EA60}')
 }
 
+/// Tabler: check.
 pub fn check_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F633}')
+    talia_icon('\u{EA5E}')
 }
 
+/// Tabler: check.
 pub fn check_mark_icon<'a>() -> Text<'a> {
-    bootstrap_icon_no_padding('\u{F633}')
+    talia_icon_no_padding('\u{EA5E}')
 }
 
 pub fn round_key_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F44E}')
+    talia_icon(KEY)
 }
 
+/// Tabler: file-export.
 pub fn backup_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F356}')
+    talia_icon('\u{EDE9}')
 }
 
+/// Tabler: file-import.
 pub fn restore_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F358}')
+    talia_icon('\u{EDEA}')
 }
 
+/// Tabler: tool.
 pub fn wrench_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F621}')
+    talia_icon('\u{EB40}')
 }
 
+/// Tabler: link.
 pub fn link_icon() -> Text<'static> {
-    bootstrap_icon('\u{F470}')
+    talia_icon('\u{EADE}')
 }
 
+/// Tabler: clipboard.
 pub fn paste_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F290}')
+    talia_icon('\u{EA6F}')
 }
 
+/// Tabler: usb.
 pub fn usb_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F6DC}')
+    talia_icon('\u{F00C}')
 }
 
+/// Tabler: device-usb.
 pub fn usb_drive_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F6F2}')
+    talia_icon('\u{FC59}')
 }
 
+/// Tabler: server.
 pub fn hdd_icon() -> Text<'static> {
-    bootstrap_icon('\u{F412}')
+    talia_icon('\u{EB1F}')
 }
 
+/// Tabler: login-2.
 pub fn enter_box_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F1BE}')
+    talia_icon('\u{FC76}')
 }
 
+/// Tabler: list-details.
 pub fn collection_icon() -> Text<'static> {
-    bootstrap_icon('\u{F2CC}')
+    talia_icon('\u{EF40}')
 }
 
+/// Tabler: building.
 pub fn org_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F876}')
+    talia_icon('\u{EA4F}')
 }
 
+/// Tabler: coins.
 pub fn coins_icon() -> Text<'static> {
-    bootstrap_icon('\u{F45B}')
+    talia_icon('\u{F65D}')
 }
 
+/// Tabler: arrow-down, the app's received arrow.
 pub fn receive_icon() -> Text<'static> {
-    bootstrap_icon('\u{F1BC}')
+    talia_icon('\u{EA16}')
 }
 
+/// Tabler: arrow-up, the app's sent arrow.
 pub fn send_icon() -> Text<'static> {
-    bootstrap_icon('\u{F1C6}')
+    talia_icon('\u{EA25}')
 }
 
+/// Tabler: settings.
 pub fn settings_icon() -> Text<'static> {
-    bootstrap_icon('\u{F3E5}')
+    talia_icon('\u{EB20}')
 }
 
+/// Tabler: clock.
 pub fn clock_icon() -> Text<'static> {
-    bootstrap_icon('\u{F293}')
+    talia_icon('\u{EA70}')
 }
 
+/// Tabler: clock, solid.
 pub fn clock_fill_icon() -> Text<'static> {
-    bootstrap_icon('\u{F291}')
+    talia_icon('\u{E010}')
 }
 
+/// Tabler: pencil.
 pub fn edit_icon_padding<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F4CA}')
+    talia_icon('\u{EB04}')
 }
 
+/// Tabler: pencil.
 pub fn edit_icon<'a>() -> Text<'a> {
-    bootstrap_icon_no_padding('\u{F4CA}')
+    talia_icon_no_padding('\u{EB04}')
 }
 
+/// Tabler: qrcode.
 pub fn qr_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F6AD}')
+    talia_icon('\u{EB11}')
 }
 
+/// Tabler: copy.
 pub fn copy_icon<'a>() -> Text<'a> {
-    bootstrap_icon_no_padding('\u{F759}')
+    talia_icon_no_padding('\u{EA7A}')
 }
 
+/// Tabler: file-export.
 pub fn file_icon<'a>() -> Text<'a> {
-    bootstrap_icon('\u{F392}')
+    talia_icon('\u{EDE9}')
 }
 
+/// Tabler: repeat.
 pub fn arrow_repeat() -> Text<'static> {
-    iconex_icon('\u{46BB}')
+    talia_icon('\u{EB72}')
 }
 
 pub fn home_icon() -> Text<'static> {
-    iconex_icon('\u{C722}')
+    talia_icon(VAULT)
 }
 
 pub fn key_icon<'a>() -> Text<'a> {
-    iconex_icon('\u{FFEC}')
+    talia_icon(KEY)
 }
 
+/// Tabler: history.
 pub fn history_icon() -> Text<'static> {
-    iconex_icon('\u{BEBA}')
+    talia_icon('\u{EBEA}')
 }
 
+/// Tabler: clipboard.
 pub fn clipboard_icon<'a>() -> Text<'a> {
-    iconex_icon('\u{F8D3}')
+    talia_icon('\u{EA6F}')
 }
 
+/// Tabler: circle-check.
 pub fn circle_check_icon() -> Text<'static> {
-    iconex_icon('\u{E2F9}')
+    talia_icon('\u{EA67}')
 }
 
+/// Tabler: circle-x.
 pub fn circle_cross_icon() -> Text<'static> {
-    iconex_icon('\u{19DA}')
+    talia_icon('\u{EA6A}')
 }
 
+/// Tabler: scale.
 pub fn scale_icon<'a>() -> Text<'a> {
-    liana_icon('\u{E001}')
+    talia_icon('\u{EBC2}')
 }

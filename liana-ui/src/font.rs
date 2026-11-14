@@ -60,6 +60,9 @@ pub const MANROPE_BOLD_BYTES: &[u8] = include_bytes!("../static/fonts/BricolageG
 pub const ICONEX_ICONS_BYTES: &[u8] = include_bytes!("../static/icons/iconex/iconex-icons.ttf");
 pub const BOOTSTRAP_ICONS_BYTE: &[u8] = include_bytes!("../static/icons/bootstrap-icons.ttf");
 pub const LIANA_ICONS_BYTES: &[u8] = include_bytes!("../static/icons/liana-icons/liana-icons.ttf");
+// Talia Desktop: the iPhone app's icons (Tabler outline subset plus our own
+// key and vault), MIT: static/icons/talia-icons/LICENSE-tabler-icons.txt.
+pub const TALIA_ICONS_BYTES: &[u8] = include_bytes!("../static/icons/talia-icons/talia-icons.ttf");
 
 pub fn load() -> Vec<Cow<'static, [u8]>> {
     vec![
@@ -70,8 +73,10 @@ pub fn load() -> Vec<Cow<'static, [u8]>> {
         MANROPE_MEDIUM_BYTES.into(),
         MANROPE_SEMIBOLD_BYTES.into(),
         MANROPE_BOLD_BYTES.into(),
-        ICONEX_ICONS_BYTES.into(),
+        // Bootstrap stays loaded for the vault graph's key glyph
+        // (component/timeline.rs); the iconex and liana-icons fonts have no
+        // user left and are no longer loaded.
         BOOTSTRAP_ICONS_BYTE.into(),
-        LIANA_ICONS_BYTES.into(),
+        TALIA_ICONS_BYTES.into(),
     ]
 }
