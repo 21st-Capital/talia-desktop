@@ -2,9 +2,8 @@ use super::{card::CARD_SHADOW, Theme};
 use crate::color;
 use iced::{
     border::Radius,
-    gradient,
     widget::container::{transparent, Catalog, Style, StyleFn},
-    Background, Border, Radians,
+    Background, Border,
 };
 
 impl Catalog for Theme {
@@ -19,31 +18,19 @@ impl Catalog for Theme {
     }
 }
 
-/// Talia: the soft brand-green glow at the top of a page, fading into the ground.
-fn ground(theme: &Theme) -> Background {
-    let ground = theme.colors.general.background;
-    if theme.is_business() {
-        return Background::Color(ground);
-    }
-    gradient::Linear::new(Radians(std::f32::consts::PI))
-        .add_stop(0.0, color::PAGE_GLOW)
-        .add_stop(0.45, ground)
-        .add_stop(1.0, ground)
-        .into()
-}
-
 pub fn background(theme: &Theme) -> Style {
     Style {
-        background: Some(ground(theme)),
+        background: Some(Background::Color(theme.colors.general.background)),
         ..Default::default()
     }
 }
 
 pub fn panel_background(theme: &Theme) -> Style {
+    let bg_color = theme.colors.general.background;
     Style {
-        background: Some(ground(theme)),
+        background: Some(Background::Color(bg_color)),
         border: Border {
-            color: color::TRANSPARENT,
+            color: bg_color,
             width: 1.0,
             radius: Radius {
                 top_left: 24.0,

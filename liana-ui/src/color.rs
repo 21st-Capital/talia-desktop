@@ -29,7 +29,6 @@ color!(GREY_3, 0x738983);
 color!(GREY_2, 0xC9D1CE);
 color!(GREY_1, 0xE5E9E8);
 color!(GREEN, 0x16C784);
-color!(PAGE_GLOW, 0x0E3B2E);
 color!(SUCCESS_GREEN, 0x16C784);
 color!(TRANSPARENT_GREEN, 0x16C784, 0.3);
 color!(RED, 0xFF4C4C);
