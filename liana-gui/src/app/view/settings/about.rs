@@ -28,9 +28,14 @@ pub fn about_section<'a>(
         Some(SettingsMessage::AboutSection.into()),
     );
 
-    let versions = std::iter::once(format!("liana-gui v{}", crate::VERSION))
-        .chain(lianad_version.map(|version| format!("lianad v{version}")))
-        .collect();
+    let versions = vec![
+        format!("Talia Desktop v{}", crate::VERSION),
+        "Based on Liana by Wizardsardine".to_string(),
+        format!("liana-gui v{}", crate::VERSION),
+    ]
+    .into_iter()
+    .chain(lianad_version.map(|version| format!("lianad v{version}")))
+    .collect();
     let version_card = version_card(versions);
 
     let content = column![header, version_card]

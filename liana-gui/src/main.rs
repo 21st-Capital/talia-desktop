@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         None,
     )?;
 
-    let config = args_to_config(&args, None, "Liana".into())?;
+    let config = args_to_config(&args, None, "Talia Desktop".into())?;
     let log_level = parse_log_level()?;
     i18n::init(GlobalSettings::load_locale(&GlobalSettings::path(
         &config.liana_directory,

@@ -10,7 +10,14 @@ fn main() {
         let out_dir = std::env::var("OUT_DIR").unwrap();
 
         let mut res = winresource::WindowsResource::new();
-        res.set_icon("../liana-ui/static/logos/liana.ico");
+        res.set_icon("../liana-ui/static/logos/talia-desktop.ico");
+        res.set("ProductName", "Talia Desktop");
+        res.set("FileDescription", "Talia Desktop");
+        res.set("CompanyName", "21st Capital");
+        res.set(
+            "LegalCopyright",
+            "Copyright (c) 2022, The Liana developers. Copyright (c) 2026, Twenty First Capital Cyber Security Consultancy L.L.C (21st Capital)",
+        );
 
         if let Ok(path) = std::env::var("TOOLKIT_x86_64_pc_windows_gnu") {
             res.set_toolkit_path(&path);

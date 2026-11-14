@@ -1,13 +1,13 @@
 use crate::widget::Svg;
 use iced::{widget::svg::Handle, window::icon};
 
-const LIANA_APP_ICON: &[u8] = include_bytes!("../static/logos/liana-app-icon.png");
+const LIANA_APP_ICON: &[u8] = include_bytes!("../static/logos/talia-desktop-app-icon.png");
 const LIANA_BUSINESS_APP_ICON: &[u8] =
     include_bytes!("../static/logos/liana-business-app-icon.png");
-const LIANA_LOGO_GREEN: &[u8] = include_bytes!("../static/logos/LIANA_SYMBOL_Green.svg");
+const LIANA_LOGO_GREEN: &[u8] = include_bytes!("../static/logos/TALIA_SYMBOL.svg");
 const LIANA_LOGO_BLUE: &[u8] = include_bytes!("../static/logos/LIANA_SYMBOL_Blue.svg");
 const LIANA_BRAND_GREY: &[u8] = include_bytes!("../static/logos/LIANA_BRAND_Gray.svg");
-const LIANA_WALLET_LOGO: &[u8] = include_bytes!("../static/logos/liana_wallet.svg");
+const LIANA_WALLET_LOGO: &[u8] = include_bytes!("../static/logos/talia_logo.svg");
 const LIANA_BUSINESS_LOGO: &[u8] = include_bytes!("../static/logos/liana_business.svg");
 const WIZARDSARDINE_LETTERING: &[u8] = include_bytes!("../static/logos/logo-wizardsardine.svg");
 

@@ -4,8 +4,8 @@
 # Use \n for line breaks
 
 bitcoind-upgrade-hint
-=> "Updating your Liana-managed Bitcoin node."
-=> "A atualizar o seu nó Bitcoin gerido pela Liana.";;
+=> "Updating your Talia Desktop managed Bitcoin node."
+=> "A atualizar o seu nó Bitcoin gerido pela Talia Desktop.";;
 
 bitcoind-upgrade-title
 => "Upgrading Bitcoin Core to {$version}"
@@ -850,8 +850,8 @@ decrypt-other-paths-confirm-on-device
 => "Terá de aceitar alguns destes caminhos de derivação no dispositivo.";;
 
 decrypt-other-paths-hint
-=> "{$device} could not decrypt the backup with the derivation paths Liana uses. Other common derivation paths can be tried with it, but it is very unlikely to work as Liana does not use them."
-=> "{$device} não conseguiu desencriptar a cópia de segurança com os caminhos de derivação que a Liana usa. Podem ser tentados outros caminhos de derivação comuns, mas é muito pouco provável que funcione, pois a Liana não os usa.";;
+=> "{$device} could not decrypt the backup with the derivation paths Talia Desktop uses. Other common derivation paths can be tried with it, but it is very unlikely to work as Talia Desktop does not use them."
+=> "{$device} não conseguiu desencriptar a cópia de segurança com os caminhos de derivação que a Talia Desktop usa. Podem ser tentados outros caminhos de derivação comuns, mas é muito pouco provável que funcione, pois a Talia Desktop não os usa.";;
 
 decrypt-other-paths-title
 => "Try other derivation paths?"
@@ -924,8 +924,8 @@ device-signed => "Signed" => "Assinado"
 device-unlock => "Please unlock the device" => "Desbloqueie o dispositivo"
 
 device-unrelated-wallet
-=> "This signing device is not related to this Liana wallet."
-=> "Este dispositivo de assinatura não está relacionado com esta carteira Liana.";;
+=> "This signing device is not related to this Talia Desktop wallet."
+=> "Este dispositivo de assinatura não está relacionado com esta carteira Talia Desktop.";;
 
 device-version-unsupported
 => "Device version not supported, upgrade to version > {$version}"
@@ -1106,8 +1106,8 @@ hw-descriptor-not-registered
 => "O descriptor da carteira não está registado no dispositivo.\n Pode registá-lo nas definições.";;
 
 hw-display-address-unavailable
-=> "Liana cannot request the device to display the address. \n Verify it with the QR code in the options below."
-=> "A Liana não consegue pedir ao dispositivo para mostrar o endereço.\nVerifique-o com o código QR nas opções abaixo.";;
+=> "Talia Desktop cannot request the device to display the address. \n Verify it with the QR code in the options below."
+=> "A Talia Desktop não consegue pedir ao dispositivo para mostrar o endereço.\nVerifique-o com o código QR nas opções abaixo.";;
 
 hw-no-taproot-miniscript
 => "This device doesn't support Taproot. Switch to Segwit or use another device."
@@ -1148,8 +1148,8 @@ installer-auth-token-emailed-to
 => "Foi enviado um token de autenticação por email para";;
 
 installer-auto-install-node
-=> "I want Liana to automatically install a Bitcoin node on my device"
-=> "Quero que a Liana instale automaticamente um nó Bitcoin no meu dispositivo";;
+=> "I want Talia Desktop to automatically install a Bitcoin node on my device"
+=> "Quero que a Talia Desktop instale automaticamente um nó Bitcoin no meu dispositivo";;
 
 installer-available-after-inactivity
 => "Available after inactivity of ~"
@@ -1176,8 +1176,8 @@ installer-backed-up-mnemonic-show-xpub
 => "Fiz cópia de segurança da frase-semente, mostrar a chave pública alargada";;
 
 installer-backup-descriptor-help
-=> "In Bitcoin, to spend from a wallet that isn't a standard single-key setup, you need both your private keys (usually stored as seed phrases) to sign transactions, and your wallet descriptor to locate your coins - like a map of your addresses.\nWithout the descriptor, your wallet may not find your coins - even if you still have the keys.\nWhen you click \"Back up descriptor\", Liana creates an encrypted file that can only be decrypted using one of your wallet's extended public keys.\nLiana handles this automatically during the restore of a wallet process by asking you to connect a device or enter a key.\nThis file is safer and more private than copying the descriptor manually."
-=> "Em Bitcoin, para gastar de uma carteira que não é uma configuração padrão de chave única, precisa das suas chaves privadas (normalmente guardadas como frases-semente) para assinar transações e do descriptor da sua carteira para localizar as suas moedas, como um mapa dos seus endereços.\nSem o descriptor, a sua carteira pode não encontrar as suas moedas, mesmo que ainda tenha as chaves.\nQuando clica em \"Fazer cópia de segurança do descriptor\", a Liana cria um ficheiro encriptado que só pode ser desencriptado usando uma das chaves públicas alargadas da sua carteira.\nA Liana trata disto automaticamente durante o restauro de uma carteira, pedindo-lhe que ligue um dispositivo ou introduza uma chave.\nEste ficheiro é mais seguro e mais privado do que copiar o descriptor manualmente.";;
+=> "In Bitcoin, to spend from a wallet that isn't a standard single-key setup, you need both your private keys (usually stored as seed phrases) to sign transactions, and your wallet descriptor to locate your coins - like a map of your addresses.\nWithout the descriptor, your wallet may not find your coins - even if you still have the keys.\nWhen you click \"Back up descriptor\", Talia Desktop creates an encrypted file that can only be decrypted using one of your wallet's extended public keys.\nTalia Desktop handles this automatically during the restore of a wallet process by asking you to connect a device or enter a key.\nThis file is safer and more private than copying the descriptor manually."
+=> "Em Bitcoin, para gastar de uma carteira que não é uma configuração padrão de chave única, precisa das suas chaves privadas (normalmente guardadas como frases-semente) para assinar transações e do descriptor da sua carteira para localizar as suas moedas, como um mapa dos seus endereços.\nSem o descriptor, a sua carteira pode não encontrar as suas moedas, mesmo que ainda tenha as chaves.\nQuando clica em \"Fazer cópia de segurança do descriptor\", a Talia Desktop cria um ficheiro encriptado que só pode ser desencriptado usando uma das chaves públicas alargadas da sua carteira.\nA Talia Desktop trata disto automaticamente durante o restauro de uma carteira, pedindo-lhe que ligue um dispositivo ou introduza uma chave.\nEste ficheiro é mais seguro e mais privado do que copiar o descriptor manualmente.";;
 
 installer-backup-descriptor-message
 => "This backup is required to recover your funds.\nClick \"Back up descriptor\" to download an encrypted file of your wallet configuration and store it in safe, accessible places.\nYou can also copy the plain-text descriptor string, but it's less private.\nWARNING: This file does not include your seed phrase(s). Back those up separately."
@@ -1212,8 +1212,8 @@ installer-bitcoin-node-management
 => "Gestão do nó Bitcoin";;
 
 installer-bitcoind-already-installed
-=> "Liana-managed bitcoind already installed"
-=> "bitcoind gerido pela Liana já instalado";;
+=> "Talia Desktop managed bitcoind already installed"
+=> "bitcoind gerido pela Talia Desktop já instalado";;
 
 installer-bitcoind-canonicalize-datadir-error
 => "Failed to canonicalize datadir: {$error}"
@@ -1374,8 +1374,8 @@ installer-enter-correct-user
 => "Introduza um utilizador correto";;
 
 installer-existing-node-description
-=> "Select this option if you already have a Bitcoin node running locally or remotely. Liana will connect to it."
-=> "Selecione esta opção se já tiver um nó Bitcoin em execução localmente ou remotamente. A Liana irá ligar-se a ele.";;
+=> "Select this option if you already have a Bitcoin node running locally or remotely. Talia Desktop will connect to it."
+=> "Selecione esta opção se já tiver um nó Bitcoin em execução localmente ou remotamente. A Talia Desktop irá ligar-se a ele.";;
 
 installer-expanding-multisig => "Expanding multisig" => "Multisig expansível"
 
@@ -1512,12 +1512,12 @@ installer-load-shared-wallet
 => "Carregar uma carteira partilhada";;
 
 installer-local-wallet-description
-=> "Use your already existing Bitcoin node or automatically install one. The Liana wallet will not connect to any external server.\n\nThis is the most private option, but the data is locally stored on this computer, only. You must perform your own backups, and share the descriptor with other people you want to be able to access the wallet."
-=> "Use o seu nó Bitcoin existente ou instale um automaticamente. A carteira Liana não se ligará a nenhum servidor externo.\n\nEsta é a opção mais privada, mas os dados ficam guardados apenas localmente neste computador. Deve fazer as suas próprias cópias de segurança e partilhar o descriptor com as outras pessoas que quiser que possam aceder à carteira.";;
+=> "Use your already existing Bitcoin node or automatically install one. The Talia Desktop wallet will not connect to any external server.\n\nThis is the most private option, but the data is locally stored on this computer, only. You must perform your own backups, and share the descriptor with other people you want to be able to access the wallet."
+=> "Use o seu nó Bitcoin existente ou instale um automaticamente. A carteira Talia Desktop não se ligará a nenhum servidor externo.\n\nEsta é a opção mais privada, mas os dados ficam guardados apenas localmente neste computador. Deve fazer as suas próprias cópias de segurança e partilhar o descriptor com as outras pessoas que quiser que possam aceder à carteira.";;
 
 installer-managed-node-description
-=> "Liana will install a pruned node on your computer. You won't need to do anything except have some disk space available (~30GB required on mainnet) and wait for the initial synchronization with the network (it can take some days depending on your internet connection speed)."
-=> "A Liana irá instalar um nó pruned no seu computador. Não terá de fazer nada exceto ter algum espaço em disco disponível (~30 GB necessários em mainnet) e aguardar a sincronização inicial com a rede (pode demorar alguns dias, dependendo da velocidade da sua ligação à internet).";;
+=> "Talia Desktop will install a pruned node on your computer. You won't need to do anything except have some disk space available (~30GB required on mainnet) and wait for the initial synchronization with the network (it can take some days depending on your internet connection speed)."
+=> "A Talia Desktop irá instalar um nó pruned no seu computador. Não terá de fazer nada exceto ter algum espaço em disco disponível (~30 GB necessários em mainnet) e aguardar a sincronização inicial com a rede (pode demorar alguns dias, dependendo da velocidade da sua ligação à internet).";;
 
 installer-manual-xpub-taproot-note
 => "Use with a Taproot-compatible device"
@@ -1614,8 +1614,8 @@ installer-remote-backend-description
 => "Use o nosso serviço para ficar imediatamente pronto a transacionar. A Wizardsardine opera a infraestrutura, permitindo que vários computadores ou participantes se liguem e sincronizem.\n\nEsta é uma opção mais simples e segura para quem quer que a Wizardsardine mantenha uma cópia de segurança do descriptor. Continua a controlar as suas chaves, e a Wizardsardine não tem controlo sobre os seus fundos, mas poderá ver informação da sua carteira associada a um endereço de email. Utilizadores focados em privacidade devem executar a sua própria infraestrutura.";;
 
 installer-remote-bitcoin-node-warning
-=> "Connection to a remote Bitcoin node is not supported. Insert an IP address bound to the same machine running Liana (ignore this warning if that's already the case)"
-=> "A ligação a um nó Bitcoin remoto não é suportada. Introduza um endereço IP associado à mesma máquina onde a Liana está a correr (ignore este aviso se já for o caso)";;
+=> "Connection to a remote Bitcoin node is not supported. Insert an IP address bound to the same machine running Talia Desktop (ignore this warning if that's already the case)"
+=> "A ligação a um nó Bitcoin remoto não é suportada. Introduza um endereço IP associado à mesma máquina onde a Talia Desktop está a correr (ignore este aviso se já for o caso)";;
 
 installer-rpc-auth => "RPC authentication:" => "Autenticação RPC:"
 
@@ -1802,20 +1802,20 @@ label-invalid-length
 label-label => "Label" => "Etiqueta"
 
 launcher-add-existing-wallet
-=> "Add an existing Liana wallet"
-=> "Adicionar uma carteira Liana existente";;
+=> "Add an existing Talia Desktop wallet"
+=> "Adicionar uma carteira Talia Desktop existente";;
 
 launcher-config-descriptor-origin-error
 => "There is an issue with the configuration for this network. You most likely use a descriptor containing one or more extended public key(s) without origin. Liana v0.2 and later only support extended public keys with origins. Please migrate your funds using Liana v0.1."
 => "Existe um problema com a configuração desta rede. Provavelmente usa um descriptor que contém uma ou mais chaves públicas alargadas sem origem. A Liana v0.2 e posterior só suportam chaves públicas alargadas com origem. Migre os seus fundos usando a Liana v0.1.";;
 
 launcher-create-new-wallet
-=> "Create a new Liana wallet"
-=> "Criar uma nova carteira Liana";;
+=> "Create a new Talia Desktop wallet"
+=> "Criar uma nova carteira Talia Desktop";;
 
 launcher-default-wallet-name
-=> "My Liana {$network} wallet"
-=> "A minha carteira Liana {$network}";;
+=> "My Talia Desktop {$network} wallet"
+=> "A minha carteira Talia Desktop {$network}";;
 
 launcher-delete-all-data-confirmation
 => "Are you sure you want to delete the configuration and all associated data for the wallet {$wallet}?"
@@ -1834,12 +1834,12 @@ launcher-delete-local-config-confirmation
 => "Tem a certeza de que quer apagar localmente a configuração da carteira {$wallet}?";;
 
 launcher-delete-node-not-affected
-=> "(If you are using a Liana-managed Bitcoin node, it will not be affected by this action.)"
-=> "(Se estiver a usar um nó Bitcoin gerido pela Liana, este não será afetado por esta ação.)";;
+=> "(If you are using a Talia Desktop managed Bitcoin node, it will not be affected by this action.)"
+=> "(Se estiver a usar um nó Bitcoin gerido pela Talia Desktop, este não será afetado por esta ação.)";;
 
 launcher-delete-node-not-affected-this-network
-=> "(The Liana-managed Bitcoin node for this network will not be affected by this action.)"
-=> "(O nó Bitcoin gerido pela Liana para esta rede não será afetado por esta ação.)";;
+=> "(The Talia Desktop managed Bitcoin node for this network will not be affected by this action.)"
+=> "(O nó Bitcoin gerido pela Talia Desktop para esta rede não será afetado por esta ação.)";;
 
 launcher-delete-title
 => "Delete configuration for Liana-{$checksum}"
@@ -1897,11 +1897,11 @@ lianalite-wallet-deleted
 
 loader-connecting-daemon => "Connecting to daemon..." => "A ligar ao daemon..."
 
-loader-failed => "Liana failed to start" => "A Liana não conseguiu iniciar"
+loader-failed => "Talia Desktop failed to start" => "A Talia Desktop não conseguiu iniciar"
 
 loader-failed-bitcoind
-=> "Liana failed to start, please check if bitcoind is running"
-=> "A Liana não conseguiu iniciar; verifique se o bitcoind está em execução";;
+=> "Talia Desktop failed to start, please check if bitcoind is running"
+=> "A Talia Desktop não conseguiu iniciar; verifique se o bitcoind está em execução";;
 
 loader-internal-daemon-error
 => "Error while starting the internal daemon"
@@ -2318,8 +2318,8 @@ settings-grant-wallet-access
 => "Conceder acesso à carteira a outro utilizador";;
 
 settings-import-export-description
-=> "A collection of the export and import functions present in Liana."
-=> "Um conjunto das funções de exportação e importação presentes na Liana.";;
+=> "A collection of the export and import functions present in Talia Desktop."
+=> "Um conjunto das funções de exportação e importação presentes na Talia Desktop.";;
 
 settings-import-wallet => "Import wallet" => "Importar carteira"
 

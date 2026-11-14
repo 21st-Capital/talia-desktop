@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>CFBundleName</key>
+        <string>Talia Desktop</string>
+        <key>CFBundleDisplayName</key>
+        <string>Talia Desktop</string>
+        <key>CFBundleIdentifier</key>
+        <string>com.twentyfirstcapital.taliadesktop</string>
+        <key>CFBundleVersion</key>
+        <string>VERSION_PLACEHOLDER</string>
+        <key>CFBundleShortVersionString</key>
+        <string>VERSION_PLACEHOLDER</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+        <key>CFBundleSignature</key>
+        <string>????</string>
+        <key>CFBundleExecutable</key>
+        <string>Talia Desktop</string>
+        <key>LSMinimumSystemVersion</key>
+        <string>10.15.0</string>
+        <key>CFBundleIconFile</key>
+        <string>TaliaDesktop.icns</string>
+        <key>NSPrincipalClass</key>
+        <string>NSApplication</string>
+        <key>LSApplicationCategoryType</key>
+        <string>public.app-category.finance</string>
+        <key>NSHumanReadableCopyright</key>
+        <string>Based on Liana. Copyright (c) 2022, The Liana developers. Copyright (c) 2026, Twenty First Capital Cyber Security Consultancy L.L.C (21st Capital). BSD 3-Clause License.</string>
+    </dict>
+</plist>

@@ -3,7 +3,7 @@
 # Format: id => "English"
 # Use \n for line breaks
 
-bitcoind-upgrade-hint => "Updating your Liana-managed Bitcoin node."
+bitcoind-upgrade-hint => "Updating your Talia Desktop managed Bitcoin node."
 
 bitcoind-upgrade-title => "Upgrading Bitcoin Core to {$version}"
 
@@ -677,7 +677,7 @@ decrypt-other-paths-confirm-on-device
 => "You will have to accept some of these derivation paths on the device.";;
 
 decrypt-other-paths-hint
-=> "{$device} could not decrypt the backup with the derivation paths Liana uses. Other common derivation paths can be tried with it, but it is very unlikely to work as Liana does not use them.";;
+=> "{$device} could not decrypt the backup with the derivation paths Talia Desktop uses. Other common derivation paths can be tried with it, but it is very unlikely to work as Talia Desktop does not use them.";;
 
 decrypt-other-paths-title => "Try other derivation paths?"
 
@@ -724,7 +724,7 @@ device-signed => "Signed"
 
 device-unlock => "Please unlock the device"
 
-device-unrelated-wallet => "This signing device is not related to this Liana wallet."
+device-unrelated-wallet => "This signing device is not related to this Talia Desktop wallet."
 
 device-version-unsupported
 => "Device version not supported, upgrade to version > {$version}";;
@@ -852,7 +852,7 @@ hw-descriptor-not-registered
 => "The wallet descriptor is not registered on the device.\n You can register it in the settings.";;
 
 hw-display-address-unavailable
-=> "Liana cannot request the device to display the address. \n Verify it with the QR code in the options below.";;
+=> "Talia Desktop cannot request the device to display the address. \n Verify it with the QR code in the options below.";;
 
 hw-no-taproot-miniscript
 => "This device doesn't support Taproot. Switch to Segwit or use another device.";;
@@ -881,7 +881,7 @@ installer-already-used-sources => "Already used sources"
 installer-auth-token-emailed-to => "An authentication token has been emailed to"
 
 installer-auto-install-node
-=> "I want Liana to automatically install a Bitcoin node on my device";;
+=> "I want Talia Desktop to automatically install a Bitcoin node on my device";;
 
 installer-available-after-inactivity => "Available after inactivity of ~"
 
@@ -898,7 +898,7 @@ installer-backed-up-mnemonic-show-xpub
 => "I have backed up the seed phrase, show the extended public key";;
 
 installer-backup-descriptor-help
-=> "In Bitcoin, to spend from a wallet that isn't a standard single-key setup, you need both your private keys (usually stored as seed phrases) to sign transactions, and your wallet descriptor to locate your coins - like a map of your addresses.\nWithout the descriptor, your wallet may not find your coins - even if you still have the keys.\nWhen you click \"Back up descriptor\", Liana creates an encrypted file that can only be decrypted using one of your wallet's extended public keys.\nLiana handles this automatically during the restore of a wallet process by asking you to connect a device or enter a key.\nThis file is safer and more private than copying the descriptor manually.";;
+=> "In Bitcoin, to spend from a wallet that isn't a standard single-key setup, you need both your private keys (usually stored as seed phrases) to sign transactions, and your wallet descriptor to locate your coins - like a map of your addresses.\nWithout the descriptor, your wallet may not find your coins - even if you still have the keys.\nWhen you click \"Back up descriptor\", Talia Desktop creates an encrypted file that can only be decrypted using one of your wallet's extended public keys.\nTalia Desktop handles this automatically during the restore of a wallet process by asking you to connect a device or enter a key.\nThis file is safer and more private than copying the descriptor manually.";;
 
 installer-backup-descriptor-message
 => "This backup is required to recover your funds.\nClick \"Back up descriptor\" to download an encrypted file of your wallet configuration and store it in safe, accessible places.\nYou can also copy the plain-text descriptor string, but it's less private.\nWARNING: This file does not include your seed phrase(s). Back those up separately.";;
@@ -919,7 +919,7 @@ installer-backup-network-mismatch
 
 installer-bitcoin-node-management => "Bitcoin node management"
 
-installer-bitcoind-already-installed => "Liana-managed bitcoind already installed"
+installer-bitcoind-already-installed => "Talia Desktop managed bitcoind already installed"
 
 installer-bitcoind-canonicalize-datadir-error
 => "Failed to canonicalize datadir: {$error}";;
@@ -1033,7 +1033,7 @@ installer-enter-correct-path => "Please enter correct path"
 installer-enter-correct-user => "Please enter correct user"
 
 installer-existing-node-description
-=> "Select this option if you already have a Bitcoin node running locally or remotely. Liana will connect to it.";;
+=> "Select this option if you already have a Bitcoin node running locally or remotely. Talia Desktop will connect to it.";;
 
 installer-expanding-multisig => "Expanding multisig"
 
@@ -1132,10 +1132,10 @@ installer-load-previous-wallet => "Load a previously used wallet"
 installer-load-shared-wallet => "Load a shared wallet"
 
 installer-local-wallet-description
-=> "Use your already existing Bitcoin node or automatically install one. The Liana wallet will not connect to any external server.\n\nThis is the most private option, but the data is locally stored on this computer, only. You must perform your own backups, and share the descriptor with other people you want to be able to access the wallet.";;
+=> "Use your already existing Bitcoin node or automatically install one. The Talia Desktop wallet will not connect to any external server.\n\nThis is the most private option, but the data is locally stored on this computer, only. You must perform your own backups, and share the descriptor with other people you want to be able to access the wallet.";;
 
 installer-managed-node-description
-=> "Liana will install a pruned node on your computer. You won't need to do anything except have some disk space available (~30GB required on mainnet) and wait for the initial synchronization with the network (it can take some days depending on your internet connection speed).";;
+=> "Talia Desktop will install a pruned node on your computer. You won't need to do anything except have some disk space available (~30GB required on mainnet) and wait for the initial synchronization with the network (it can take some days depending on your internet connection speed).";;
 
 installer-manual-xpub-taproot-note => "Use with a Taproot-compatible device"
 
@@ -1203,7 +1203,7 @@ installer-remote-backend-description
 => "Use our service to instantly be ready to transact. Wizardsardine runs the infrastructure, allowing multiple computers or participants to connect and synchronize.\n\nThis is a simpler and safer option for people who want Wizardsardine to keep a backup of their descriptor. You are still in control of your keys, and Wizardsardine does not have any control over your funds, but it will be able to see your wallet's information, associated to an email address. Privacy focused users should run their own infrastructure instead.";;
 
 installer-remote-bitcoin-node-warning
-=> "Connection to a remote Bitcoin node is not supported. Insert an IP address bound to the same machine running Liana (ignore this warning if that's already the case)";;
+=> "Connection to a remote Bitcoin node is not supported. Insert an IP address bound to the same machine running Talia Desktop (ignore this warning if that's already the case)";;
 
 installer-rpc-auth => "RPC authentication:"
 
@@ -1341,14 +1341,14 @@ label-invalid-length => "Invalid label length, must be 80 bytes or less"
 
 label-label => "Label"
 
-launcher-add-existing-wallet => "Add an existing Liana wallet"
+launcher-add-existing-wallet => "Add an existing Talia Desktop wallet"
 
 launcher-config-descriptor-origin-error
 => "There is an issue with the configuration for this network. You most likely use a descriptor containing one or more extended public key(s) without origin. Liana v0.2 and later only support extended public keys with origins. Please migrate your funds using Liana v0.1.";;
 
-launcher-create-new-wallet => "Create a new Liana wallet"
+launcher-create-new-wallet => "Create a new Talia Desktop wallet"
 
-launcher-default-wallet-name => "My Liana {$network} wallet"
+launcher-default-wallet-name => "My Talia Desktop {$network} wallet"
 
 launcher-delete-all-data-confirmation
 => "Are you sure you want to delete the configuration and all associated data for the wallet {$wallet}?";;
@@ -1363,10 +1363,10 @@ launcher-delete-local-config-confirmation
 => "Are you sure you want to delete locally the configuration for the wallet {$wallet}?";;
 
 launcher-delete-node-not-affected
-=> "(If you are using a Liana-managed Bitcoin node, it will not be affected by this action.)";;
+=> "(If you are using a Talia Desktop managed Bitcoin node, it will not be affected by this action.)";;
 
 launcher-delete-node-not-affected-this-network
-=> "(The Liana-managed Bitcoin node for this network will not be affected by this action.)";;
+=> "(The Talia Desktop managed Bitcoin node for this network will not be affected by this action.)";;
 
 launcher-delete-title => "Delete configuration for Liana-{$checksum}"
 
@@ -1406,10 +1406,10 @@ lianalite-wallet-deleted
 
 loader-connecting-daemon => "Connecting to daemon..."
 
-loader-failed => "Liana failed to start"
+loader-failed => "Talia Desktop failed to start"
 
 loader-failed-bitcoind
-=> "Liana failed to start, please check if bitcoind is running";;
+=> "Talia Desktop failed to start, please check if bitcoind is running";;
 
 loader-internal-daemon-error => "Error while starting the internal daemon"
 
@@ -1716,7 +1716,7 @@ settings-fingerprint-aliases => "Fingerprint aliases:"
 settings-grant-wallet-access => "Grant access to wallet to another user"
 
 settings-import-export-description
-=> "A collection of the export and import functions present in Liana.";;
+=> "A collection of the export and import functions present in Talia Desktop.";;
 
 settings-import-wallet => "Import wallet"
 

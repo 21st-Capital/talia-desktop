@@ -863,7 +863,7 @@ pub async fn import_backup(
         1 => backup.accounts.first().expect("already checked"),
         _ => {
             return Err(Error::BackupImport(
-                "Liana is actually not supporting import of backup with several accounts!".into(),
+                "Talia Desktop is actually not supporting import of backup with several accounts!".into(),
             ));
         }
     };
@@ -1192,7 +1192,7 @@ pub async fn from_backup(
         1 => backup.accounts.first().expect("already checked"),
         _ => {
             return Err(Error::BackupImport(
-                "Liana is actually not supporting import of backup with several accounts!".into(),
+                "Talia Desktop is actually not supporting import of backup with several accounts!".into(),
             ));
         }
     };

@@ -232,7 +232,7 @@ impl<S: SettingsTrait> App<S> {
                 return alias;
             }
         }
-        "Liana wallet"
+        "Talia Desktop wallet"
     }
 
     pub fn cache(&self) -> &Cache {
