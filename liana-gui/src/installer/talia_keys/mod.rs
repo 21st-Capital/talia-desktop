@@ -48,8 +48,9 @@ const SITE_PATH: &str = "/desktop/keys";
 const EXCHANGE_PATH: &str = "/api/vaults/desktop-handoff/exchange/";
 const EXCHANGE_TIMEOUT: Duration = Duration::from_secs(30);
 
-/// How long the app waits for the browser to come back.
-pub const WAIT: Duration = Duration::from_secs(15 * 60);
+/// How long the app waits for the browser to come back: an hour, room for an
+/// onboarding fee paid in bitcoin on the way (decided 2026-11-14).
+pub const WAIT: Duration = Duration::from_secs(60 * 60);
 
 /// The vault shapes, in the words the iPhone app and the backend use.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -993,5 +994,11 @@ mod tests {
             exchange(&format!("http://127.0.0.1:{port}"), "code", "verifier").await,
             Err(HandoffError::InvalidCode)
         );
+    }
+
+    #[test]
+    fn the_wait_leaves_room_for_a_bitcoin_payment() {
+        assert_eq!(WAIT, Duration::from_secs(3600));
+        assert_eq!(Endpoints::from_env().map(|e| e.wait), Ok(WAIT));
     }
 }

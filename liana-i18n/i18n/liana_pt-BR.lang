@@ -1768,7 +1768,7 @@ installer-talia-keys-network-unsupported
 installer-talia-keys-open-again => "Open the page again" => NONE
 
 installer-talia-keys-timeout
-=> "No answer from the website after 15 minutes. Try again."
+=> "No answer from the website after 60 minutes. Try again."
 => NONE;;
 
 installer-talia-keys-title => "21st Capital keys" => NONE
