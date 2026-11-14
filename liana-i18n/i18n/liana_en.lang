@@ -1276,17 +1276,9 @@ installer-template-event-timelock => "After some time* of wallet inactivity"
 installer-template-footnote
 => "*The time range (timelock) for the activation of keys can be configured in the next step.";;
 
-installer-template-multisig-primary => "2-of-2 multisig"
-
-installer-template-multisig-recovery => "2-of-3 multisig"
-
 installer-template-policy-primary => "Primary spending path"
 
 installer-template-policy-recovery => "Recovery spending path"
-
-installer-template-state-locked => "Can't spend"
-
-installer-template-state-spend => "Can spend"
 
 installer-the-descriptor => "The descriptor"
 

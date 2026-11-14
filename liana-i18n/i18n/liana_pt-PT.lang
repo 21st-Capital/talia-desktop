@@ -1715,10 +1715,6 @@ installer-template-footnote
 => "*The time range (timelock) for the activation of keys can be configured in the next step."
 => "*O período (timelock) antes da ativação das chaves configura-se no passo seguinte.";;
 
-installer-template-multisig-primary => "2-of-2 multisig" => "Multisig 2-de-2"
-
-installer-template-multisig-recovery => "2-of-3 multisig" => "Multisig 2-de-3"
-
 installer-template-policy-primary
 => "Primary spending path"
 => "Caminho de gasto principal";;
@@ -1726,10 +1722,6 @@ installer-template-policy-primary
 installer-template-policy-recovery
 => "Recovery spending path"
 => "Caminho de gasto de recuperação";;
-
-installer-template-state-locked => "Can't spend" => "Não pode gastar"
-
-installer-template-state-spend => "Can spend" => "Pode gastar"
 
 installer-the-descriptor => "The descriptor" => "O descriptor"
 
