@@ -1,20 +1,17 @@
-//! The installer's spending timeline: one rail per policy, read left to right
-//! through the events that open it.
+//! The installer's spending timeline, drawn as the Talia vault graph: one lane
+//! per spending path, an amber key tile and a green key card on the left, and a
+//! line that is dashed while the path waits and solid amber once it is open.
 
 use iced::{
     advanced::text as advanced_text,
     alignment::Vertical,
     mouse,
-    widget::canvas::{self, gradient::Linear, Canvas, Frame, LineCap, Path, Stroke},
+    widget::canvas::{self, Canvas, Frame, LineDash, Path, Stroke},
     Color, Font, Pixels, Point, Rectangle, Renderer, Size,
 };
 use liana_i18n::t;
 
-use crate::{
-    font,
-    theme::{palette::TimelineTone, Theme},
-    widget::Element,
-};
+use crate::{font, theme::Theme, widget::Element};
 
 /// A wallet shape the installer offers, with the policies it comes with.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -28,92 +25,81 @@ pub enum Template {
 pub fn spending_timeline<'a, M: 'a>(template: Template) -> Element<'a, M> {
     Canvas::<Template, M, Theme, Renderer>::new(template)
         .width(CANVAS_WIDTH)
-        .height(RAILS_TOP + ROW_PITCH * POLICIES as f32 + FOOTNOTE_HEIGHT)
+        .height(CANVAS_HEIGHT)
         .into()
 }
 
-const CANVAS_WIDTH: f32 = 800.0;
-const PAD: f32 = 28.0;
-/// Event headers hang from here, icon last.
-const HEADER_BOTTOM: f32 = 82.0;
-const RAILS_TOP: f32 = 92.0;
-const ROW_PITCH: f32 = 80.0;
-const FOOTNOTE_HEIGHT: f32 = 68.0;
-/// A chip label wraps past this.
-const LABEL_MAX: f32 = 124.0;
-const CUSTOM_CHIP_WIDTH: f32 = 200.0;
-const COLUMN_MIN: f32 = 190.0;
-/// The rails need the rest.
-const COLUMN_MAX: f32 = 280.0;
-/// Policy column to first marker.
-const COLUMN_GAP: f32 = 32.0;
-const NAME_INSET: f32 = 8.0;
-/// A policy name may run into the gap, clear of the guide.
-const NAME_OVERHANG: f32 = COLUMN_GAP - 12.0;
-const NAME_GAP: f32 = 7.0;
-/// Open-ended tail, as a fraction of the event step.
-const TAIL_RATIO: f32 = 0.7;
-/// Room for the tail pill.
-const TAIL_MIN: f32 = 140.0;
-/// Part of the tail that fades out.
-const FADE_RATIO: f32 = 0.35;
-/// Pills keep this far from a marker.
-const MARKER_CLEAR: f32 = 14.0;
-/// Extra clearance a pill keeps from the glow around a marker.
-const GLOW_CLEAR: f32 = 8.0;
-/// Clearance a pill keeps at the open end of its rail.
-const TAIL_CLEAR: f32 = 4.0;
-const HEADER_WIDTH_MAX: f32 = 170.0;
-/// A header keeps this much of the event step to itself.
-const HEADER_STEP_INSET: f32 = 16.0;
-const GUIDE_TOP: f32 = RAILS_TOP - 4.0;
-const GUIDE_OVERHANG: f32 = 8.0;
-/// Rails sit this far below the middle of their row.
-const RAIL_DROP: f32 = 8.0;
-const FOOTNOTE_GAP: f32 = 16.0;
+// The graph's colours are pinned: the same amber, card green and inks in every
+// drawing of it, whatever palette the application runs with.
+const AMBER: Color = Color::from_rgb8(0xF2, 0xA9, 0x00);
+const CARD_GREEN: Color = Color::from_rgb8(0x12, 0x4A, 0x38);
+const GROUND: Color = Color::from_rgb8(0x0F, 0x15, 0x13);
+const WHITE: Color = Color::WHITE;
+/// A lane that is still waiting: its dashed line and its starting dot.
+const WAITING: Color = Color::from_rgb8(0x5C, 0x60, 0x5F);
+const AXIS_INK: Color = Color::from_rgba8(0xFF, 0xFF, 0xFF, 0.72);
+const FOOTNOTE_INK: Color = Color::from_rgba8(0xFF, 0xFF, 0xFF, 0.50);
+const GRIDLINE: Color = Color::from_rgba8(0xFF, 0xFF, 0xFF, 0.16);
+const GROUND_BORDER: Color = Color::from_rgba8(0xFF, 0xFF, 0xFF, 0.08);
 
-const CARD_RADIUS: f32 = 16.0;
-const TILE_RADIUS: f32 = 10.0;
-const TILE_SIDE: f32 = 36.0;
-const TILE_GAP: f32 = 8.0;
-const CHIP_INSET_LEFT: f32 = 6.0;
-const CHIP_INSET_RIGHT: f32 = 10.0;
-const CHIP_INSET_Y: f32 = 6.0;
-const CHIP_GAP: f32 = 10.0;
-const BADGE_RADIUS: f32 = 8.0;
-const BADGE_OVERHANG: f32 = 5.0;
-const BADGE_RIM: f32 = 2.0;
+const CANVAS_WIDTH: f32 = 800.0;
+const CANVAS_HEIGHT: f32 = 320.0;
+const PAD: f32 = 28.0;
+const GROUND_RADIUS: f32 = 16.0;
+const HAIRLINE: f32 = 1.0;
+
+/// Axis labels hang from here, centred on their gridline.
+const AXIS_BOTTOM: f32 = 60.0;
+const AXIS_WIDTH_MAX: f32 = 170.0;
+/// An axis label keeps this much of the step between gridlines to itself.
+const AXIS_STEP_INSET: f32 = 16.0;
+/// Gridlines start under the axis text, never level with it.
+const GRID_TOP: f32 = 68.0;
+const GRID_BOTTOM: f32 = 258.0;
+const GRID_WIDTH: f32 = 2.0;
+const LANES_TOP: f32 = 76.0;
+const LANES_BOTTOM: f32 = 252.0;
+const LANE_GAP_MAX: f32 = 36.0;
+const FOOTNOTE_TOP: f32 = 270.0;
+
+const TILE_WIDTH: f32 = 36.0;
+const TILE_GAP: f32 = 5.0;
+const BOX_RADIUS: f32 = 6.0;
+const CARD_WIDTH_MIN: f32 = 180.0;
+const CARD_WIDTH_MAX: f32 = 270.0;
+const CARD_INSET_LEFT: f32 = 11.0;
+const CARD_INSET_RIGHT: f32 = 12.0;
+/// The rhythm both columns are laid out from, so that a key's glyph always
+/// sits on that key's name.
+const CARD_PAD_V: f32 = 8.0;
+const TEXT_LINE: f32 = 16.0;
+const KEY_SPACE: f32 = 3.0;
+
+/// Key card to the first gridline.
+const LINE_GAP: f32 = 34.0;
+/// Where the waiting path opens, as a fraction of the timeline.
+const OPENING_RATIO: f32 = 0.52;
+const LINE_WIDTH: f32 = 2.0;
+const DASH: [f32; 2] = [6.0, 5.0];
+const DOT_RADIUS: f32 = 5.0;
+/// Ground-coloured ring that lifts a dot off its line.
+const DOT_RING: f32 = 7.5;
+const ARROW_LENGTH: f32 = 10.0;
+const ARROW_HALF: f32 = 6.0;
 const PILL_PAD_X: f32 = 10.0;
 const PILL_PAD_Y: f32 = 5.0;
-const PILL_GAP: f32 = 5.0;
-const HEADER_ICON_GAP: f32 = 6.0;
-const RAIL_WIDTH: f32 = 2.0;
-const MARKER_RADIUS: f32 = 7.0;
-const MARKER_RIM: f32 = 3.0;
-/// The halo reads as part of the marker, so it scales with it.
-const GLOW_RADIUS: f32 = MARKER_RADIUS * 2.0;
-const GLOW_ALPHA: f32 = 0.45;
-const GLOW_STEPS: usize = 16;
-/// Trace of the accent left on the guide of the event the diagram is about.
-const GUIDE_HOT_ALPHA: f32 = 0.28;
-const HAIRLINE: f32 = 1.0;
+const PILL_RADIUS: f32 = 5.0;
+/// A pill keeps this far from a dot or an arrowhead.
+const PILL_CLEAR: f32 = 14.0;
 
 /// Bootstrap Icons, the font liana-ui registers for [`crate::icon`].
 const ICONS: Font = Font::with_name("bootstrap-icons");
 const KEY_GLYPH: char = '\u{F44E}';
-const LOCK_GLYPH: char = '\u{F47B}';
-const UNLOCK_GLYPH: char = '\u{F600}';
-const RECEIPT_GLYPH: char = '\u{F1BC}';
-const HOURGLASS_GLYPH: char = '\u{F41F}';
+const KEY_GLYPH_SIZE: f32 = 16.0;
 
-const KEY_GLYPH_SIZE: f32 = 19.0;
-const BADGE_TEXT_SIZE: f32 = 10.0;
-const PILL_ICON_SIZE: f32 = 12.0;
-const HEADER_ICON_SIZE: f32 = 16.0;
-const LABEL_SIZES: &[f32] = &[14.0, 13.0];
-const NAME_SIZES: &[f32] = &[13.0, 12.0, 11.0];
-const HEADER_SIZES: &[f32] = &[13.0, 12.0, 11.0];
-const STATE_SIZES: &[f32] = &[11.0, 10.0];
+const CARD_SIZES: &[f32] = &[13.0, 12.0, 11.0, 10.0];
+const AXIS_SIZES: &[f32] = &[13.0, 12.0, 11.0];
+const PILL_SIZES: &[f32] = &[10.0, 9.0];
 const FOOTNOTE_SIZES: &[f32] = &[13.0, 12.0, 11.0];
 const LINE_HEIGHT: f32 = 1.0;
 
@@ -122,99 +108,12 @@ const BISECT_STEPS: usize = 8;
 /// Slack absorbing the rounding of a laid-out line height.
 const ROUNDING: f32 = 0.5;
 
-const POLICIES: usize = 2;
 const EVENTS: [Event; 2] = [Event::Receipt, Event::Timelock];
-/// A policy that spends from the first coin on.
-const ALWAYS: [State; 2] = [State::Spend, State::Spend];
-/// A policy the timelock opens.
-const AFTER_TIMELOCK: [State; 2] = [State::Locked, State::Spend];
-
-const SOLE_PRIMARY: [Key; 1] = [Key::new(1, KeyKind::Primary)];
-const SOLE_RECOVERY: [Key; 1] = [Key::new(2, KeyKind::Recovery)];
-const SOLE_INHERITANCE: [Key; 1] = [Key::new(2, KeyKind::Inheritance)];
-const MULTISIG_PRIMARY: [Key; 2] = [Key::new(1, KeyKind::Primary), Key::new(2, KeyKind::Primary)];
-const MULTISIG_RECOVERY: [Key; 3] = [
-    Key::new(1, KeyKind::Primary),
-    Key::new(2, KeyKind::Primary),
-    Key::new(3, KeyKind::Recovery),
-];
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum KeyKind {
-    Primary,
-    Recovery,
-    Inheritance,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum State {
-    Spend,
-    Locked,
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Event {
     Receipt,
     Timelock,
-}
-
-#[derive(Debug, Clone, Copy)]
-struct Key {
-    number: u8,
-    kind: KeyKind,
-}
-
-impl Key {
-    const fn new(number: u8, kind: KeyKind) -> Self {
-        Self { number, kind }
-    }
-}
-
-struct Policy {
-    name: String,
-    label: String,
-    keys: &'static [Key],
-    segments: &'static [State],
-}
-
-impl Template {
-    /// The policy that always spends, then the one the timelock opens.
-    fn policies(self) -> [Policy; POLICIES] {
-        let (primary_label, primary_keys, recovery_label, recovery_keys) = match self {
-            Template::Custom => (
-                t!("installer-template-custom-primary"),
-                &SOLE_PRIMARY[..],
-                t!("installer-template-custom-recovery"),
-                &SOLE_RECOVERY[..],
-            ),
-            Template::Inheritance => (
-                t!("installer-primary-key"),
-                &SOLE_PRIMARY[..],
-                t!("installer-inheritance-key"),
-                &SOLE_INHERITANCE[..],
-            ),
-            Template::MultisigSecurity => (
-                t!("installer-template-multisig-primary"),
-                &MULTISIG_PRIMARY[..],
-                t!("installer-template-multisig-recovery"),
-                &MULTISIG_RECOVERY[..],
-            ),
-        };
-        [
-            Policy {
-                name: t!("installer-template-policy-primary"),
-                label: primary_label,
-                keys: primary_keys,
-                segments: &ALWAYS,
-            },
-            Policy {
-                name: t!("installer-template-policy-recovery"),
-                label: recovery_label,
-                keys: recovery_keys,
-                segments: &AFTER_TIMELOCK,
-            },
-        ]
-    }
 }
 
 impl Event {
@@ -224,53 +123,79 @@ impl Event {
             Event::Timelock => t!("installer-template-event-timelock"),
         }
     }
-
-    fn glyph(self) -> char {
-        match self {
-            Event::Receipt => RECEIPT_GLYPH,
-            Event::Timelock => HOURGLASS_GLYPH,
-        }
-    }
-
-    /// The timelock expiring is the moment the diagram is about.
-    fn is_hot(self) -> bool {
-        self == Event::Timelock
-    }
 }
 
-impl State {
-    fn label(self) -> String {
-        match self {
-            State::Spend => t!("installer-template-state-spend"),
-            State::Locked => t!("installer-template-state-locked"),
-        }
-    }
+/// One spending path: the keys it names, how many of them must sign, and the
+/// event that opens it.
+struct Policy {
+    name: String,
+    threshold: usize,
+    keys: Vec<String>,
+    opens: Event,
+}
 
-    fn glyph(self) -> char {
-        match self {
-            State::Spend => UNLOCK_GLYPH,
-            State::Locked => LOCK_GLYPH,
+impl Policy {
+    /// The quorum goes in the title when there is one to state.
+    fn title(&self) -> String {
+        if self.keys.len() > 1 {
+            format!("{} {}/{}:", self.name, self.threshold, self.keys.len())
+        } else {
+            format!("{}:", self.name)
         }
     }
 }
 
-/// One run of consecutive events a policy spends through, or stays locked
-/// through. The last run of a policy has no end: the timeline stays open.
-struct Run {
-    start: usize,
-    end: Option<usize>,
-    state: State,
-    glow: bool,
+impl Template {
+    /// The path that always spends, then the one the timelock opens.
+    fn policies(self) -> [Policy; 2] {
+        let (threshold, primary, recovery) = match self {
+            Template::Custom => (
+                1,
+                vec![t!("installer-template-custom-primary")],
+                vec![t!("installer-template-custom-recovery")],
+            ),
+            Template::Inheritance => (
+                1,
+                vec![t!("installer-primary-key")],
+                vec![t!("installer-inheritance-key")],
+            ),
+            Template::MultisigSecurity => (
+                2,
+                vec![
+                    t!("installer-primary-key-number", number = 1),
+                    t!("installer-primary-key-number", number = 2),
+                ],
+                vec![
+                    t!("installer-primary-key-number", number = 1),
+                    t!("installer-primary-key-number", number = 2),
+                    t!("installer-recovery-key"),
+                ],
+            ),
+        };
+        [
+            Policy {
+                name: t!("installer-template-policy-primary"),
+                threshold,
+                keys: primary,
+                opens: Event::Receipt,
+            },
+            Policy {
+                name: t!("installer-template-policy-recovery"),
+                threshold,
+                keys: recovery,
+                opens: Event::Timelock,
+            },
+        ]
+    }
 }
 
-/// A policy's rail, with the chip naming it.
-struct Row {
-    y: f32,
-    name: Fitted,
-    label: Fitted,
-    keys: &'static [Key],
-    chip: Size,
-    runs: Vec<Run>,
+/// A policy laid out: its texts at the size they fit, and the height its card
+/// takes.
+struct Lane {
+    title: Fitted,
+    names: Vec<Fitted>,
+    opens: Event,
+    height: f32,
 }
 
 /// A text laid out at the largest size that fits, with the bounds it takes.
@@ -286,397 +211,226 @@ impl<M> canvas::Program<M, Theme, Renderer> for Template {
         &self,
         _state: &Self::State,
         renderer: &Renderer,
-        theme: &Theme,
+        _theme: &Theme,
         bounds: Rectangle,
         _cursor: mouse::Cursor,
     ) -> Vec<canvas::Geometry> {
         let mut frame = Frame::new(renderer, bounds.size());
-        Painter {
-            frame: &mut frame,
-            theme,
-        }
-        .draw(*self);
+        Painter { frame: &mut frame }.draw(*self);
         vec![frame.into_geometry()]
     }
 }
 
 struct Painter<'a> {
     frame: &'a mut Frame,
-    theme: &'a Theme,
 }
 
 impl Painter<'_> {
     fn draw(&mut self, template: Template) {
-        let rows = self.rows(template);
-        let column = self.column_width(&rows);
-        let x_start = PAD + column + COLUMN_GAP;
+        let lanes = lanes(template);
+        let card_width = lanes
+            .iter()
+            .flat_map(|lane| std::iter::once(&lane.title).chain(&lane.names))
+            .map(|text| text.bounds.width + CARD_INSET_LEFT + CARD_INSET_RIGHT)
+            .fold(CARD_WIDTH_MIN, f32::max)
+            .min(CARD_WIDTH_MAX);
+        let x_start = PAD + TILE_WIDTH + TILE_GAP + card_width + LINE_GAP;
         let x_end = CANVAS_WIDTH - PAD;
-        let (step, tail) = steps(x_end - x_start);
-        let event_x: Vec<f32> = (0..EVENTS.len())
-            .map(|k| x_start + step * k as f32)
-            .collect();
+        let x_opening = x_start + ((x_end - x_start) * OPENING_RATIO).round();
+        let x_of = |event: Event| match event {
+            Event::Receipt => x_start,
+            Event::Timelock => x_opening,
+        };
 
-        self.card();
-        for (event, x) in EVENTS.into_iter().zip(&event_x) {
-            self.guide(*x, event.is_hot());
-            self.event_header(*x, event, (step - HEADER_STEP_INSET).min(HEADER_WIDTH_MAX));
+        self.ground();
+        let axis_width = (x_opening - x_start - AXIS_STEP_INSET).min(AXIS_WIDTH_MAX);
+        for event in EVENTS {
+            self.gridline(x_of(event));
+            self.axis_label(x_of(event), event, axis_width);
         }
-        for row in &rows {
-            self.policy_chip(row);
-            for run in &row.runs {
-                let (x1, x2) = run.span(&event_x, x_end);
-                self.rail(x1, x2, row.y, run.state, run.end.is_none());
-            }
-            for run in &row.runs {
-                self.marker(event_x[run.start], row.y, run.state, run.glow);
-            }
-        }
-        for row in &rows {
-            for (r, run) in row.runs.iter().enumerate() {
-                self.state_pill(row, run, row.runs.get(r + 1), &event_x, x_end, tail);
-            }
+
+        // The lanes share the room evenly, stacked around its middle.
+        let taken: f32 = lanes.iter().map(|lane| lane.height).sum();
+        let room = LANES_BOTTOM - LANES_TOP;
+        let gap = ((room - taken) / (lanes.len() as f32 - 1.0)).clamp(0.0, LANE_GAP_MAX);
+        let stack = taken + gap * (lanes.len() as f32 - 1.0);
+        let mut top = (LANES_TOP + (room - stack) / 2.0).round();
+        for lane in &lanes {
+            let y = (top + lane.height / 2.0).round();
+            self.key_tile(top, lane);
+            self.key_card(top, card_width, lane);
+            self.timeline(x_start, x_of(lane.opens), x_end, y);
+            top += lane.height + gap;
         }
         self.footnote();
     }
 
-    fn rows(&self, template: Template) -> Vec<Row> {
-        template
-            .policies()
-            .into_iter()
-            .enumerate()
-            .map(|(i, policy)| {
-                let chip_label = fit(
-                    label(policy.label, font::MEDIUM, self.theme.colors.text.primary),
-                    LABEL_SIZES,
-                    LABEL_MAX,
-                    2,
-                );
-                let policy_name = fit(
-                    label(policy.name, font::BOLD, self.theme.colors.text.secondary),
-                    NAME_SIZES,
-                    COLUMN_MAX + NAME_OVERHANG - NAME_INSET,
-                    1,
-                );
-                let tiles = tiles_width(policy.keys);
-                let chip_width = if template == Template::Custom {
-                    CUSTOM_CHIP_WIDTH
-                } else {
-                    CHIP_INSET_LEFT + tiles + CHIP_GAP + chip_label.bounds.width + CHIP_INSET_RIGHT
-                };
-                let chip = Size::new(
-                    chip_width,
-                    2.0 * CHIP_INSET_Y + TILE_SIDE.max(chip_label.bounds.height),
-                );
-                Row {
-                    y: RAILS_TOP + ROW_PITCH * i as f32 + ROW_PITCH / 2.0 + RAIL_DROP,
-                    name: policy_name,
-                    label: chip_label,
-                    keys: policy.keys,
-                    chip,
-                    runs: runs(policy.segments),
-                }
-            })
-            .collect()
-    }
-
-    /// The left column fits the widest chip, and the names lean into the gap.
-    fn column_width(&self, rows: &[Row]) -> f32 {
-        rows.iter()
-            .map(|row| {
-                row.chip
-                    .width
-                    .max(row.name.bounds.width + NAME_INSET - NAME_OVERHANG)
-            })
-            .fold(COLUMN_MIN, f32::max)
-            .min(COLUMN_MAX)
-    }
-
-    fn card(&mut self) {
-        let card = Path::rounded_rectangle(
+    /// The panel the graph sits on. It keeps its own dark ground so the green
+    /// cards and the amber read the same whatever surrounds it.
+    fn ground(&mut self) {
+        let ground = Path::rounded_rectangle(
             Point::new(HAIRLINE / 2.0, HAIRLINE / 2.0),
             Size::new(CANVAS_WIDTH - HAIRLINE, self.frame.height() - HAIRLINE),
-            CARD_RADIUS.into(),
+            GROUND_RADIUS.into(),
         );
-        self.frame
-            .fill(&card, self.theme.colors.cards.simple.background);
+        self.frame.fill(&ground, GROUND);
         self.frame.stroke(
-            &card,
+            &ground,
             Stroke::default()
-                .with_color(self.theme.colors.text.border)
+                .with_color(GROUND_BORDER)
                 .with_width(HAIRLINE),
         );
     }
 
-    fn guide(&mut self, x: f32, hot: bool) {
-        let bottom = GUIDE_TOP + ROW_PITCH * POLICIES as f32 + GUIDE_OVERHANG;
-        let color = if hot {
-            fade(self.theme.colors.timeline.spendable.ink, GUIDE_HOT_ALPHA)
-        } else {
-            self.theme.colors.text.border
-        };
-        self.frame.stroke(
-            &Path::line(Point::new(x, GUIDE_TOP), Point::new(x, bottom)),
-            Stroke::default().with_color(color).with_width(HAIRLINE),
+    /// One flat colour from top to bottom: nothing in the graph fades.
+    fn gridline(&mut self, x: f32) {
+        self.frame.fill_rectangle(
+            Point::new(x - GRID_WIDTH / 2.0, GRID_TOP),
+            Size::new(GRID_WIDTH, GRID_BOTTOM - GRID_TOP),
+            GRIDLINE,
         );
     }
 
-    fn event_header(&mut self, x: f32, event: Event, width: f32) {
-        let accent = if event.is_hot() {
-            self.theme.colors.timeline.spendable.ink
-        } else {
-            self.theme.colors.text.secondary
-        };
-        let icon = glyph(event.glyph(), HEADER_ICON_SIZE, accent);
-        let icon_height = measure(&icon).height;
+    fn axis_label(&mut self, x: f32, event: Event, width: f32) {
         let header = fit(
-            label(
-                event.label(),
-                font::REGULAR,
-                self.theme.colors.text.secondary,
-            ),
-            HEADER_SIZES,
+            label(event.label(), font::MEDIUM, AXIS_INK),
+            AXIS_SIZES,
             width,
             3,
         );
         self.text(
             &header.text,
-            Point::new(x, HEADER_BOTTOM - icon_height - HEADER_ICON_GAP),
+            Point::new(x, AXIS_BOTTOM),
             advanced_text::Alignment::Center,
-            Vertical::Bottom,
-        );
-        self.text(
-            &icon,
-            Point::new(x, HEADER_BOTTOM - icon_height / 2.0),
-            advanced_text::Alignment::Center,
-            Vertical::Center,
-        );
-    }
-
-    /// Key tiles then label, styled like the form fields of the installer.
-    fn policy_chip(&mut self, row: &Row) {
-        let top_left = Point::new(PAD, row.y - row.chip.height / 2.0);
-        let chip = Path::rounded_rectangle(top_left, row.chip, TILE_RADIUS.into());
-        self.frame
-            .fill(&chip, self.theme.colors.general.form_field_background);
-        self.frame.stroke(
-            &chip,
-            Stroke::default()
-                .with_color(self.theme.colors.text.border)
-                .with_width(HAIRLINE),
-        );
-
-        for (i, key) in row.keys.iter().enumerate() {
-            let x = top_left.x + CHIP_INSET_LEFT + (TILE_SIDE + TILE_GAP) * i as f32;
-            self.key_tile(Point::new(x, row.y - TILE_SIDE / 2.0), *key);
-        }
-        let label_x = top_left.x
-            + CHIP_INSET_LEFT
-            + tiles_width(row.keys)
-            + CHIP_GAP
-            + row.label.bounds.width / 2.0;
-        self.text(
-            &row.label.text,
-            Point::new(label_x, row.y),
-            advanced_text::Alignment::Center,
-            Vertical::Center,
-        );
-        self.text(
-            &row.name.text,
-            Point::new(PAD + NAME_INSET, top_left.y - NAME_GAP),
-            advanced_text::Alignment::Left,
             Vertical::Bottom,
         );
     }
 
-    /// Tinted square, key glyph, number badge overhanging the corner.
-    fn key_tile(&mut self, top_left: Point, key: Key) {
-        let tone = self.tone(key.kind);
+    /// The amber tile: one white key per key of the lane, each level with its
+    /// name. A lane with a single key centres it.
+    fn key_tile(&mut self, top: f32, lane: &Lane) {
         let tile = Path::rounded_rectangle(
-            top_left,
-            Size::new(TILE_SIDE, TILE_SIDE),
-            TILE_RADIUS.into(),
+            Point::new(PAD, top),
+            Size::new(TILE_WIDTH, lane.height),
+            BOX_RADIUS.into(),
         );
-        self.frame.fill(&tile, tone.fill);
-        self.frame.stroke(
-            &tile,
-            Stroke::default().with_color(tone.rim).with_width(HAIRLINE),
-        );
+        self.frame.fill(&tile, AMBER);
 
-        let center = Point::new(top_left.x + TILE_SIDE / 2.0, top_left.y + TILE_SIDE / 2.0);
-        let glyph = glyph(KEY_GLYPH, KEY_GLYPH_SIZE, tone.ink);
-        self.text(
-            &glyph,
-            center,
-            advanced_text::Alignment::Center,
-            Vertical::Center,
-        );
-
-        let badge = Point::new(
-            top_left.x + TILE_SIDE + BADGE_OVERHANG - BADGE_RADIUS,
-            top_left.y + TILE_SIDE + BADGE_OVERHANG - BADGE_RADIUS,
-        );
-        let disc = Path::circle(badge, BADGE_RADIUS);
-        self.frame.fill(&disc, tone.ink);
-        self.frame.stroke(
-            &disc,
-            Stroke::default()
-                .with_color(self.theme.colors.general.form_field_background)
-                .with_width(BADGE_RIM),
-        );
-        let mut number = label(
-            key.number.to_string(),
-            font::BOLD,
-            self.theme.colors.timeline.badge_ink,
-        );
-        number.size = Pixels(BADGE_TEXT_SIZE);
-        self.text(
-            &number,
-            badge,
-            advanced_text::Alignment::Center,
-            Vertical::Center,
-        );
-    }
-
-    /// Solid accent while the policy can spend, dashed grey while it cannot.
-    /// The open tail fades out.
-    fn rail(&mut self, x1: f32, x2: f32, y: f32, state: State, fades: bool) {
-        let rail = match state {
-            State::Spend => self.theme.colors.timeline.rail_spend,
-            State::Locked => self.theme.colors.timeline.rail_locked,
-        };
-        match rail.dash {
-            None => {
-                let bar = Path::rectangle(
-                    Point::new(x1, y - RAIL_WIDTH / 2.0),
-                    Size::new(x2 - x1, RAIL_WIDTH),
-                );
-                if fades {
-                    let gradient = Linear::new(Point::new(x1, y), Point::new(x2, y))
-                        .add_stop(0.0, rail.color)
-                        .add_stop(0.55, rail.color)
-                        .add_stop(1.0, fade(rail.color, 0.0));
-                    self.frame.fill(&bar, gradient);
-                } else {
-                    self.frame.fill(&bar, rail.color);
-                }
-            }
-            Some(dash) => self.frame.stroke(
-                &Path::line(Point::new(x1, y), Point::new(x2, y)),
-                Stroke {
-                    line_dash: dash,
-                    ..Stroke::default()
-                        .with_color(rail.color)
-                        .with_width(RAIL_WIDTH)
-                        .with_line_cap(LineCap::Round)
-                },
-            ),
-        }
-    }
-
-    /// A dot where a run opens. The glow marks the first unlock.
-    fn marker(&mut self, x: f32, y: f32, state: State, glow: bool) {
-        let center = Point::new(x, y);
-        if glow {
-            self.glow(center);
-        }
-        let color = match state {
-            State::Spend => self.theme.colors.timeline.rail_spend.color,
-            State::Locked => self.theme.colors.timeline.rail_locked.color,
-        };
-        let dot = Path::circle(center, MARKER_RADIUS);
-        self.frame.fill(&dot, color);
-        self.frame.stroke(
-            &dot,
-            Stroke::default()
-                .with_color(self.theme.colors.cards.simple.background)
-                .with_width(MARKER_RIM),
-        );
-    }
-
-    /// Discs from the rim inwards, standing in for the radial fade the canvas
-    /// cannot fill. Each one adds just enough alpha to reach the ramp.
-    fn glow(&mut self, center: Point) {
-        let accent = self.theme.colors.timeline.spendable.ink;
-        let mut covered = 0.0;
-        for step in 0..GLOW_STEPS {
-            let inward = (step + 1) as f32 / GLOW_STEPS as f32;
-            let target = GLOW_ALPHA * inward;
-            let alpha = (target - covered) / (1.0 - covered);
-            covered = target;
-            self.frame.fill(
-                &Path::circle(center, GLOW_RADIUS * (1.0 - inward)),
-                fade(accent, alpha),
+        let key = glyph(KEY_GLYPH, KEY_GLYPH_SIZE, WHITE);
+        let x = PAD + TILE_WIDTH / 2.0;
+        for i in 0..lane.names.len() {
+            let y = if lane.names.len() == 1 {
+                top + lane.height / 2.0
+            } else {
+                name_center(top, i)
+            };
+            self.text(
+                &key,
+                Point::new(x, y),
+                advanced_text::Alignment::Center,
+                Vertical::Center,
             );
         }
     }
 
-    /// Icon and uppercase text over the rail, clear of the markers and glows.
-    fn state_pill(
-        &mut self,
-        row: &Row,
-        run: &Run,
-        next: Option<&Run>,
-        event_x: &[f32],
-        x_end: f32,
-        tail: f32,
-    ) {
-        let tone = self.rail_tone(run.state);
-        let (x1, x2) = run.span(event_x, x_end);
-        let clear_left = if run.glow {
-            GLOW_RADIUS + GLOW_CLEAR
-        } else {
-            MARKER_CLEAR
-        };
-        let clear_right = match next {
-            None => TAIL_CLEAR,
-            Some(next) if next.glow => GLOW_RADIUS + TAIL_CLEAR,
-            Some(_) => MARKER_CLEAR,
-        };
+    /// The green card: the lane's title in bold, then each key's name on its
+    /// own line. Hard edges all round.
+    fn key_card(&mut self, top: f32, width: f32, lane: &Lane) {
+        let left = PAD + TILE_WIDTH + TILE_GAP;
+        let card = Path::rounded_rectangle(
+            Point::new(left, top),
+            Size::new(width, lane.height),
+            BOX_RADIUS.into(),
+        );
+        self.frame.fill(&card, CARD_GREEN);
 
-        let icon = glyph(run.state.glyph(), PILL_ICON_SIZE, tone.ink);
-        let icon_bounds = measure(&icon);
-        let state = fit(
-            label(run.state.label().to_uppercase(), font::BOLD, tone.ink),
-            STATE_SIZES,
-            x2 - x1 - clear_left - clear_right - 2.0 * PILL_PAD_X - PILL_ICON_SIZE - PILL_GAP - 1.0,
-            2,
-        );
-        let size = Size::new(
-            2.0 * PILL_PAD_X + icon_bounds.width + PILL_GAP + state.bounds.width,
-            2.0 * PILL_PAD_Y + icon_bounds.height.max(state.bounds.height),
-        );
-
-        // Centred on the solid part of its rail, then pushed inside the clearances.
-        let solid = if run.end.is_none() {
-            x2 - x1 - tail * FADE_RATIO
-        } else {
-            x2 - x1
-        };
-        let left = (x1 + clear_left)
-            .max((x1 + solid / 2.0 - size.width / 2.0).min(x2 - clear_right - size.width));
-
-        let pill = Path::rounded_rectangle(
-            Point::new(left, row.y - size.height / 2.0),
-            size,
-            (size.height / 2.0).into(),
-        );
-        self.frame.fill(&pill, tone.fill);
-        self.frame.stroke(
-            &pill,
-            Stroke::default().with_color(tone.rim).with_width(HAIRLINE),
-        );
+        let x = left + CARD_INSET_LEFT;
         self.text(
-            &icon,
-            Point::new(left + PILL_PAD_X + icon_bounds.width / 2.0, row.y),
-            advanced_text::Alignment::Center,
+            &lane.title.text,
+            Point::new(x, top + CARD_PAD_V + TEXT_LINE / 2.0),
+            advanced_text::Alignment::Left,
             Vertical::Center,
         );
+        for (i, name) in lane.names.iter().enumerate() {
+            self.text(
+                &name.text,
+                Point::new(x, name_center(top, i)),
+                advanced_text::Alignment::Left,
+                Vertical::Center,
+            );
+        }
+    }
+
+    /// Dashed grey while the path waits, then solid amber from the opening dot
+    /// to the arrowhead, with the ACTIVE pill where it opens.
+    fn timeline(&mut self, x_start: f32, x_open: f32, x_end: f32, y: f32) {
+        if x_open > x_start {
+            self.frame.stroke(
+                &Path::line(Point::new(x_start, y), Point::new(x_open, y)),
+                Stroke {
+                    line_dash: LineDash {
+                        segments: &DASH,
+                        offset: 0,
+                    },
+                    ..Stroke::default().with_color(WAITING).with_width(LINE_WIDTH)
+                },
+            );
+            self.dot(x_start, y, WAITING);
+        }
+
+        let x_arrow = x_end - ARROW_LENGTH;
+        self.frame.fill_rectangle(
+            Point::new(x_open, y - LINE_WIDTH / 2.0),
+            Size::new(x_arrow - x_open + 1.0, LINE_WIDTH),
+            AMBER,
+        );
+        let arrow = Path::new(|path| {
+            path.move_to(Point::new(x_end, y));
+            path.line_to(Point::new(x_arrow, y - ARROW_HALF));
+            path.line_to(Point::new(x_arrow, y + ARROW_HALF));
+            path.close();
+        });
+        self.frame.fill(&arrow, AMBER);
+        self.dot(x_open, y, AMBER);
+
+        // A path open from the start wears its pill before the next gridline;
+        // one that opens later wears it between its dot and its arrowhead.
+        let x_until = if x_open > x_start {
+            x_arrow
+        } else {
+            x_start + (x_end - x_start) * OPENING_RATIO
+        };
+        self.active_pill(x_open + PILL_CLEAR, x_until - PILL_CLEAR, y);
+    }
+
+    fn dot(&mut self, x: f32, y: f32, color: Color) {
+        let center = Point::new(x, y);
+        self.frame.fill(&Path::circle(center, DOT_RING), GROUND);
+        self.frame.fill(&Path::circle(center, DOT_RADIUS), color);
+    }
+
+    /// White on amber, centred on the line between `x1` and `x2`.
+    fn active_pill(&mut self, x1: f32, x2: f32, y: f32) {
+        let state = fit(
+            label(t!("pill-active").to_uppercase(), font::BOLD, WHITE),
+            PILL_SIZES,
+            x2 - x1 - 2.0 * PILL_PAD_X,
+            1,
+        );
+        let size = Size::new(
+            (2.0 * PILL_PAD_X + state.bounds.width).round(),
+            (2.0 * PILL_PAD_Y + state.bounds.height).round(),
+        );
+        let left = ((x1 + x2 - size.width) / 2.0).round();
+        let pill = Path::rounded_rectangle(
+            Point::new(left, y - size.height / 2.0),
+            size,
+            PILL_RADIUS.into(),
+        );
+        self.frame.fill(&pill, AMBER);
         self.text(
             &state.text,
-            Point::new(
-                left + PILL_PAD_X + icon_bounds.width + PILL_GAP + state.bounds.width / 2.0,
-                row.y,
-            ),
+            Point::new(left + size.width / 2.0, y),
             advanced_text::Alignment::Center,
             Vertical::Center,
         );
@@ -687,7 +441,7 @@ impl Painter<'_> {
             label(
                 t!("installer-template-footnote"),
                 font::REGULAR,
-                self.theme.colors.text.muted,
+                FOOTNOTE_INK,
             ),
             FOOTNOTE_SIZES,
             CANVAS_WIDTH - 2.0 * PAD,
@@ -695,26 +449,10 @@ impl Painter<'_> {
         );
         self.text(
             &note.text,
-            Point::new(PAD, RAILS_TOP + ROW_PITCH * POLICIES as f32 + FOOTNOTE_GAP),
+            Point::new(PAD, FOOTNOTE_TOP),
             advanced_text::Alignment::Left,
             Vertical::Top,
         );
-    }
-
-    fn tone(&self, kind: KeyKind) -> TimelineTone {
-        let timeline = &self.theme.colors.timeline;
-        match kind {
-            KeyKind::Primary => timeline.primary,
-            KeyKind::Recovery => timeline.recovery,
-            KeyKind::Inheritance => timeline.inheritance,
-        }
-    }
-
-    fn rail_tone(&self, state: State) -> TimelineTone {
-        match state {
-            State::Spend => self.theme.colors.timeline.spendable,
-            State::Locked => self.theme.colors.timeline.locked,
-        }
     }
 
     fn text(
@@ -733,6 +471,56 @@ impl Painter<'_> {
     }
 }
 
+/// Each policy with its texts fitted to the widest card the graph allows.
+fn lanes(template: Template) -> Vec<Lane> {
+    let text_max = CARD_WIDTH_MAX - CARD_INSET_LEFT - CARD_INSET_RIGHT;
+    template
+        .policies()
+        .into_iter()
+        .map(|policy| {
+            let title = fit(
+                label(policy.title(), font::BOLD, WHITE),
+                CARD_SIZES,
+                text_max,
+                1,
+            );
+            let last = policy.keys.len() - 1;
+            let names: Vec<Fitted> = policy
+                .keys
+                .iter()
+                .enumerate()
+                .map(|(i, key)| {
+                    // Keys that sign together are joined by a plus.
+                    let name = if i < last {
+                        format!("{key} +")
+                    } else {
+                        key.clone()
+                    };
+                    fit(label(name, font::REGULAR, WHITE), CARD_SIZES, text_max, 1)
+                })
+                .collect();
+            let height =
+                2.0 * CARD_PAD_V + TEXT_LINE + (KEY_SPACE + TEXT_LINE) * names.len() as f32;
+            Lane {
+                title,
+                names,
+                opens: policy.opens,
+                height,
+            }
+        })
+        .collect()
+}
+
+/// Middle of the line the `index`th key's name sits on, in a lane starting at
+/// `top`. The tile and the card both read it, so glyph and name stay level.
+fn name_center(top: f32, index: usize) -> f32 {
+    top + CARD_PAD_V
+        + TEXT_LINE
+        + (KEY_SPACE + TEXT_LINE) * index as f32
+        + KEY_SPACE
+        + TEXT_LINE / 2.0
+}
+
 fn label(content: String, font: Font, color: Color) -> canvas::Text {
     canvas::Text {
         content,
@@ -748,55 +536,6 @@ fn glyph(code: char, size: f32, color: Color) -> canvas::Text {
     let mut glyph = label(code.to_string(), ICONS, color);
     glyph.size = Pixels(size);
     glyph
-}
-
-impl Run {
-    /// Where the run starts and ends on the canvas; an open run runs to the edge.
-    fn span(&self, event_x: &[f32], x_end: f32) -> (f32, f32) {
-        (
-            event_x[self.start],
-            self.end.map_or(x_end, |end| event_x[end]),
-        )
-    }
-}
-
-/// Merge consecutive events in the same state; the last run stays open.
-fn runs(segments: &[State]) -> Vec<Run> {
-    let mut out: Vec<Run> = Vec::new();
-    for (k, state) in segments.iter().enumerate() {
-        if out.last().is_some_and(|run| run.state == *state) {
-            continue;
-        }
-        if let Some(last) = out.last_mut() {
-            last.end = Some(k);
-        }
-        out.push(Run {
-            start: k,
-            end: None,
-            state: *state,
-            glow: false,
-        });
-    }
-    // The first unlock is the moment the diagram is about.
-    if let Some(run) = out.iter_mut().skip(1).find(|run| run.state == State::Spend) {
-        run.glow = true;
-    }
-    out
-}
-
-/// Events evenly spaced over `span`, then an open-ended tail.
-fn steps(span: f32) -> (f32, f32) {
-    let events = EVENTS.len() as f32;
-    let tail = (span / (events - 1.0 + TAIL_RATIO) * TAIL_RATIO).max(TAIL_MIN);
-    ((span - tail) / (events - 1.0), tail)
-}
-
-fn tiles_width(keys: &[Key]) -> f32 {
-    keys.len() as f32 * TILE_SIDE + (keys.len() as f32 - 1.0) * TILE_GAP
-}
-
-fn fade(color: Color, alpha: f32) -> Color {
-    Color { a: alpha, ..color }
 }
 
 /// Largest of `sizes` that fits on one line, else on up to `max_lines`
