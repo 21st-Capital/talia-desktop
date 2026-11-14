@@ -1909,7 +1909,9 @@ lianalite-wallet-deleted
 
 loader-connecting-daemon => "Connecting to daemon..." => "Connessione al daemon..."
 
-loader-failed => "Talia Desktop failed to start" => "Talia Desktop non è riuscita ad avviarsi"
+loader-failed
+=> "Talia Desktop failed to start"
+=> "Talia Desktop non è riuscita ad avviarsi";;
 
 loader-failed-bitcoind
 => "Talia Desktop failed to start, please check if bitcoind is running"

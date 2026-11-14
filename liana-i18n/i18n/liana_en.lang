@@ -724,7 +724,8 @@ device-signed => "Signed"
 
 device-unlock => "Please unlock the device"
 
-device-unrelated-wallet => "This signing device is not related to this Talia Desktop wallet."
+device-unrelated-wallet
+=> "This signing device is not related to this Talia Desktop wallet.";;
 
 device-version-unsupported
 => "Device version not supported, upgrade to version > {$version}";;
@@ -919,7 +920,8 @@ installer-backup-network-mismatch
 
 installer-bitcoin-node-management => "Bitcoin node management"
 
-installer-bitcoind-already-installed => "Talia Desktop managed bitcoind already installed"
+installer-bitcoind-already-installed
+=> "Talia Desktop managed bitcoind already installed";;
 
 installer-bitcoind-canonicalize-datadir-error
 => "Failed to canonicalize datadir: {$error}";;
