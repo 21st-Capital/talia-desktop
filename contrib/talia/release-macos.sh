@@ -30,7 +30,7 @@ ditto "$SRC" "$APP"
 
 notarise() {
     local file="$1" log="$WORK/notary.log"
-    xcrun notarytool submit "$file" --keychain-profile "$NOTARY_PROFILE" --wait --timeout 30m | tee "$log"
+    xcrun notarytool submit "$file" --keychain-profile "$NOTARY_PROFILE" --wait --timeout 3h | tee "$log"
     if ! grep -q "status: Accepted" "$log"; then
         local id
         id="$(grep -m1 -oE 'id: [0-9a-f-]{36}' "$log" | cut -d' ' -f2 || true)"

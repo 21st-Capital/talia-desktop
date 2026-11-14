@@ -55,6 +55,18 @@ type on a picture background even in dark mode). It needs a Python with dmgbuild
 (`PYTHON=...`). macOS 26 ignores the background link dmgbuild writes, so the script has
 macOS itself make it (`background_bookmark.py`).
 
+## Releasing
+
+1. Mac: build (`build-macos-app.sh`), then `release-macos.sh "<app>" talia-desktop-mac.dmg`
+   on the Mac that holds the team's "Developer ID Application" certificate and the
+   `talia-notary` notarytool profile (both backed up in the company password manager).
+   It signs, notarises and staples the app and the .dmg.
+2. Windows: GitHub > Actions > "Talia Desktop for Windows" > Run workflow; rename the
+   artifact to `talia-desktop-windows.exe`. Not code-signed (decided 2026-11-14).
+3. Publish a GitHub release with `talia-desktop-mac.dmg`, `talia-desktop-windows.exe` and
+   `SHA256SUMS.txt`. The website's download buttons follow `releases/latest` under these
+   file names, so they need no change.
+
 ## Building on a Mac
 
 ```
