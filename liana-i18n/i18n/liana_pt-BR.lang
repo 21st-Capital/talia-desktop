@@ -979,6 +979,10 @@ export-aliases-conflict
 
 export-canceled => "Export canceled" => "Exportação cancelada"
 
+export-choose-file => "Choose a file to import..." => NONE
+
+export-choose-location => "Choose a location to export..." => NONE
+
 export-encrypted-descriptor-include-paths
 => "Include derivation paths"
 => "Incluir caminhos de derivação";;
@@ -2747,6 +2751,38 @@ transactions-transaction => "Transaction" => "Transação"
 
 transactions-txid => "Tx ID:" => "ID da transação:"
 
+warning-coin-selection => "Error when selecting coins for spend" => NONE
+
+warning-daemon-communication => "Communication with Daemon failed" => NONE
+
+warning-daemon-start => "Daemon failed to start" => NONE
+
+warning-daemon-stopped => "Daemon stopped" => NONE
+
+warning-daemon-unsupported => "Daemon client is not supported" => NONE
+
+warning-descriptor-analysis => "Descriptor analysis error: '{$error}'." => NONE
+
+warning-fiat-price => "Fiat price error: {$error}" => NONE
+
 warning-hardware-wallet-error
 => "Signing device error"
 => "Erro do dispositivo de assinatura";;
+
+warning-http-error => "HTTP error: {$error}" => NONE
+
+warning-http-error-code => "HTTP error {$code}: {$error}" => NONE
+
+warning-internal-error => "Internal error" => NONE
+
+warning-invalid-fields => "Some fields are invalid" => NONE
+
+warning-not-implemented => "Feature not implemented for this backend" => NONE
+
+warning-restore-backup => "Failed to restore backup: {$error}" => NONE
+
+warning-spend-creation => "Spend creation error: '{$error}'." => NONE
+
+warning-unknown-error => "Unknown error" => NONE
+
+warning-wallet-error => "Wallet error" => NONE

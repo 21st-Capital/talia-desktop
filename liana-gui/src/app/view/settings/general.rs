@@ -44,17 +44,17 @@ pub fn general_section<'a>(
         Some(SettingsMessage::GeneralSection.into()),
     );
 
-    // English only: no language setting.
+    let language = language();
     let fiat_price = fiat_price(new_price_setting, currencies_list);
 
-    let content = column![header, fiat_price].spacing(VSpacing::L);
+    let content = column![header, language, fiat_price].spacing(VSpacing::L);
 
     dashboard(&Menu::Settings, cache, warning, content)
 }
 
 pub fn language<'a>() -> Element<'a, Message> {
     let picker = pick_list::pick_list(
-        &SupportedLocale::ALL[..],
+        &SupportedLocale::OFFERED[..],
         Some(i18n::current_locale()),
         |locale| SettingsMessage::LanguageEdited(locale).into(),
     )

@@ -677,8 +677,8 @@ pub enum RpcAuthType {
 impl fmt::Display for RpcAuthType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            RpcAuthType::CookieFile => write!(f, "Cookie file path"),
-            RpcAuthType::UserPass => write!(f, "User and password"),
+            RpcAuthType::CookieFile => write!(f, "{}", crate::t!("settings-cookie-file-path")),
+            RpcAuthType::UserPass => write!(f, "{}", crate::t!("installer-rpc-user-password")),
         }
     }
 }

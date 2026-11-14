@@ -763,6 +763,10 @@ export-aliases-conflict => "Aliases conflict, what do you want to do?"
 
 export-canceled => "Export canceled"
 
+export-choose-file => "Choose a file to import..."
+
+export-choose-location => "Choose a location to export..."
+
 export-encrypted-descriptor-include-paths => "Include derivation paths"
 
 export-encrypted-descriptor-include-paths-tooltip
@@ -2055,4 +2059,36 @@ transactions-transaction => "Transaction"
 
 transactions-txid => "Tx ID:"
 
+warning-coin-selection => "Error when selecting coins for spend"
+
+warning-daemon-communication => "Communication with Daemon failed"
+
+warning-daemon-start => "Daemon failed to start"
+
+warning-daemon-stopped => "Daemon stopped"
+
+warning-daemon-unsupported => "Daemon client is not supported"
+
+warning-descriptor-analysis => "Descriptor analysis error: '{$error}'."
+
+warning-fiat-price => "Fiat price error: {$error}"
+
 warning-hardware-wallet-error => "Signing device error"
+
+warning-http-error => "HTTP error: {$error}"
+
+warning-http-error-code => "HTTP error {$code}: {$error}"
+
+warning-internal-error => "Internal error"
+
+warning-invalid-fields => "Some fields are invalid"
+
+warning-not-implemented => "Feature not implemented for this backend"
+
+warning-restore-backup => "Failed to restore backup: {$error}"
+
+warning-spend-creation => "Spend creation error: '{$error}'."
+
+warning-unknown-error => "Unknown error"
+
+warning-wallet-error => "Wallet error"

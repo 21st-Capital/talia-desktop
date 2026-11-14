@@ -18,6 +18,20 @@ impl SupportedLocale {
         self.code().parse().expect("catalog locale must parse")
     }
 
+    /// The languages Talia Desktop offers (decided 2026-11-14): English and
+    /// German. Liana's other catalogs stay in the tree so upstream releases
+    /// merge cleanly, but they are never offered or applied.
+    pub const OFFERED: [SupportedLocale; 2] = [SupportedLocale::En, SupportedLocale::De];
+
+    /// `self` when Talia Desktop offers it, else English.
+    pub fn offered(self) -> Self {
+        if Self::OFFERED.contains(&self) {
+            self
+        } else {
+            SupportedLocale::En
+        }
+    }
+
     pub fn from_system() -> Self {
         sys_locale::get_locale()
             .and_then(|locale| SupportedLocale::from_str(&locale).ok())
@@ -180,7 +194,17 @@ mod tests {
         );
         assert_eq!(SupportedLocale::from_str("en--US"), Err(()));
         assert_eq!(SupportedLocale::from_str("english"), Err(()));
-        assert_eq!(SupportedLocale::from_str("de-DE"), Err(()));
+        assert_eq!(SupportedLocale::from_str("de-DE"), Ok(SupportedLocale::De));
+        assert_eq!(SupportedLocale::from_str("de_CH.UTF-8"), Ok(SupportedLocale::De));
+        assert_eq!(SupportedLocale::from_str("ja-JP"), Err(()));
+    }
+
+    #[test]
+    fn only_english_and_german_are_offered() {
+        assert_eq!(SupportedLocale::De.offered(), SupportedLocale::De);
+        assert_eq!(SupportedLocale::En.offered(), SupportedLocale::En);
+        assert_eq!(SupportedLocale::Fr.offered(), SupportedLocale::En);
+        assert_eq!(SupportedLocale::PtBr.offered(), SupportedLocale::En);
     }
 
     #[test]

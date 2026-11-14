@@ -281,7 +281,7 @@ fn language_picker<'a, M: Clone + 'a>(
 ) -> Option<Element<'a, M>> {
     on_selected.map(|on_selected| {
         pick_list::pick_list(
-            &SupportedLocale::ALL[..],
+            &SupportedLocale::OFFERED[..],
             Some(i18n::current_locale()),
             on_selected,
         )

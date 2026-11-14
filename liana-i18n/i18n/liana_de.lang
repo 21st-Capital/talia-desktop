@@ -1,0 +1,2788 @@
+# Translator-friendly catalog
+# Language: Deutsch
+# Format: id => "English" => "Translation"
+# Use \n for line breaks
+
+bitcoind-upgrade-hint
+=> "Updating your Talia Desktop managed Bitcoin node."
+=> "Ihr von Talia Desktop verwalteter Bitcoin-Node wird aktualisiert.";;
+
+bitcoind-upgrade-title
+=> "Upgrading Bitcoin Core to {$version}"
+=> "Bitcoin Core wird auf {$version} aktualisiert";;
+
+bitcoind-upgrade-verified
+=> "The downloaded binary is verified before it is installed."
+=> "Die heruntergeladene Software wird vor der Installation geprüft.";;
+
+bitcoind-upgrade-waiting
+=> "Waiting for another wallet to finish the Bitcoin Core upgrade"
+=> "Warten, bis eine andere Wallet das Bitcoin-Core-Update abgeschlossen hat";;
+
+btn-accept => "Accept" => "Akzeptieren"
+
+btn-add-key => "Add a key" => "Schlüssel hinzufügen"
+
+btn-add-payment => "Add payment" => "Zahlung hinzufügen"
+
+btn-add-recovery-option => "Add recovery path" => "Wiederherstellungspfad hinzufügen"
+
+btn-add-recovery-path => "Add recovery path" => "Wiederherstellungspfad hinzufügen"
+
+btn-add-safety-net => "Add Safety Net" => "Sicherheitsnetz hinzufügen"
+
+btn-add-wallet => "Add wallet" => "Wallet hinzufügen"
+
+btn-apply => "Apply" => "Anwenden"
+
+btn-approve => "Approve" => "Freigeben"
+
+btn-back => "Back" => "Zurück"
+
+btn-back-up-descriptor => "Back up descriptor" => "Deskriptor sichern"
+
+btn-backup-encrypted-descriptor
+=> "Back up encrypted descriptor"
+=> "Verschlüsselten Deskriptor sichern";;
+
+btn-broadcast => "Broadcast" => "Senden"
+
+btn-bump-fee => "Bump fee" => "Gebühr erhöhen"
+
+btn-cancel => "Cancel" => "Abbrechen"
+
+btn-cancel-transaction => "Cancel transaction" => "Stornieren"
+
+btn-change-email => "Change email" => "E-Mail ändern"
+
+btn-check-connection => "Check connection" => "Verbindung prüfen"
+
+btn-clear => "Clear" => "Leeren"
+
+btn-clear-all => "Clear all" => "Alles leeren"
+
+btn-close-tab => "Close" => "Schließen"
+
+btn-confirm => "Confirm" => "Bestätigen"
+
+btn-connect-another-email
+=> "Connect with another email"
+=> "Mit einer anderen E-Mail verbinden";;
+
+btn-customize => "Customize" => "Anpassen"
+
+btn-delete => "Delete" => "Löschen"
+
+btn-delete-wallet => "Delete wallet" => "Wallet löschen"
+
+btn-dismiss => "Dismiss" => "Schließen"
+
+btn-edit => "Edit" => "Ändern"
+
+btn-edit-keys => "Edit keys" => "Schlüssel ändern"
+
+btn-email-wizardsardine => "Email WS" => "E-Mail an WS"
+
+btn-export => "Export" => "Exportieren"
+
+btn-fee-level-high => "High" => "Hoch"
+
+btn-fee-level-low => "Low" => "Niedrig"
+
+btn-fee-level-medium => "Medium" => "Mittel"
+
+btn-generate => "Generate" => "Erzeugen"
+
+btn-generate-address => "Generate address" => "Adresse erzeugen"
+
+btn-go-back => "Go back" => "Zurück"
+
+btn-go-back-to-psbts => "Go back to PSBTs" => "Zu den PSBTs"
+
+btn-go-to-replacement => "Go to replacement" => "Zum Ersatz"
+
+btn-go-to-rescan => "Go to rescan" => "Zum erneuten Scan"
+
+btn-ignore => "Ignore" => "Ignorieren"
+
+btn-import => "Import" => "Importieren"
+
+btn-keep-my-changes => "Keep my changes" => "Meine Änderungen behalten"
+
+btn-login => "Login" => "Anmelden"
+
+btn-manage-keys => "Manage keys" => "Schlüssel verwalten"
+
+btn-mark-keys-ready => "Mark keys as ready" => "Schlüssel als bereit markieren"
+
+btn-more-backend-node-info
+=> "More information about backend and node options"
+=> "Mehr zu Backend- und Node-Optionen";;
+
+btn-new => "New" => "Neu"
+
+btn-next => "Next" => "Weiter"
+
+btn-no => "No" => "Nein"
+
+btn-ok => "OK" => "OK"
+
+btn-overwrite => "Overwrite" => "Ersetzen"
+
+btn-previous => "Previous" => "Zurück"
+
+btn-previous-arrow => "< Previous" => "< Zurück"
+
+btn-processing => "Processing..." => "Läuft..."
+
+btn-register-on-device => "Register on device" => "Auf dem Gerät registrieren"
+
+btn-reload => "Reload" => "Neu laden"
+
+btn-replace => "Replace" => "Ersetzen"
+
+btn-resend-token => "Resend token" => "Code erneut senden"
+
+btn-reset-timelock => "Reset timelock" => "Timelock zurücksetzen"
+
+btn-retry => "Retry" => "Wiederholen"
+
+btn-save => "Save" => "Speichern"
+
+btn-see-more-details => "See more details" => "Mehr Details"
+
+btn-select => "Select" => "Auswählen"
+
+btn-send-for-approval => "Send for approval" => "Zur Freigabe senden"
+
+btn-send-invitation => "Send invitation" => "Einladung senden"
+
+btn-send-token => "Send token" => "Code senden"
+
+btn-set => "Set" => "Wählen"
+
+btn-set-keys => "Set keys" => "Schlüssel festlegen"
+
+btn-share-xpubs => "Share xpubs" => "xpubs teilen"
+
+btn-show-qr => "Show QR code" => "QR-Code anzeigen"
+
+btn-sign => "Sign" => "Signieren"
+
+btn-skip => "Skip" => "Überspringen"
+
+btn-skip-registration => "Skip registration" => "Ohne Registrierung"
+
+btn-split-tab => "Split" => "Teilen"
+
+btn-start-rescan => "Start rescan" => "Erneuten Scan starten"
+
+btn-starting-rescan => "Starting rescan..." => "Erneuter Scan startet..."
+
+btn-template-help
+=> "Something’s wrong with this template?"
+=> "Stimmt etwas mit dieser Vorlage nicht?";;
+
+btn-try-other-paths
+=> "Try other derivation paths"
+=> "Andere Ableitungspfade versuchen";;
+
+btn-unlock-all => "Unlock all" => "Entsperren"
+
+btn-update => "Update" => "Aktualisieren"
+
+btn-updating => "Updating" => "Update läuft"
+
+btn-verify-on-device => "Verify on signing device" => "Auf dem Signiergerät prüfen"
+
+btn-yes => "Yes" => "Ja"
+
+business-access-error => "Access error" => NONE
+
+business-account-connection-failed
+=> "Failed to connect with account {$email}. The session may have expired."
+=> NONE;;
+
+business-account-number => "Account #{$index}" => "Konto Nr. {$index}"
+
+business-add-key-label => "Add a key" => NONE
+
+business-add-two-keys-to-continue => "Add at least 2 keys to continue" => NONE
+
+business-admin-name => "Admin{$name}" => NONE
+
+business-after-days
+=> "{ $count ->\n    [one] After 1 day\n   *[other] After {$count} days\n}"
+=> NONE;;
+
+business-after-hours
+=> "{ $count ->\n    [one] After 1 hour\n   *[other] After {$count} hours\n}"
+=> NONE;;
+
+business-after-months
+=> "{ $count ->\n    [one] After 1 month\n   *[other] After {$count} months\n}"
+=> NONE;;
+
+business-all-files => "All files" => NONE
+
+business-all-keys-set-waiting
+=> "All keys are set. Once the other participants finish this step, the wallet will be ready."
+=> NONE;;
+
+business-assigned-keys-set-waiting
+=> "Your assigned keys are set. Waiting for the other participants to finish this step."
+=> NONE;;
+
+business-auth-code-request-failed
+=> "Failed to request authentication code from server."
+=> NONE;;
+
+business-authenticated => "Authenticated" => NONE
+
+business-backend-error => "Backend error" => NONE
+
+business-cannot-approve-template => "Can't approve this template?" => NONE
+
+business-clipboard-empty => "Clipboard is empty" => NONE
+
+business-code-six-digits => "Code must contain only 6 digits." => NONE
+
+business-common-you => "You" => NONE
+
+business-confirm-coldcard-success
+=> "Please confirm on your Coldcard that the wallet registration completed successfully."
+=> NONE;;
+
+business-confirm-device => "Please confirm on your device..." => NONE
+
+business-confirm-registration => "Confirm registration" => NONE
+
+business-connect-device-register
+=> "Connect the associated device to register"
+=> NONE;;
+
+business-connection-error => "Connection error" => "Verbindungsfehler"
+
+business-contact-create-account
+=> "Contact Wizardsardine to create an account."
+=> NONE;;
+
+business-create-new-path => "Create new path" => NONE
+
+business-current-xpub => "Current extended public key" => NONE
+
+business-detected-devices => "Detected devices" => NONE
+
+business-device-disconnected => "Device disconnected" => NONE
+
+business-device-locked-unlock => "Device is locked. Please unlock it first." => NONE
+
+business-device-not-supported => "Device is not supported" => NONE
+
+business-device-unsupported-locked => "Device locked or unsupported" => NONE
+
+business-did-registration-succeed
+=> "Did the registration succeed on your Coldcard?"
+=> NONE;;
+
+business-duplicate-timelock => "Duplicate timelock" => NONE
+
+business-edit-key => "Edit key" => NONE
+
+business-edit-primary-path => "Edit primary path" => NONE
+
+business-edit-recovery-path => "Edit recovery path" => NONE
+
+business-edited => "Edited" => NONE
+
+business-edited-by-on => "Edited by {$editor} on {$date}" => NONE
+
+business-edited-by-user => "Edited by {$editor}" => NONE
+
+business-edited-on => "Edited on {$date}" => NONE
+
+business-edited-relative => "Edited{$editor} {$time}" => NONE
+
+business-email-app-open-failed => "Couldn't open your email app" => NONE
+
+business-email-app-open-failed-message
+=> "Open your email client and contact Wizardsardine to request template edits."
+=> NONE;;
+
+business-external-keys => "External keys" => NONE
+
+business-external-signer-help
+=> "The third party who will set up and sign with this key. They'll be invited by email."
+=> NONE;;
+
+business-fetched-from-device => "Fetched from {$kind} #{$fingerprint}" => NONE
+
+business-fetching-device => "Fetching from device..." => NONE
+
+business-file-dialog-result-failed
+=> "Failed to receive result from file dialog thread"
+=> NONE;;
+
+business-file-read-failed => "Failed to read file: {$error}" => NONE
+
+business-filter-organizations => "Filter organizations..." => NONE
+
+business-filter-wallets => "Filter wallets..." => NONE
+
+business-from-your-organization => "From your organization" => NONE
+
+business-hardware-wallet-not-found => "Signing device not found" => NONE
+
+business-import-xpub-file
+=> "Import extended public key file (xpub)"
+=> "Datei mit erweitertem öffentlichem Schlüssel (xpub) importieren";;
+
+business-internal-signer-help
+=> "The organization member who will set up and sign with this key. They'll be invited by email."
+=> NONE;;
+
+business-invalid-threshold => "Invalid threshold value" => NONE
+
+business-key-alias => "Key alias" => NONE
+
+business-key-alias-placeholder => "e.g. Alice, Treasury, Lawyer..." => NONE
+
+business-key-count
+=> "{ $count ->\n    [one] (1 key)\n   *[other] ({$count} keys)\n}"
+=> "{ $count ->\n    [one] (1 Schlüssel)\n   *[other] ({$count} Schlüssel)\n}";;
+
+business-key-definition-help
+=> "Define the key's name and who holds it. You'll set it up later, by connecting a device or adding its extended public key."
+=> NONE;;
+
+business-key-deleted => "Key deleted" => NONE
+
+business-key-deleted-message
+=> "The key you were editing was deleted by another user."
+=> NONE;;
+
+business-key-modified => "Key modified" => NONE
+
+business-key-modified-message
+=> "This key was modified by another user. Would you like to reload the server version or keep your changes?"
+=> NONE;;
+
+business-key-number => "Key {$id}" => NONE
+
+business-key-path-account-help
+=> "The account number in this key's derivation path. Pick a different account to derive an independent key from the same device."
+=> NONE;;
+
+business-key-removed => "Key removed" => NONE
+
+business-key-removed-from-path
+=> "\"{$alias}\" was deleted by another user and has been removed from your path selection."
+=> NONE;;
+
+business-key-type => "Key type" => NONE
+
+business-key-type-help
+=> "Internal: Held by a member of your organization.\nExternal: Held by a trusted third party.\nCosigner: Professional co-signing service.\nSafety Net: Professional recovery service."
+=> NONE;;
+
+business-keys-awaiting-manager
+=> "Awaiting the Wallet Manager. They haven't marked the keys & signers as ready yet."
+=> NONE;;
+
+business-keys-in-path => "Keys in path:" => NONE
+
+business-keys-manager-instruction
+=> "List the keys that will be part of this wallet and assign a signer to each. The spending policy will be crafted from these keys."
+=> NONE;;
+
+business-keys-ready-by-manager
+=> "Marked as ready by the Wallet Manager. They've finished adding keys & signers."
+=> NONE;;
+
+business-keys-ready-policy-editable
+=> "Keys & signers marked as ready. The spending policy will be crafted from these keys. You can still edit keys if anything needs to change."
+=> NONE;;
+
+business-keys-ready-policy-pending
+=> "Keys & signers marked as ready. The spending policy will be crafted from these keys."
+=> NONE;;
+
+business-keys-required-to-spend
+=> "{ $count ->\n    [one] {$threshold} of 1 key required to spend\n   *[other] {$threshold} of {$count} keys required to spend\n}"
+=> NONE;;
+
+business-keys-shared-policy-tab
+=> "These keys are shared with the Spending policy tab"
+=> NONE;;
+
+business-keys-shared-with-policy
+=> "These keys are shared with the Spending policy tab, where you arrange them into spending paths."
+=> NONE;;
+
+business-keys-signers => "Keys & signers" => NONE
+
+business-loading-wallet => "Loading wallet..." => NONE
+
+business-login-email-help
+=> "Enter the email associated with your account"
+=> "Geben Sie die E-Mail-Adresse Ihres Kontos ein";;
+
+business-login-failed => "Login failed." => NONE
+
+business-lost-connection-restart
+=> "Lost connection to the server. Please restart the application."
+=> NONE;;
+
+business-manager-set-keys-help
+=> "Select a key to complete its setup. Keys can be set up by each key manager individually, or by the wallet manager on their behalf."
+=> NONE;;
+
+business-max-unit => "Max {$max} {$unit}" => NONE
+
+business-max-unit-label => "Max: {$max} {$unit}" => NONE
+
+business-new-email-address => "New email address" => NONE
+
+business-no-descriptor-available => "No descriptor available" => NONE
+
+business-no-devices-to-register => "You have no devices to register." => NONE
+
+business-no-hardware-wallets
+=> "No signing device detected. Connect one and unlock it."
+=> "Kein Signiergerät erkannt. Schließen Sie eines an und entsperren Sie es.";;
+
+business-no-keys-assigned => "No keys assigned to you." => NONE
+
+business-no-keys-available => "No keys available. Add keys first." => NONE
+
+business-no-members-match => "No members match" => NONE
+
+business-no-orgs-search => "No organizations found matching your search." => NONE
+
+business-no-timelock => "No timelock" => NONE
+
+business-no-user-id-available => "No user ID available" => NONE
+
+business-no-wallet-selected => "No wallet selected" => NONE
+
+business-no-wallets-search => "No wallets found matching your search." => NONE
+
+business-not-part-wallet => "Not part of this wallet (#{$fingerprint})" => NONE
+
+business-organization => "Organization" => NONE
+
+business-organizations => "Organizations" => NONE
+
+business-other-participants-keys => "Other participants' keys" => NONE
+
+business-participant-set-keys-help
+=> "Select a key assigned to you to complete its setup. You can connect a signing device or add an extended public key manually."
+=> NONE;;
+
+business-path-deleted => "Path deleted" => NONE
+
+business-path-deleted-message
+=> "The path you were editing was deleted by another user."
+=> NONE;;
+
+business-path-modified => "Path modified" => NONE
+
+business-primary-path => "Primary path" => NONE
+
+business-primary-path-modified-message
+=> "The primary path was modified by another user. Would you like to reload the server version or keep your changes?"
+=> NONE;;
+
+business-professional-service => "Professional service" => NONE
+
+business-provider-name => "Provider · {$provider}" => NONE
+
+business-recovery-path => "Recovery path" => NONE
+
+business-recovery-path-modified-message
+=> "This recovery path was modified by another user. Would you like to reload the server version or keep your changes?"
+=> NONE;;
+
+business-recovery-path-number => "Recovery path {$number}" => NONE
+
+business-register-devices => "Register devices" => NONE
+
+business-register-wallet-devices-help
+=> "Register the wallet descriptor on each device, or skip if unavailable."
+=> NONE;;
+
+business-registered-on-device => "Registered on device" => NONE
+
+business-registering-wallet => "Registering wallet" => NONE
+
+business-registration-failed => "Registration failed" => NONE
+
+business-request-template-edits-help
+=> "To request edits, reach out to Wizardsardine directly: they can make the changes and send it back for approval."
+=> NONE;;
+
+business-role-manager => "Manager" => "Verwalter"
+
+business-role-participant => "Participant" => "Teilnehmer"
+
+business-search-members-or-email
+=> "Search organization members or enter email"
+=> NONE;;
+
+business-select-account-placeholder => "Select account" => NONE
+
+business-select-key-source => "Select key source · {$alias}" => NONE
+
+business-select-xpub-file => "Select extended public key file" => NONE
+
+business-service-token => "Service token" => NONE
+
+business-service-token-help
+=> "Paste the token from the provider. Their firm name is fetched automatically."
+=> NONE;;
+
+business-service-token-placeholder => "e.g. 42-absent-cake-eagle" => NONE
+
+business-service-unavailable
+=> "The service is temporarily unavailable. Your wallet data and funds are not affected."
+=> NONE;;
+
+business-set-keys => "Set keys" => NONE
+
+business-signer-email => "Signer email" => NONE
+
+business-spending-policy => "Spending policy" => NONE
+
+business-template-locked-approve
+=> "Template is locked and pending approval. You must approve it to continue."
+=> NONE;;
+
+business-template-locked-unlock
+=> "Template is locked and pending approval. Unlock to make further changes."
+=> NONE;;
+
+business-template-read-only
+=> "Read-only. Only a WS Admin can edit this template."
+=> NONE;;
+
+business-text-files => "Text files" => NONE
+
+business-threshold-range => "Threshold (1-{$count}):" => NONE
+
+business-timelock => "Timelock:" => NONE
+
+business-timelock-unit-days => "days" => NONE
+
+business-timelock-unit-hours => "hours" => NONE
+
+business-timelock-unit-months => "months" => NONE
+
+business-timelock-zero => "Timelock cannot be zero" => NONE
+
+business-token-duplicate => "Duplicate token." => NONE
+
+business-token-invalid => "Invalid token." => NONE
+
+business-try-again-support
+=> "Please try again shortly. If the issue persists, contact support."
+=> NONE;;
+
+business-unable-load-wallet => "Unable to load wallet" => NONE
+
+business-unsupported-method => "Unsupported method: {$method}" => NONE
+
+business-use-email => "Use {$email}" => NONE
+
+business-user-session-not-found
+=> "User session not found. Please log in again or contact Wizardsardine."
+=> NONE;;
+
+business-wallet-access-denied
+=> "You do not have access to this wallet. Contact Wizardsardine."
+=> NONE;;
+
+business-wallet-count-label
+=> "{ $count ->\n    [one] 1 wallet\n   *[other] {$count} wallets\n}"
+=> NONE;;
+
+business-wallets => "Wallets" => NONE
+
+business-wrong-network-device
+=> "Wrong network in device settings"
+=> "Falsches Netzwerk in den Geräteeinstellungen";;
+
+business-xpub-empty => "Extended public key cannot be empty." => NONE
+
+business-xpub-invalid-format
+=> "Invalid extended public key format: {$error}"
+=> NONE;;
+
+business-xpub-invalid-network
+=> "Extended public key is not valid for {$network}."
+=> NONE;;
+
+business-xpub-replace-existing-help
+=> "This key already has an extended public key. You can replace it by fetching from a device, importing from file, or pasting."
+=> NONE;;
+
+business-your-keys => "Your keys" => NONE
+
+coins-address-label => "Address label:" => "Adress-Label:"
+
+coins-block-height => "Block height:" => "Blockhöhe:"
+
+coins-first-recovery-in-blocks
+=> "First recovery path will be available in {$blocks} blocks"
+=> "Der erste Wiederherstellungspfad ist in {$blocks} Blöcken verfügbar";;
+
+coins-not-in-block => "Not in a block" => "Noch in keinem Block"
+
+coins-outpoint => "Outpoint:" => "Outpoint:"
+
+coins-recovery-active
+=> "Recovery path is active"
+=> "Wiederherstellungspfad ist aktiv";;
+
+coins-spend-block-height => "Spend block height:" => "Blockhöhe der Ausgabe:"
+
+coins-spend-txid => "Spend txid:" => "Txid der Ausgabe:"
+
+combobox-already-signer => "already a signer" => "bereits ein Signierer"
+
+common-address => "Address" => "Adresse"
+
+common-address-label => "Address:" => "Adresse:"
+
+common-and => "and" => "und"
+
+common-approx-feerate-value => "(~{$rate} sats/vbyte)" => "(~{$rate} sats/vbyte)"
+
+common-are-you-sure => "Are you sure?" => "Sind Sie sicher?"
+
+common-blocks => "blocks" => "Blöcke"
+
+common-connecting-ellipsis => "Connecting..." => "Verbindung wird hergestellt..."
+
+common-connection-failed => "Connection failed" => "Verbindung fehlgeschlagen"
+
+common-copy => "Copy" => "Kopieren"
+
+common-descriptor => "Descriptor" => "Deskriptor"
+
+common-descriptor-label => "Descriptor:" => "Deskriptor:"
+
+common-email => "Email" => "E-Mail"
+
+common-error => "Error" => "Fehler"
+
+common-error-with-detail => "{$message} ({$error})" => "{$message} ({$error})"
+
+common-feerate => "Feerate" => "Gebührensatz"
+
+common-feerate-value => "({$rate} sats/vbyte)" => "({$rate} sats/vbyte)"
+
+common-fetching => "Fetching ..." => "Wird abgerufen ..."
+
+common-learn-more => "Learn more" => "Mehr erfahren"
+
+common-loading => "Loading..." => "Wird geladen..."
+
+common-login => "Login" => "Anmelden"
+
+common-no-label => "No label" => "Kein Label"
+
+common-no-label-parenthesized => "(No label)" => "(Kein Label)"
+
+common-not-available => "N/A" => "k. A."
+
+common-other-options => "Other options" => "Weitere Optionen"
+
+common-paste => "Paste" => "Einfügen"
+
+common-processing => "Processing..." => "Wird verarbeitet..."
+
+common-ready => "Ready" => "Bereit"
+
+common-recovery => "Recovery" => "Wiederherstellung"
+
+common-register => "Register" => "Registrieren"
+
+common-see-more => "See more" => "Mehr anzeigen"
+
+common-select-account
+=> "Select an account to continue"
+=> "Wählen Sie ein Konto, um fortzufahren";;
+
+common-self-transfer => "Self-transfer" => "Eigenüberweisung"
+
+common-something-wrong => "Something wrong happened" => "Etwas ist schiefgelaufen"
+
+common-token => "Token" => "Code"
+
+common-wallet => "Wallet" => "Wallet"
+
+connect-account-missing-from-cache
+=> "Account must be in cache"
+=> "Das Konto muss im Cache vorhanden sein";;
+
+connect-cache-update-failed
+=> "Failed to update cache: {$error}"
+=> "Cache konnte nicht aktualisiert werden: {$error}";;
+
+connect-remote-servers-unresponsive
+=> "Remote servers are unresponsive"
+=> "Die Server antworten nicht";;
+
+decrypt-airgap-help
+=> "Using an air-gapped device? Export the extended public key from your device, then use the upload or paste option. If you don’t know the correct derivation path, try with the following:"
+=> "Sie nutzen ein Air-Gap-Gerät? Exportieren Sie den erweiterten öffentlichen Schlüssel von Ihrem Gerät und nutzen Sie dann Hochladen oder Einfügen. Wenn Sie den richtigen Ableitungspfad nicht kennen, versuchen Sie es mit diesen:";;
+
+decrypt-backup-file => "Decrypt backup file" => "Backup-Datei entschlüsseln"
+
+decrypt-device-description
+=> "Plug in and unlock a signing device belonging to this setup to automatically decrypt the backup"
+=> "Schließen Sie ein Signiergerät dieses Setups an und entsperren Sie es, um das Backup automatisch zu entschlüsseln";;
+
+decrypt-device-failed
+=> "Failed to decrypt file with this device"
+=> "Die Datei konnte mit diesem Gerät nicht entschlüsselt werden";;
+
+decrypt-enter-mnemonic-unsafe
+=> "UNSAFE: Enter the seed phrase of one of the keys"
+=> "UNSICHER: Geben Sie die Seed-Phrase eines der Schlüssel ein";;
+
+decrypt-enter-mnemonic-warning
+=> "This option is not secure. I understand that entering a seed phrase on a computer may result in theft of my funds."
+=> "Diese Option ist nicht sicher. Mir ist bewusst, dass die Eingabe einer Seed-Phrase auf einem Computer zum Diebstahl meiner Coins führen kann.";;
+
+decrypt-invalid-descriptor
+=> "The file has been decrypted but the descriptor is not a valid Liana descriptor."
+=> "Die Datei wurde entschlüsselt, aber der Deskriptor ist kein gültiger Liana-Deskriptor.";;
+
+decrypt-invalid-encoding
+=> "The file cannot be decoded properly, it seems not to be an encrypted backup."
+=> "Die Datei kann nicht richtig gelesen werden. Sie scheint kein verschlüsseltes Backup zu sein.";;
+
+decrypt-invalid-mnemonic => "Invalid seed phrase" => "Ungültige Seed-Phrase"
+
+decrypt-invalid-type
+=> "The file has been decrypted but the content type is not supported."
+=> "Die Datei wurde entschlüsselt, aber dieser Inhaltstyp wird nicht unterstützt.";;
+
+decrypt-invalid-xpub
+=> "Invalid extended public key"
+=> "Ungültiger erweiterter öffentlicher Schlüssel";;
+
+decrypt-mnemonic-cannot-decrypt
+=> "Seed phrase is valid but cannot decrypt the file"
+=> "Die Seed-Phrase ist gültig, kann die Datei aber nicht entschlüsseln";;
+
+decrypt-mnemonic-source => "Seed phrase" => "Seed-Phrase"
+
+decrypt-other-paths-confirm-on-device
+=> "You will have to accept some of these derivation paths on the device."
+=> "Sie müssen einige dieser Ableitungspfade auf dem Gerät bestätigen.";;
+
+decrypt-other-paths-hint
+=> "{$device} could not decrypt the backup with the derivation paths Talia Desktop uses. Other common derivation paths can be tried with it, but it is very unlikely to work as Talia Desktop does not use them."
+=> "{$device} konnte das Backup mit den Ableitungspfaden von Talia Desktop nicht entschlüsseln. Andere gängige Ableitungspfade lassen sich versuchen, aber das klappt sehr wahrscheinlich nicht, da Talia Desktop sie nicht verwendet.";;
+
+decrypt-other-paths-title
+=> "Try other derivation paths?"
+=> "Andere Ableitungspfade versuchen?";;
+
+decrypt-pairing-code => "Pairing code: {$code}" => "Kopplungscode: {$code}"
+
+decrypt-paste-xpub
+=> "Paste an extended public key (xpub)"
+=> "Erweiterten öffentlichen Schlüssel (xpub) einfügen";;
+
+decrypt-provide-xpub
+=> "Provide one of the extended public keys used in this wallet."
+=> "Geben Sie einen der erweiterten öffentlichen Schlüssel dieser Wallet an.";;
+
+decrypt-try-device
+=> "Try to decrypt with this device..."
+=> "Mit diesem Gerät entschlüsseln...";;
+
+decrypt-unlock-device
+=> "Please unlock or open app on the device"
+=> "Bitte entsperren Sie das Gerät oder öffnen Sie die App darauf";;
+
+decrypt-xpub-cannot-decrypt
+=> "Extended public key is valid but cannot decrypt this file"
+=> "Der erweiterte öffentliche Schlüssel ist gültig, kann diese Datei aber nicht entschlüsseln";;
+
+device-already-used => "Already used" => "Bereits verwendet"
+
+device-check-device => "Please check your device" => "Bitte prüfen Sie Ihr Gerät"
+
+device-enter-cosigner-token => "Enter a Cosigner token" => "Co-Signer-Code eingeben"
+
+device-enter-safety-net-token
+=> "Enter a Safety Net token"
+=> "Sicherheitsnetz-Code eingeben";;
+
+device-generate-hot-key
+=> "Generate hot key stored on this computer"
+=> "Hot Key auf diesem Computer erzeugen";;
+
+device-hot-key-test-only
+=> "We recommend using this option only for test purposes"
+=> "Wir empfehlen diese Option nur für Tests";;
+
+device-install-firmware-version-or-later
+=> "Install firmware version {$version} \nor later"
+=> "Installieren Sie Firmware {$version} \noder neuer";;
+
+device-locked => "Locked" => "Gesperrt"
+
+device-locked-check-code
+=> "Locked, check code: {$code}"
+=> "Gesperrt, Code prüfen: {$code}";;
+
+device-open-app
+=> "Please open the app on device"
+=> "Bitte öffnen Sie die App auf dem Gerät";;
+
+device-processing-check-device
+=> "Processing, please check your device"
+=> "Wird verarbeitet, bitte prüfen Sie Ihr Gerät";;
+
+device-registered => "Registered" => "Registriert"
+
+device-signed => "Signed" => "Signiert"
+
+device-unlock => "Please unlock the device" => "Bitte entsperren Sie das Gerät"
+
+device-unrelated-wallet
+=> "This signing device is not related to this Talia Desktop wallet."
+=> "Dieses Signiergerät gehört nicht zu dieser Talia-Desktop-Wallet.";;
+
+device-version-unsupported
+=> "Device version not supported, upgrade to version > {$version}"
+=> "Geräteversion nicht unterstützt, aktualisieren Sie auf eine Version > {$version}";;
+
+download-stalled
+=> "Download failed, check your internet connection"
+=> "Download fehlgeschlagen, prüfen Sie Ihre Internetverbindung";;
+
+duration-days
+=> "{ $count ->\n    [one] 1 day\n   *[other] {$count} days\n}"
+=> "{ $count ->\n    [one] 1 Tag\n   *[other] {$count} Tage\n}";;
+
+duration-days-approx => "~{$count} days" => "~{$count} Tage"
+
+duration-days-compact => "{$count}d" => "{$count} T."
+
+duration-days-compact-approx => "~{$count}d" => "~{$count} T."
+
+duration-hours
+=> "{ $count ->\n    [one] 1 hour\n   *[other] {$count} hours\n}"
+=> "{ $count ->\n    [one] 1 Stunde\n   *[other] {$count} Stunden\n}";;
+
+duration-hours-compact => "{$count}h" => "{$count} Std."
+
+duration-minutes
+=> "{ $count ->\n    [one] 1 minute\n   *[other] {$count} minutes\n}"
+=> "{ $count ->\n    [one] 1 Minute\n   *[other] {$count} Minuten\n}";;
+
+duration-minutes-compact => "{$count}m" => "{$count} Min."
+
+duration-months
+=> "{ $count ->\n    [one] 1 month\n   *[other] {$count} months\n}"
+=> "{ $count ->\n    [one] 1 Monat\n   *[other] {$count} Monate\n}";;
+
+duration-months-compact => "{$count}m" => "{$count} Mon."
+
+duration-years
+=> "{ $count ->\n    [one] 1 year\n   *[other] {$count} years\n}"
+=> "{ $count ->\n    [one] 1 Jahr\n   *[other] {$count} Jahre\n}";;
+
+duration-years-compact => "{$count}y" => "{$count} J."
+
+error-unknown => "Unknown error occurred" => "Ein unbekannter Fehler ist aufgetreten"
+
+export-aliases-conflict
+=> "Aliases conflict, what do you want to do?"
+=> "Die Namen widersprechen sich. Wie möchten Sie fortfahren?";;
+
+export-canceled => "Export canceled" => "Export abgebrochen"
+
+export-choose-file
+=> "Choose a file to import..."
+=> "Datei zum Importieren wählen...";;
+
+export-choose-location
+=> "Choose a location to export..."
+=> "Speicherort für den Export wählen...";;
+
+export-encrypted-descriptor-include-paths
+=> "Include derivation paths"
+=> "Ableitungspfade einschließen";;
+
+export-encrypted-descriptor-include-paths-tooltip
+=> "Including them makes recovery faster. Leaving them out is more private, but recovering from this file can take several minutes on some signing devices."
+=> "Mit ihnen geht eine Wiederherstellung schneller. Ohne sie ist die Datei privater, aber die Wiederherstellung kann auf manchen Signiergeräten einige Minuten dauern.";;
+
+export-labels-conflict
+=> "Labels conflict, what do you want to do?"
+=> "Die Labels widersprechen sich. Wie möchten Sie fortfahren?";;
+
+export-progress => "Progress: {$progress}%" => "Fortschritt: {$progress} %"
+
+export-select-path
+=> "Select the path you want to export in the popup window..."
+=> "Wählen Sie im Fenster den Speicherort für den Export...";;
+
+export-starting => "Starting export..." => "Export startet..."
+
+export-success => "Export successful!" => "Export erfolgreich!"
+
+export-timeout
+=> "Export failed: timeout"
+=> "Export fehlgeschlagen: Zeitüberschreitung";;
+
+export-title-export-backup => "Export backup" => "Backup exportieren"
+
+export-title-export-descriptor => "Export descriptor" => "Deskriptor exportieren"
+
+export-title-export-encrypted-descriptor
+=> "Export encrypted descriptor"
+=> "Verschlüsselten Deskriptor exportieren";;
+
+export-title-export-labels => "Export labels" => "Labels exportieren"
+
+export-title-export-psbt => "Export PSBT" => "PSBT exportieren"
+
+export-title-export-xpub
+=> "Export extended public key (xpub)"
+=> "Erweiterten öffentlichen Schlüssel (xpub) exportieren";;
+
+export-title-import-descriptor => "Import descriptor" => "Deskriptor importieren"
+
+export-title-import-psbt => "Import PSBT" => "PSBT importieren"
+
+export-title-import-wallet-backup
+=> "Import existing wallet from backup"
+=> "Bestehende Wallet aus einem Backup importieren";;
+
+export-title-import-xpub
+=> "Import extended public key (xpub)"
+=> "Erweiterten öffentlichen Schlüssel (xpub) importieren";;
+
+export-title-restore-backup => "Restore backup" => "Backup wiederherstellen"
+
+export-title-transactions => "Export transactions" => "Transaktionen exportieren"
+
+fiat-amount-non-negative
+=> "Amount must be non-negative"
+=> "Der Betrag darf nicht negativ sein";;
+
+fiat-currency-mismatch
+=> "Currency mismatch: expected {$expected}, got {$actual}"
+=> "Währung passt nicht: erwartet {$expected}, erhalten {$actual}";;
+
+fiat-exchange-rate
+=> "Exchange rate: 1 BTC ~ {$amount} {$currency}"
+=> "Wechselkurs: 1 BTC ~ {$amount} {$currency}";;
+
+fiat-invalid-currency => "Invalid currency" => "Ungültige Währung"
+
+fiat-last-requested => "Last requested: {$time}" => "Zuletzt abgefragt: {$time}"
+
+fiat-last-updated-source
+=> "Last updated at source: {$time}"
+=> "Zuletzt bei der Quelle aktualisiert: {$time}";;
+
+fiat-price-positive
+=> "Price per BTC must be positive"
+=> "Der Preis pro BTC muss positiv sein";;
+
+fiat-source => "Source: {$source}" => "Quelle: {$source}"
+
+fiat-source-timestamp
+=> "Default price at the time the transaction has been confirmed"
+=> "Standardpreis zum Zeitpunkt der Bestätigung der Transaktion";;
+
+fiat-source-user
+=> "Price you have filled yourself"
+=> "Von Ihnen eingetragener Preis";;
+
+fiat-source-wizardsardine
+=> "Price automatically processed by WS when you crafted the transaction"
+=> "Automatisch von WS ermittelter Preis zum Zeitpunkt der Erstellung der Transaktion";;
+
+home-balance => "Balance" => "Guthaben"
+
+home-checking-transactions
+=> "Checking for new transactions"
+=> "Neue Transaktionen werden gesucht";;
+
+home-payment-history => "Payment history" => "Zahlungsverlauf"
+
+home-recovery-left
+=> "≈ {$units} left before first recovery path becomes available."
+=> "≈ {$units} bis der erste Wiederherstellungspfad verfügbar ist.";;
+
+home-recovery-warning
+=> "Recovery path is or will soon be available for {$count} coin(s)."
+=> "Ein Wiederherstellungspfad ist oder wird bald verfügbar für {$count} Coin(s).";;
+
+home-rescan-warning-backup
+=> "As this wallet was restored from a backup, you may need to rescan the blockchain to see past transactions."
+=> "Da diese Wallet aus einem Backup wiederhergestellt wurde, müssen Sie die Blockchain eventuell erneut scannen, um frühere Transaktionen zu sehen.";;
+
+home-rescan-warning-descriptor
+=> "As this wallet was imported from a descriptor, you may need to rescan the blockchain to see past transactions."
+=> "Da diese Wallet aus einem Deskriptor importiert wurde, müssen Sie die Blockchain eventuell erneut scannen, um frühere Transaktionen zu sehen.";;
+
+home-syncing => "Syncing" => "Synchronisierung"
+
+home-syncing-blockchain
+=> "Syncing blockchain ({$progress}%)"
+=> "Blockchain wird synchronisiert ({$progress} %)";;
+
+hw-descriptor-not-registered
+=> "The wallet descriptor is not registered on the device.\n You can register it in the settings."
+=> "Der Wallet-Deskriptor ist nicht auf dem Gerät registriert.\n Sie können ihn in den Einstellungen registrieren.";;
+
+hw-display-address-unavailable
+=> "Talia Desktop cannot request the device to display the address. \n Verify it with the QR code in the options below."
+=> "Talia Desktop kann das Gerät nicht bitten, die Adresse anzuzeigen. \n Prüfen Sie sie mit dem QR-Code in den Optionen unten.";;
+
+hw-no-taproot-miniscript
+=> "This device doesn't support Taproot. Switch to Segwit or use another device."
+=> "Dieses Gerät unterstützt kein Taproot. Wechseln Sie zu Segwit oder nutzen Sie ein anderes Gerät.";;
+
+hw-not-in-spending-path
+=> "This signing device is not part of this spending path."
+=> "Dieses Signiergerät gehört nicht zu diesem Ausgabepfad.";;
+
+hw-taproot-firmware-outdated
+=> "Update firmware to {$version} or later to use Taproot."
+=> "Aktualisieren Sie die Firmware auf {$version} oder neuer, um Taproot zu nutzen.";;
+
+import-success => "Import successful" => "Import erfolgreich"
+
+installer-able-to-move-any-time
+=> "Able to move the funds at any time."
+=> "Kann die Coins jederzeit bewegen.";;
+
+installer-accept-invitation-for
+=> "Accept invitation for wallet:"
+=> "Einladung annehmen für Wallet:";;
+
+installer-accepted-wallet-not-found
+=> "Wallet of accepted invitation not found"
+=> "Wallet der angenommenen Einladung nicht gefunden";;
+
+installer-add-key => "Add key" => "Schlüssel hinzufügen"
+
+installer-add-safety-net-key
+=> "Add Safety Net key"
+=> "Sicherheitsnetz-Schlüssel hinzufügen";;
+
+installer-already-have-node
+=> "I already have a node"
+=> "Ich habe bereits einen Node";;
+
+installer-already-used-sources
+=> "Already used sources"
+=> "Bereits verwendete Quellen";;
+
+installer-auth-token-emailed-to
+=> "An authentication token has been emailed to"
+=> "Ein Anmeldecode wurde gesendet an";;
+
+installer-auto-install-node
+=> "I want Talia Desktop to automatically install a Bitcoin node on my device"
+=> "Talia Desktop soll automatisch einen Bitcoin-Node auf meinem Gerät installieren";;
+
+installer-available-after-inactivity
+=> "Available after inactivity of ~"
+=> "Verfügbar nach einer Inaktivität von ~";;
+
+installer-available-port-failed
+=> "Could not get available port: {$error}."
+=> "Kein freier Port gefunden: {$error}.";;
+
+installer-available-ports-failed
+=> "Could not get available ports: {$error1}; {$error2}."
+=> "Keine freien Ports gefunden: {$error1}; {$error2}.";;
+
+installer-backed-up-descriptor-checkbox
+=> "I have backed up my descriptor"
+=> "Ich habe meinen Deskriptor gesichert";;
+
+installer-backed-up-mnemonic-checkbox
+=> "I have backed up my seed phrase"
+=> "Ich habe meine Seed-Phrase gesichert";;
+
+installer-backed-up-mnemonic-show-xpub
+=> "I have backed up the seed phrase, show the extended public key"
+=> "Ich habe die Seed-Phrase gesichert, erweiterten öffentlichen Schlüssel anzeigen";;
+
+installer-backup-descriptor-help
+=> "In Bitcoin, to spend from a wallet that isn't a standard single-key setup, you need both your private keys (usually stored as seed phrases) to sign transactions, and your wallet descriptor to locate your coins - like a map of your addresses.\nWithout the descriptor, your wallet may not find your coins - even if you still have the keys.\nWhen you click \"Back up descriptor\", Talia Desktop creates an encrypted file that can only be decrypted using one of your wallet's extended public keys.\nTalia Desktop handles this automatically during the restore of a wallet process by asking you to connect a device or enter a key.\nThis file is safer and more private than copying the descriptor manually."
+=> "Um bei Bitcoin aus einer Wallet auszugeben, die kein einfaches Ein-Schlüssel-Setup ist, brauchen Sie zwei Dinge: Ihre privaten Schlüssel (meist als Seed-Phrasen gespeichert), um Transaktionen zu signieren, und Ihren Wallet-Deskriptor, um Ihre Coins zu finden. Er ist wie eine Karte Ihrer Adressen.\nOhne den Deskriptor findet Ihre Wallet Ihre Coins womöglich nicht, selbst wenn Sie die Schlüssel noch haben.\nWenn Sie auf „Deskriptor sichern“ klicken, erstellt Talia Desktop eine verschlüsselte Datei, die sich nur mit einem der erweiterten öffentlichen Schlüssel Ihrer Wallet entschlüsseln lässt.\nTalia Desktop erledigt das beim Wiederherstellen einer Wallet automatisch, indem es Sie bittet, ein Gerät anzuschließen oder einen Schlüssel einzugeben.\nDiese Datei ist sicherer und privater, als den Deskriptor von Hand zu kopieren.";;
+
+installer-backup-descriptor-message
+=> "This backup is required to recover your funds.\nClick \"Back up descriptor\" to download an encrypted file of your wallet configuration and store it in safe, accessible places.\nYou can also copy the plain-text descriptor string, but it's less private.\nWARNING: This file does not include your seed phrase(s). Back those up separately."
+=> "Dieses Backup brauchen Sie, um Ihre Coins wiederherzustellen.\nKlicken Sie auf „Deskriptor sichern“, um eine verschlüsselte Datei Ihrer Wallet-Konfiguration herunterzuladen, und bewahren Sie sie an sicheren, erreichbaren Orten auf.\nSie können auch den Deskriptor als Klartext kopieren, das ist aber weniger privat.\nACHTUNG: Diese Datei enthält Ihre Seed-Phrase(n) nicht. Sichern Sie diese separat.";;
+
+installer-backup-descriptor-missing
+=> "Backup imported but descriptor missing!"
+=> "Backup importiert, aber der Deskriptor fehlt!";;
+
+installer-backup-descriptor-title
+=> "Back up your wallet configuration (descriptor)"
+=> "Sichern Sie Ihre Wallet-Konfiguration (Deskriptor)";;
+
+installer-backup-imported
+=> "Backup successfully imported!"
+=> "Backup erfolgreich importiert!";;
+
+installer-backup-mnemonic-title
+=> "Back up your seed phrase"
+=> "Sichern Sie Ihre Seed-Phrase";;
+
+installer-backup-mnemonic-warning
+=> "Beware to back up the seed phrase as it will NOT be stored on the computer."
+=> "Sichern Sie die Seed-Phrase unbedingt, denn sie wird NICHT auf dem Computer gespeichert.";;
+
+installer-backup-network-mismatch
+=> "The backup network does not match the selected network."
+=> "Das Netzwerk des Backups passt nicht zum gewählten Netzwerk.";;
+
+installer-bitcoin-node-management
+=> "Bitcoin node management"
+=> "Verwaltung des Bitcoin-Nodes";;
+
+installer-bitcoind-already-installed
+=> "Talia Desktop managed bitcoind already installed"
+=> "Von Talia Desktop verwaltetes bitcoind ist bereits installiert";;
+
+installer-bitcoind-canonicalize-datadir-error
+=> "Failed to canonicalize datadir: {$error}"
+=> "Datenverzeichnis konnte nicht aufgelöst werden: {$error}";;
+
+installer-bitcoind-command-error
+=> "Command to start bitcoind returned an error: {$error}"
+=> "Der Befehl zum Starten von bitcoind meldete einen Fehler: {$error}";;
+
+installer-bitcoind-connection-error
+=> "bitcoind connection check failed: {$error}"
+=> "Verbindungsprüfung zu bitcoind fehlgeschlagen: {$error}";;
+
+installer-bitcoind-executable-not-found
+=> "bitcoind executable not found."
+=> "Programmdatei von bitcoind nicht gefunden.";;
+
+installer-bitcoind-lock-error
+=> "lock file error: {$error}"
+=> "Fehler bei der Sperrdatei: {$error}";;
+
+installer-bitcoind-process-exited
+=> "bitcoind process exited with status '{$status}'."
+=> "Der bitcoind-Prozess wurde mit Status „{$status}“ beendet.";;
+
+installer-build-your-own => "Build your own" => "Selbst zusammenstellen"
+
+installer-build-your-own-description
+=> "Create a custom setup that fits all your needs."
+=> "Erstellen Sie ein eigenes Setup, das genau zu Ihnen passt.";;
+
+installer-canonicalize-cookie-failed
+=> "Failed to canonicalize cookie path: {$error}"
+=> "Cookie-Pfad konnte nicht aufgelöst werden: {$error}";;
+
+installer-canonicalize-datadir-failed
+=> "Failed to canonicalize datadir path: {$error}"
+=> "Pfad des Datenverzeichnisses konnte nicht aufgelöst werden: {$error}";;
+
+installer-change-alias-later
+=> "You will be able to change it later in Settings > Wallet"
+=> "Sie können ihn später unter Einstellungen > Wallet ändern";;
+
+installer-checking-connection
+=> "Checking connection..."
+=> "Verbindung wird geprüft...";;
+
+installer-choose-backend => "Choose backend" => "Backend wählen"
+
+installer-choose-wallet-type => "Choose wallet type" => "Wallet-Typ wählen"
+
+installer-connected-to => "Connected to" => "Verbunden mit"
+
+installer-connection-checked => "Connection checked" => "Verbindung geprüft"
+
+installer-cookie-path => "Cookie path" => "Cookie-Pfad"
+
+installer-cosigner-token-disallowed
+=> "Cosigner tokens are not allowed for this path"
+=> "Co-Signer-Codes sind für diesen Pfad nicht erlaubt";;
+
+installer-create-datadir-path-failed
+=> "Failed to create datadir path: {$error}"
+=> "Pfad des Datenverzeichnisses konnte nicht erstellt werden: {$error}";;
+
+installer-create-random-key
+=> "Or create a new random key:"
+=> "Oder einen neuen zufälligen Schlüssel erzeugen:";;
+
+installer-custom-template-description-1
+=> "For this setup you will need to define your primary and recovery spending paths. For security reasons, we suggest you use a separate signing device for each key belonging to them."
+=> "Für dieses Setup legen Sie Ihren Hauptpfad und Ihre Wiederherstellungspfade fest. Aus Sicherheitsgründen empfehlen wir für jeden Schlüssel ein eigenes Signiergerät.";;
+
+installer-custom-template-description-2
+=> "The keys belonging to your primary path can always spend. Those belonging to the recovery paths will be able to spend only after a defined time of wallet inactivity, allowing for secure recovery and advanced spending policies."
+=> "Die Schlüssel des Hauptpfads können jederzeit ausgeben. Die Schlüssel der Wiederherstellungspfade können erst ausgeben, wenn die Wallet eine festgelegte Zeit unbenutzt war. Das ermöglicht eine sichere Wiederherstellung und fortgeschrittene Ausgaberegeln.";;
+
+installer-descriptor-generating
+=> "Generating and validating your wallet descriptor. This can take a few seconds."
+=> "Ihr Wallet-Deskriptor wird erstellt und geprüft. Das kann einige Sekunden dauern.";;
+
+installer-descriptor-invalid
+=> "Either descriptor is invalid or incompatible with network"
+=> "Der Deskriptor ist ungültig oder passt nicht zum Netzwerk";;
+
+installer-descriptor-missing => "Descriptor missing" => "Deskriptor fehlt"
+
+installer-descriptor-read-failed
+=> "Failed to read the descriptor"
+=> "Der Deskriptor konnte nicht gelesen werden";;
+
+installer-descriptor-template => "Descriptor template" => "Deskriptor-Vorlage"
+
+installer-descriptor-type => "Descriptor type" => "Deskriptor-Typ"
+
+installer-descriptor-type-segwit => "Segwit" => "Segwit"
+
+installer-descriptor-type-taproot => "Taproot (recommended)" => "Taproot (empfohlen)"
+
+installer-descriptor-type-tooltip
+=> "The type of addresses your wallet uses. Taproot lowers fees and improves privacy when spending."
+=> "Die Art der Adressen Ihrer Wallet. Taproot senkt die Gebühren und verbessert die Privatsphäre beim Ausgeben.";;
+
+installer-descriptor-wrong-network
+=> "The descriptor is for another network"
+=> "Der Deskriptor ist für ein anderes Netzwerk";;
+
+installer-detected-hardware => "Detected devices" => "Erkannte Geräte"
+
+installer-device-method-unsupported
+=> "Device not supported, method: {$method}"
+=> "Gerät nicht unterstützt, Methode: {$method}";;
+
+installer-device-wrong-network
+=> "The device is configured on the wrong network"
+=> "Das Gerät ist auf das falsche Netzwerk eingestellt";;
+
+installer-distinct-ports-unavailable
+=> "Could not get distinct ports. Please try again."
+=> "Keine getrennten Ports verfügbar. Bitte versuchen Sie es erneut.";;
+
+installer-download-complete => "Download complete" => "Download abgeschlossen"
+
+installer-download-failed
+=> "Download failed: '{$error}'."
+=> "Download fehlgeschlagen: „{$error}“.";;
+
+installer-downloading-bitcoin-core-progress
+=> "Downloading Bitcoin Core {$version}... {$progress}%"
+=> "Bitcoin Core {$version} wird heruntergeladen... {$progress} %";;
+
+installer-duplicate-token => "Duplicate token" => "Doppelter Code"
+
+installer-electrum-address-notes
+=> "Note: include \"ssl://\" as a prefix for SSL connections."
+=> "Hinweis: Für SSL-Verbindungen „ssl://“ voranstellen.";;
+
+installer-email-invalid => "Email is not valid" => "Die E-Mail-Adresse ist ungültig"
+
+installer-enter-correct-address
+=> "Please enter correct address"
+=> "Bitte geben Sie eine gültige Adresse ein";;
+
+installer-enter-correct-electrum-address
+=> "Please enter correct address (including port), optionally prefixed with tcp:// or ssl://"
+=> "Bitte geben Sie eine gültige Adresse ein (mit Port), optional mit tcp:// oder ssl:// davor";;
+
+installer-enter-correct-password
+=> "Please enter correct password"
+=> "Bitte geben Sie ein gültiges Passwort ein";;
+
+installer-enter-correct-path
+=> "Please enter correct path"
+=> "Bitte geben Sie einen gültigen Pfad ein";;
+
+installer-enter-correct-user
+=> "Please enter correct user"
+=> "Bitte geben Sie einen gültigen Benutzer ein";;
+
+installer-existing-node-description
+=> "Select this option if you already have a Bitcoin node running locally or remotely. Talia Desktop will connect to it."
+=> "Wählen Sie diese Option, wenn Sie bereits einen Bitcoin-Node lokal oder entfernt betreiben. Talia Desktop verbindet sich damit.";;
+
+installer-export-backup-failed
+=> "Failed to export backup"
+=> "Backup konnte nicht exportiert werden";;
+
+installer-finalize-installation
+=> "Finalize installation"
+=> "Installation abschließen";;
+
+installer-generate-mnemonic
+=> "Generate a new seed phrase"
+=> "Neue Seed-Phrase erzeugen";;
+
+installer-give-wallet-alias
+=> "Give your wallet an alias"
+=> "Geben Sie Ihrer Wallet einen Namen";;
+
+installer-hot-signer => "Hot signer" => "Hot Signer"
+
+installer-import-backup => "Import a backup" => "Backup importieren"
+
+installer-import-descriptor => "Import a descriptor" => "Deskriptor importieren"
+
+installer-import-mnemonic => "Import seed phrase" => "Seed-Phrase importieren"
+
+installer-import-mnemonic-title => "Import seed phrase" => "Seed-Phrase importieren"
+
+installer-import-wallet-rescan-help
+=> "If you are using a Bitcoin Core node, you will need to perform a rescan of the blockchain after creating the wallet in order to see your coins and past transactions. This can be done in Settings > Node."
+=> "Wenn Sie einen Bitcoin-Core-Node nutzen, müssen Sie die Blockchain nach dem Erstellen der Wallet erneut scannen, um Ihre Coins und früheren Transaktionen zu sehen. Das geht unter Einstellungen > Node.";;
+
+installer-import-wallet-title => "Import the wallet" => "Wallet importieren"
+
+installer-import-xpub-device
+=> "Import an extended public key by selecting a signing device:"
+=> "Erweiterten öffentlichen Schlüssel von einem Signiergerät importieren:";;
+
+installer-imported-key-already-used
+=> "Imported key already used"
+=> "Importierter Schlüssel wird bereits verwendet";;
+
+installer-installation-complete
+=> "Installation complete"
+=> "Installation abgeschlossen";;
+
+installer-installation-failed
+=> "Installation failed: '{$error}'."
+=> "Installation fehlgeschlagen: „{$error}“.";;
+
+installer-installed => "Installed" => "Installiert"
+
+installer-installing => "Installing..." => "Wird installiert..."
+
+installer-installing-bitcoind
+=> "Installing bitcoind..."
+=> "bitcoind wird installiert...";;
+
+installer-introduction => "Introduction" => "Einführung"
+
+installer-invalid-descriptor => "Invalid descriptor" => "Ungültiger Deskriptor"
+
+installer-invalid-token => "Invalid token!" => "Ungültiger Code!"
+
+installer-invitation-invalid
+=> "Invitation token is invalid or expired"
+=> "Der Einladungscode ist ungültig oder abgelaufen";;
+
+installer-invitation-token => "Invitation token" => "Einladungscode"
+
+installer-invitation-token-help
+=> "Type the invitation token you received by email"
+=> "Geben Sie den Einladungscode aus Ihrer E-Mail ein";;
+
+installer-key-alias-already-used
+=> "This alias is already used for another key"
+=> "Dieser Name wird bereits für einen anderen Schlüssel verwendet";;
+
+installer-key-alias-placeholder
+=> "E.g. My signing device"
+=> "Z. B. Mein Signiergerät";;
+
+installer-key-already-in-wallet
+=> "Fetched key has already been added to the wallet."
+=> "Der abgerufene Schlüssel ist bereits in der Wallet.";;
+
+installer-key-already-used
+=> "Key already used"
+=> "Schlüssel wird bereits verwendet";;
+
+installer-key-already-used-in-path
+=> "Key already used in this path"
+=> "Schlüssel wird in diesem Pfad bereits verwendet";;
+
+installer-key-fetch-wrong-network
+=> "Failed to fetch key. Switch network on device and retry"
+=> "Schlüssel konnte nicht abgerufen werden. Stellen Sie das Netzwerk am Gerät um und versuchen Sie es erneut";;
+
+installer-key-index => "Key @{$index}:" => "Schlüssel @{$index}:"
+
+installer-key-name-alias => "Key name (alias):" => "Name des Schlüssels:"
+
+installer-key-name-help
+=> "Give this key a friendly name. It will help you identify it later:"
+=> "Geben Sie diesem Schlüssel einen Namen. So erkennen Sie ihn später wieder:";;
+
+installer-key-path-account => "Key path account:" => "Konto im Schlüsselpfad:"
+
+installer-key-wrong-network
+=> "Fetched key does not have the correct network"
+=> "Der abgerufene Schlüssel gehört zum falschen Netzwerk";;
+
+installer-keys-inactivity
+=> "Keys can move the funds after inactivity of:"
+=> "Schlüssel können die Coins bewegen nach einer Inaktivität von:";;
+
+installer-load-previous-wallet
+=> "Load a previously used wallet"
+=> "Eine früher genutzte Wallet laden";;
+
+installer-load-shared-wallet
+=> "Load a shared wallet"
+=> "Eine geteilte Wallet laden";;
+
+installer-local-wallet-description
+=> "Use your already existing Bitcoin node or automatically install one. The Talia Desktop wallet will not connect to any external server.\n\nThis is the most private option, but the data is locally stored on this computer, only. You must perform your own backups, and share the descriptor with other people you want to be able to access the wallet."
+=> "Nutzen Sie Ihren bestehenden Bitcoin-Node oder lassen Sie automatisch einen installieren. Die Talia-Desktop-Wallet verbindet sich mit keinem externen Server.\n\nDas ist die privateste Option, aber die Daten liegen nur auf diesem Computer. Sie müssen selbst Backups erstellen und den Deskriptor mit allen teilen, die auf die Wallet zugreifen sollen.";;
+
+installer-managed-node-description
+=> "Talia Desktop will install a pruned node on your computer. You won't need to do anything except have some disk space available (~30GB required on mainnet) and wait for the initial synchronization with the network (it can take some days depending on your internet connection speed)."
+=> "Talia Desktop installiert einen Pruned Node auf Ihrem Computer. Sie brauchen nur etwas freien Speicherplatz (~30 GB im Mainnet) und müssen die erste Synchronisierung mit dem Netzwerk abwarten (das kann je nach Internetverbindung einige Tage dauern).";;
+
+installer-manual-xpub-taproot-note
+=> "Use with a Taproot-compatible device"
+=> "Mit einem Taproot-fähigen Gerät verwenden";;
+
+installer-mnemonic-backup-help
+=> "A hot key generated on this computer was used for creating this wallet. Its seed phrase needs to be backed up. \n Keep it in a safe place. Never share it with anyone."
+=> "Für diese Wallet wurde ein Hot Key verwendet, der auf diesem Computer erzeugt wurde. Seine Seed-Phrase muss gesichert werden. \n Bewahren Sie sie sicher auf. Geben Sie sie niemals weiter.";;
+
+installer-mnemonic-recovery-help
+=> "If you were using a hot key (a key stored on the computer) in your wallet, you will need to recover it from its seed phrase to be able to sign transactions again. Otherwise you can directly go the next step."
+=> "Wenn Ihre Wallet einen Hot Key (einen auf dem Computer gespeicherten Schlüssel) nutzte, müssen Sie ihn aus seiner Seed-Phrase wiederherstellen, um wieder Transaktionen signieren zu können. Sonst können Sie direkt zum nächsten Schritt gehen.";;
+
+installer-no-current-wallets
+=> "You have no current wallets"
+=> "Sie haben derzeit keine Wallets";;
+
+installer-node-setup-title
+=> "Set up connection to the Bitcoin node"
+=> "Verbindung zum Bitcoin-Node einrichten";;
+
+installer-node-type => "Node type:" => "Node-Typ:"
+
+installer-password => "Password" => "Passwort"
+
+installer-paste-descriptor => "Paste a descriptor" => "Deskriptor einfügen"
+
+installer-paste-descriptor-description
+=> "Creates a new wallet from the pasted descriptor"
+=> "Erstellt eine neue Wallet aus dem eingefügten Deskriptor";;
+
+installer-path-duplicate-sequence
+=> "No two recovery paths may become available at the very same date."
+=> "Zwei Wiederherstellungspfade dürfen nicht zum genau gleichen Zeitpunkt verfügbar werden.";;
+
+installer-path-key-source-disallowed
+=> "Path contains a key that is disallowed for this kind of path."
+=> "Der Pfad enthält einen Schlüssel, der für diese Art von Pfad nicht erlaubt ist.";;
+
+installer-path-only-cosigner-keys
+=> "A path cannot contain only cosigner keys."
+=> "Ein Pfad darf nicht nur aus Co-Signer-Schlüsseln bestehen.";;
+
+installer-port-attempts-exhausted
+=> "Exhausted attempts"
+=> "Alle Versuche aufgebraucht";;
+
+installer-primary-key => "Primary key" => "Hauptschlüssel"
+
+installer-primary-spending-option
+=> "Primary spending path:"
+=> "Hauptpfad zum Ausgeben:";;
+
+installer-read-cookie-file-failed
+=> "Failed to read cookie file: {$error}"
+=> "Cookie-Datei konnte nicht gelesen werden: {$error}";;
+
+installer-recovery-key => "Recovery key" => "Wiederherstellungsschlüssel"
+
+installer-recovery-option
+=> "Recovery path #{$number}:"
+=> "Wiederherstellungspfad Nr. {$number}:";;
+
+installer-register-descriptor-failed
+=> "Failed to register descriptor"
+=> "Deskriptor konnte nicht registriert werden";;
+
+installer-register-descriptor-help
+=> "To be used with the wallet, a signing device needs the descriptor. If the descriptor contains one or more keys imported from an external signing device, the descriptor must be registered on it. Registration confirms that the device is able to handle the policy. Registration on a device is not a substitute for backing up the descriptor."
+=> "Ein Signiergerät braucht den Deskriptor, um mit der Wallet zu arbeiten. Enthält der Deskriptor Schlüssel von einem externen Signiergerät, muss er darauf registriert werden. Die Registrierung bestätigt, dass das Gerät mit dem Setup umgehen kann. Sie ersetzt nicht das Backup des Deskriptors.";;
+
+installer-register-descriptor-optional
+=> "This step is only necessary if you are using a signing device."
+=> "Dieser Schritt ist nur nötig, wenn Sie ein Signiergerät nutzen.";;
+
+installer-register-descriptor-title
+=> "Register descriptor"
+=> "Deskriptor registrieren";;
+
+installer-registered-descriptor-checkbox
+=> "I have registered the descriptor on my device(s)"
+=> "Ich habe den Deskriptor auf meinen Geräten registriert";;
+
+installer-remote-backend-description
+=> "Use our service to instantly be ready to transact. Wizardsardine runs the infrastructure, allowing multiple computers or participants to connect and synchronize.\n\nThis is a simpler and safer option for people who want Wizardsardine to keep a backup of their descriptor. You are still in control of your keys, and Wizardsardine does not have any control over your funds, but it will be able to see your wallet's information, associated to an email address. Privacy focused users should run their own infrastructure instead."
+=> "Nutzen Sie unseren Dienst und sind Sie sofort bereit für Transaktionen. Wizardsardine betreibt die Infrastruktur, sodass sich mehrere Computer oder Beteiligte verbinden und synchronisieren können.\n\nDas ist eine einfachere und sicherere Option für alle, die möchten, dass Wizardsardine ein Backup ihres Deskriptors aufbewahrt. Sie behalten die Kontrolle über Ihre Schlüssel, und Wizardsardine hat keine Kontrolle über Ihre Coins, kann aber die Informationen Ihrer Wallet sehen, verknüpft mit einer E-Mail-Adresse. Wer viel Wert auf Privatsphäre legt, sollte eine eigene Infrastruktur betreiben.";;
+
+installer-remote-bitcoin-node-warning
+=> "Connection to a remote Bitcoin node is not supported. Insert an IP address bound to the same machine running Talia Desktop (ignore this warning if that's already the case)"
+=> "Eine Verbindung zu einem entfernten Bitcoin-Node wird nicht unterstützt. Geben Sie eine IP-Adresse des Rechners ein, auf dem Talia Desktop läuft (ignorieren Sie diesen Hinweis, wenn das bereits der Fall ist)";;
+
+installer-rpc-auth => "RPC authentication:" => "RPC-Authentifizierung:"
+
+installer-rpc-user-password => "User and password" => "Benutzer und Passwort"
+
+installer-safety-net => "Safety Net:" => "Sicherheitsnetz:"
+
+installer-safety-net-description
+=> "This adds a final recovery path containing keys from professional key agents.\n\nUse this option if you have been provided one or more Safety Net tokens."
+=> "Damit kommt ein letzter Wiederherstellungspfad mit Schlüsseln professioneller Schlüsselverwahrer hinzu.\n\nNutzen Sie diese Option, wenn Sie einen oder mehrere Sicherheitsnetz-Codes erhalten haben.";;
+
+installer-safety-net-key => "Safety Net key" => "Sicherheitsnetz-Schlüssel"
+
+installer-safety-net-token-disallowed
+=> "Safety Net tokens are not allowed for this path"
+=> "Sicherheitsnetz-Codes sind für diesen Pfad nicht erlaubt";;
+
+installer-seed-key-not-in-descriptor
+=> "The descriptor does not use a key derived from this seed phrase"
+=> "Der Deskriptor nutzt keinen Schlüssel aus dieser Seed-Phrase";;
+
+installer-select-device-register
+=> "Select signing device to register descriptor on:"
+=> "Wählen Sie das Signiergerät, auf dem der Deskriptor registriert werden soll:";;
+
+installer-select-device-register-if-needed
+=> "If necessary, please select the signing device to register descriptor on:"
+=> "Wählen Sie bei Bedarf das Signiergerät, auf dem der Deskriptor registriert werden soll:";;
+
+installer-select-key-source => "Select key source" => "Schlüsselquelle wählen"
+
+installer-sequence-value-warning
+=> "Value must be greater than 0 and lower than 65535"
+=> "Der Wert muss größer als 0 und kleiner als 65535 sein";;
+
+installer-serialize-daemon-config-failed
+=> "Failed to serialize daemon config: {$error}"
+=> "Daemon-Konfiguration konnte nicht gespeichert werden: {$error}";;
+
+installer-serialize-gui-config-failed
+=> "Failed to serialize GUI config: {$error}"
+=> "GUI-Konfiguration konnte nicht gespeichert werden: {$error}";;
+
+installer-share-xpubs-title
+=> "Share your extended public keys (xpubs)"
+=> "Teilen Sie Ihre erweiterten öffentlichen Schlüssel (xpubs)";;
+
+installer-shared-wallet-help
+=> "If you received an invitation to join a shared wallet"
+=> "Wenn Sie eine Einladung zu einer geteilten Wallet erhalten haben";;
+
+installer-start-bitcoin-node
+=> "Start Bitcoin full node"
+=> "Bitcoin Full Node starten";;
+
+installer-start-daemon-failed
+=> "Failed to start Liana daemon: {$error}"
+=> "Liana-Daemon konnte nicht gestartet werden: {$error}";;
+
+installer-started => "Started" => "Gestartet"
+
+installer-starting => "Starting..." => "Wird gestartet..."
+
+installer-stop-daemon-failed
+=> "Failed to stop Liana daemon: {$error}"
+=> "Liana-Daemon konnte nicht gestoppt werden: {$error}";;
+
+installer-store-mnemonic-failed
+=> "Failed to store seed phrase: {$error}"
+=> "Seed-Phrase konnte nicht gespeichert werden: {$error}";;
+
+installer-switch-account-help
+=> "Switch account if you already use the same device in other configurations"
+=> "Wechseln Sie das Konto, wenn Sie dasselbe Gerät bereits in anderen Setups nutzen";;
+
+installer-talia-add-heir => "Add an heir" => "Erben hinzufügen"
+
+installer-talia-browser-done
+=> "Your keys are on their way to Talia Desktop. You can close this tab."
+=> "Ihre Schlüssel sind auf dem Weg zu Talia Desktop. Sie können diesen Tab schließen.";;
+
+installer-talia-browser-title => "Talia Desktop" => "Talia Desktop"
+
+installer-talia-browser-wrong-request
+=> "This link is not for the current request. Start again from Talia Desktop."
+=> "Dieser Link gehört nicht zur aktuellen Anfrage. Starten Sie erneut in Talia Desktop.";;
+
+installer-talia-cosigner => "21st Capital co-signer" => "21st Capital Co-Signer"
+
+installer-talia-event-heir => "After 8 to 15 months*" => "Nach 8 bis 15 Monaten*"
+
+installer-talia-event-rescue => "After 15 months*" => "Nach 15 Monaten*"
+
+installer-talia-explain-2-2
+=> "Both keys are needed to spend, so losing one would lock your coins. A backup gets them back: an heir's key or the 21st Capital Rescue Key. Every vault needs at least one."
+=> "Zum Ausgeben braucht es beide Schlüssel. Geht einer verloren, wären Ihre Coins gesperrt. Ein Backup holt sie zurück: der Schlüssel eines Erben oder der 21st Capital Rescue-Schlüssel. Jeder Vault braucht mindestens eines davon.";;
+
+installer-talia-explain-multi
+=> "You can add heirs, each with their own key that works after 8 to 15 months, and the 21st Capital Rescue Key, which works after 15 months. Every vault needs at least one of them as a backup."
+=> "Sie können Erben hinzufügen, jeder mit einem eigenen Schlüssel, der nach 8 bis 15 Monaten gilt, und den 21st Capital Rescue-Schlüssel, der nach 15 Monaten gilt. Jeder Vault braucht mindestens einen davon als Backup.";;
+
+installer-talia-explain-single
+=> "The Rescue Key works after 15 months. You can also add heirs, each with their own key that works after 8 to 15 months."
+=> "Der Rescue-Schlüssel gilt nach 15 Monaten. Sie können auch Erben hinzufügen, jeder mit einem eigenen Schlüssel, der nach 8 bis 15 Monaten gilt.";;
+
+installer-talia-footnote-multi
+=> "*Counted for each coin from the day it last moved. Heirs and the Rescue Key are chosen in the next step."
+=> "*Für jeden Coin ab dem Tag gezählt, an dem er zuletzt bewegt wurde. Erben und den Rescue-Schlüssel wählen Sie im nächsten Schritt.";;
+
+installer-talia-footnote-single
+=> "*Counted for each coin from the day it last moved. Heirs are chosen in the next step."
+=> "*Für jeden Coin ab dem Tag gezählt, an dem er zuletzt bewegt wurde. Erben wählen Sie im nächsten Schritt.";;
+
+installer-talia-get-keys
+=> "Get my 21st Capital keys"
+=> "Meine 21st-Capital-Schlüssel holen";;
+
+installer-talia-heir-key => "Heir key" => "Schlüssel des Erben"
+
+installer-talia-heir-key-number
+=> "Heir {$number} key"
+=> "Schlüssel von Erbe {$number}";;
+
+installer-talia-heir-number => "Heir {$number}" => "Erbe {$number}"
+
+installer-talia-heir-wait => "Works after" => "Gilt nach"
+
+installer-talia-heirs => "Heirs" => "Erben"
+
+installer-talia-heirs-caption
+=> "Each heir has their own key. It works only for coins you have not moved for the months you choose."
+=> "Jeder Erbe hat einen eigenen Schlüssel. Er gilt nur für Coins, die Sie für die gewählten Monate nicht bewegt haben.";;
+
+installer-talia-holder-21c => "21st Capital" => "21st Capital"
+
+installer-talia-holder-own => "Your own key" => "Ihr eigener Schlüssel"
+
+installer-talia-keys-already-used
+=> "One of these keys is already one of your keys in this vault. Contact us."
+=> "Einer dieser Schlüssel ist bereits einer Ihrer Schlüssel in diesem Vault. Kontaktieren Sie uns.";;
+
+installer-talia-keys-answer-rescue-first
+=> "Answer the Rescue Key question first."
+=> "Beantworten Sie zuerst die Frage zum Rescue-Schlüssel.";;
+
+installer-talia-keys-bad-answer
+=> "The answer from 21st Capital could not be read. Try again, or contact us."
+=> "Die Antwort von 21st Capital konnte nicht gelesen werden. Versuchen Sie es erneut oder kontaktieren Sie uns.";;
+
+installer-talia-keys-bad-setting
+=> "The setting {$name} is not a valid https address."
+=> "Die Einstellung {$name} ist keine gültige https-Adresse.";;
+
+installer-talia-keys-caption
+=> "Sign in on the 21st Capital website with two-factor. If your onboarding fee is still open, you can pay it there. Your keys then come back to Talia Desktop on their own."
+=> "Melden Sie sich auf der Website von 21st Capital mit Zwei-Faktor-Authentifizierung an. Ist Ihre Onboarding-Gebühr noch offen, können Sie sie dort bezahlen. Ihre Schlüssel kommen dann von selbst zu Talia Desktop.";;
+
+installer-talia-keys-change-shape
+=> "Change the vault shape"
+=> "Vault-Aufbau ändern";;
+
+installer-talia-keys-check-failed
+=> "The 21st Capital key check did not pass. Contact us."
+=> "Die Prüfung der 21st-Capital-Schlüssel ist fehlgeschlagen. Kontaktieren Sie uns.";;
+
+installer-talia-keys-done
+=> "Your 21st Capital keys are in."
+=> "Ihre 21st-Capital-Schlüssel sind da.";;
+
+installer-talia-keys-invalid-code
+=> "That sign-in has expired or was already used. Try again."
+=> "Diese Anmeldung ist abgelaufen oder wurde schon verwendet. Versuchen Sie es erneut.";;
+
+installer-talia-keys-listen-failed
+=> "Talia Desktop could not wait for your browser. Try again."
+=> "Talia Desktop konnte nicht auf Ihren Browser warten. Versuchen Sie es erneut.";;
+
+installer-talia-keys-missing
+=> "A 21st Capital key this vault needs did not arrive. Contact us."
+=> "Ein Schlüssel von 21st Capital, den dieser Vault braucht, ist nicht angekommen. Kontaktieren Sie uns.";;
+
+installer-talia-keys-network-unsupported
+=> "21st Capital keys are available on Bitcoin and Testnet4 only."
+=> "Schlüssel von 21st Capital gibt es nur für Bitcoin und Testnet4.";;
+
+installer-talia-keys-open-again => "Open the page again" => "Seite erneut öffnen"
+
+installer-talia-keys-timeout
+=> "No answer from the website after 60 minutes. Try again."
+=> "Nach 60 Minuten keine Antwort von der Website. Versuchen Sie es erneut.";;
+
+installer-talia-keys-title => "21st Capital keys" => "21st-Capital-Schlüssel"
+
+installer-talia-keys-too-many-tries
+=> "Too many tries. Wait a minute, then try again."
+=> "Zu viele Versuche. Warten Sie eine Minute und versuchen Sie es dann erneut.";;
+
+installer-talia-keys-unreachable
+=> "Could not reach 21st Capital. Check your connection and try again."
+=> "21st Capital ist nicht erreichbar. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.";;
+
+installer-talia-keys-waiting
+=> "Finish on the 21st Capital website. Talia Desktop is waiting for your keys."
+=> "Schließen Sie den Vorgang auf der Website von 21st Capital ab. Talia Desktop wartet auf Ihre Schlüssel.";;
+
+installer-talia-keys-wrong-network
+=> "These keys are for {$theirs}, but this wallet is on {$ours}."
+=> "Diese Schlüssel sind für {$theirs}, diese Wallet ist aber auf {$ours}.";;
+
+installer-talia-lane-heir => "Heir" => "Erbe"
+
+installer-talia-lane-primary-key => "Primary Key" => "Hauptschlüssel"
+
+installer-talia-lane-primary-keys => "Primary Keys" => "Hauptschlüssel"
+
+installer-talia-lane-rescue => "Rescue" => "Rescue"
+
+installer-talia-legend-21c-keys => "21st Capital keys" => "21st-Capital-Schlüssel"
+
+installer-talia-legend-heir-keys => "Heir keys" => "Schlüssel der Erben"
+
+installer-talia-legend-your-keys => "Your keys" => "Ihre Schlüssel"
+
+installer-talia-multi-2-2 => "Multi-Signature, 2 of 2" => "Multi-Signatur, 2 von 2"
+
+installer-talia-multi-2-2-description
+=> "Two keys: you hold one, and the second is held by 21st Capital or by you. Both signatures are needed to spend."
+=> "Zwei Schlüssel: Einen halten Sie, den zweiten hält 21st Capital oder Sie selbst. Zum Ausgeben braucht es beide Signaturen.";;
+
+installer-talia-multi-2-3 => "Multi-Signature, 2 of 3" => "Multi-Signatur, 2 von 3"
+
+installer-talia-multi-2-3-description
+=> "Three keys: you hold two, and the third is held by 21st Capital or by you. Any two signatures spend."
+=> "Drei Schlüssel: Zwei halten Sie, den dritten hält 21st Capital oder Sie selbst. Zwei beliebige Signaturen genügen zum Ausgeben.";;
+
+installer-talia-primary-keys => "Primary keys" => "Hauptschlüssel"
+
+installer-talia-rescue-caption
+=> "21st Capital holds the Rescue Key. We can use it only when you ask for a rescue and send us your vault's backup file."
+=> "21st Capital hält den Rescue-Schlüssel. Wir können ihn nur nutzen, wenn Sie eine Rettung anfordern und uns die Backup-Datei Ihres Vaults senden.";;
+
+installer-talia-rescue-key
+=> "21st Capital Rescue Key"
+=> "21st Capital Rescue-Schlüssel";;
+
+installer-talia-rescue-no
+=> "No, skip the Rescue Key"
+=> "Nein, ohne Rescue-Schlüssel";;
+
+installer-talia-rescue-opens
+=> "It works only for coins you have not moved for {$months} months."
+=> "Er gilt nur für Coins, die Sie {$months} Monate lang nicht bewegt haben.";;
+
+installer-talia-rescue-required
+=> "Rescue Key required"
+=> "Rescue-Schlüssel erforderlich";;
+
+installer-talia-rescue-required-2-2
+=> "Both keys are needed to spend. If you lose one, a backup gets your coins back. Without an heir, that backup is the 21st Capital Rescue Key. Add an heir to make it optional."
+=> "Zum Ausgeben braucht es beide Schlüssel. Geht einer verloren, holt ein Backup Ihre Coins zurück. Ohne Erben ist dieses Backup der 21st Capital Rescue-Schlüssel. Fügen Sie einen Erben hinzu, um ihn optional zu machen.";;
+
+installer-talia-rescue-required-2-3
+=> "Every vault needs a backup in case keys are lost. Without an heir, that backup is the 21st Capital Rescue Key. Add an heir to make it optional."
+=> "Jeder Vault braucht ein Backup, falls Schlüssel verloren gehen. Ohne Erben ist dieses Backup der 21st Capital Rescue-Schlüssel. Fügen Sie einen Erben hinzu, um ihn optional zu machen.";;
+
+installer-talia-rescue-single
+=> "Your one key spends on its own. If you lose it, the 21st Capital Rescue Key gets your coins back."
+=> "Ihr einziger Schlüssel gibt allein aus. Geht er verloren, holt der 21st Capital Rescue-Schlüssel Ihre Coins zurück.";;
+
+installer-talia-rescue-yes
+=> "Yes, include the Rescue Key"
+=> "Ja, mit Rescue-Schlüssel";;
+
+installer-talia-single
+=> "Single Signature with rescue"
+=> "Einzelsignatur mit Rescue";;
+
+installer-talia-single-description
+=> "Your one key spends on its own. If you lose it, the 21st Capital Rescue Key gets your coins back. It works only for coins you have not moved for 15 months."
+=> "Ihr einziger Schlüssel gibt allein aus. Geht er verloren, holt der 21st Capital Rescue-Schlüssel Ihre Coins zurück. Er gilt nur für Coins, die Sie 15 Monate lang nicht bewegt haben.";;
+
+installer-talia-slot-pending
+=> "Comes with Get my 21st Capital keys"
+=> "Kommt mit „Meine 21st-Capital-Schlüssel holen“";;
+
+installer-talia-who-holds-second
+=> "Who holds the second key?"
+=> "Wer hält den zweiten Schlüssel?";;
+
+installer-talia-who-holds-third
+=> "Who holds the third key?"
+=> "Wer hält den dritten Schlüssel?";;
+
+installer-talia-your-extra-key => "Your extra key" => "Ihr zusätzlicher Schlüssel"
+
+installer-talia-your-key => "Your key" => "Ihr Schlüssel"
+
+installer-talia-your-key-number => "Your key {$number}" => "Ihr Schlüssel {$number}"
+
+installer-template-custom-primary => "Primary keys" => "Hauptschlüssel"
+
+installer-template-custom-recovery
+=> "Recovery keys"
+=> "Wiederherstellungsschlüssel";;
+
+installer-template-event-receipt => "Receipt of funds" => "Eingang der Coins"
+
+installer-template-event-timelock
+=> "After some time* of wallet inactivity"
+=> "Nach einer gewissen Zeit* ohne Wallet-Aktivität";;
+
+installer-template-footnote
+=> "*The time range (timelock) for the activation of keys can be configured in the next step."
+=> "*Den Zeitraum (Timelock), nach dem die Schlüssel gelten, legen Sie im nächsten Schritt fest.";;
+
+installer-template-policy-primary
+=> "Primary spending path"
+=> "Hauptpfad zum Ausgeben";;
+
+installer-template-policy-recovery
+=> "Recovery spending path"
+=> "Wiederherstellungspfad zum Ausgeben";;
+
+installer-the-descriptor => "The descriptor" => "Der Deskriptor"
+
+installer-the-descriptor-label => "The descriptor:" => "Der Deskriptor:"
+
+installer-threshold => "Threshold:" => "Schwelle:"
+
+installer-threshold-keys
+=> "{ $total ->\n    [one] {$threshold} out of 1 key\n   *[other] {$threshold} out of {$total} keys\n}"
+=> "{ $total ->\n    [one] {$threshold} von 1 Schlüssel\n   *[other] {$threshold} von {$total} Schlüsseln\n}";;
+
+installer-token-type-disallowed
+=> "Token type not allowed in this path"
+=> "Diese Code-Art ist in diesem Pfad nicht erlaubt";;
+
+installer-use-liana-connect => "Use Liana Connect" => "Liana Connect nutzen"
+
+installer-use-own-node => "Use your own node" => "Eigenen Node nutzen"
+
+installer-user => "User" => "Benutzer"
+
+installer-wallet-alias => "Wallet alias" => "Name der Wallet"
+
+installer-wallet-alias-too-long
+=> "Wallet alias is too long."
+=> "Der Name der Wallet ist zu lang.";;
+
+installer-xpub-invalid
+=> "Invalid extended public key"
+=> "Ungültiger erweiterter öffentlicher Schlüssel";;
+
+installer-xpub-origin-missing => "Origin missing" => "Herkunft fehlt"
+
+installer-xpub-taproot-note
+=> "Taproot selected. Use an xpub from a compatible"
+=> "Taproot ist gewählt. Nutzen Sie eine xpub von einem kompatiblen";;
+
+installer-xpub-taproot-note-device => "device" => "Gerät"
+
+installer-xpub-wrong-derivation-path
+=> "Wrong derivation path"
+=> "Falscher Ableitungspfad";;
+
+installer-xpub-wrong-network => "Wrong network" => "Falsches Netzwerk"
+
+label-edit => "Edit label" => "Label bearbeiten"
+
+label-external-output => "(External output)" => "(Externer Ausgang)"
+
+label-inherited-address
+=> "This label was inherited from the one assigned to its address. You can change it anytime."
+=> "Dieses Label stammt von seiner Adresse. Sie können es jederzeit ändern.";;
+
+label-inherited-funding
+=> "This label was inherited from the coin spent to create it. You can change it anytime."
+=> "Dieses Label stammt von dem Coin, mit dem er erstellt wurde. Sie können es jederzeit ändern.";;
+
+label-inherited-payment
+=> "This label was inherited from the one assigned to its payment. You can change it anytime."
+=> "Dieses Label stammt von seiner Zahlung. Sie können es jederzeit ändern.";;
+
+label-inherited-transaction
+=> "This label was inherited from the transaction that created this change. You can change it anytime."
+=> "Dieses Label stammt von der Transaktion, die dieses Wechselgeld erzeugt hat. Sie können es jederzeit ändern.";;
+
+label-invalid-length
+=> "Invalid label length, must be 80 bytes or less"
+=> "Ungültige Länge des Labels, höchstens 80 Bytes";;
+
+label-label => "Label" => "Label"
+
+launcher-add-existing-wallet
+=> "Add an existing Talia Desktop wallet"
+=> "Bestehende Talia-Desktop-Wallet hinzufügen";;
+
+launcher-config-descriptor-origin-error
+=> "There is an issue with the configuration for this network. You most likely use a descriptor containing one or more extended public key(s) without origin. Liana v0.2 and later only support extended public keys with origins. Please migrate your funds using Liana v0.1."
+=> "Mit der Konfiguration für dieses Netzwerk stimmt etwas nicht. Wahrscheinlich nutzen Sie einen Deskriptor mit erweiterten öffentlichen Schlüsseln ohne Herkunft. Liana ab v0.2 unterstützt nur erweiterte öffentliche Schlüssel mit Herkunft. Bitte übertragen Sie Ihre Coins mit Liana v0.1.";;
+
+launcher-create-new-wallet
+=> "Create a new Talia Desktop wallet"
+=> "Neue Talia-Desktop-Wallet erstellen";;
+
+launcher-default-wallet-name
+=> "My Talia Desktop {$network} wallet"
+=> "Meine Talia-Desktop-Wallet ({$network})";;
+
+launcher-delete-all-data-confirmation
+=> "Are you sure you want to delete the configuration and all associated data for the wallet {$wallet}?"
+=> "Möchten Sie die Konfiguration und alle zugehörigen Daten der Wallet {$wallet} wirklich löschen?";;
+
+launcher-delete-connect-all-members
+=> "Also permanently delete this wallet from Liana Connect (for all members)."
+=> "Diese Wallet auch dauerhaft aus Liana Connect löschen (für alle Mitglieder).";;
+
+launcher-delete-connect-disassociate
+=> "Also disassociate {$email} from this Liana Connect wallet."
+=> "{$email} auch von dieser Liana-Connect-Wallet trennen.";;
+
+launcher-delete-local-config-confirmation
+=> "Are you sure you want to delete locally the configuration for the wallet {$wallet}?"
+=> "Möchten Sie die Konfiguration der Wallet {$wallet} auf diesem Computer wirklich löschen?";;
+
+launcher-delete-node-not-affected
+=> "(If you are using a Talia Desktop managed Bitcoin node, it will not be affected by this action.)"
+=> "(Ein von Talia Desktop verwalteter Bitcoin-Node ist davon nicht betroffen.)";;
+
+launcher-delete-node-not-affected-this-network
+=> "(The Talia Desktop managed Bitcoin node for this network will not be affected by this action.)"
+=> "(Der von Talia Desktop verwaltete Bitcoin-Node für dieses Netzwerk ist davon nicht betroffen.)";;
+
+launcher-delete-title
+=> "Delete configuration for Liana-{$checksum}"
+=> "Konfiguration für Liana-{$checksum} löschen";;
+
+launcher-delete-title-alias
+=> "Delete configuration for {$alias} (Liana-{$checksum})"
+=> "Konfiguration für {$alias} (Liana-{$checksum}) löschen";;
+
+launcher-delete-warning-irreversible
+=> "WARNING: This cannot be undone."
+=> "ACHTUNG: Das lässt sich nicht rückgängig machen.";;
+
+launcher-read-daemon-config-failed
+=> "Failed to read daemon configuration file in the directory: {$path}"
+=> "Daemon-Konfigurationsdatei im Verzeichnis konnte nicht gelesen werden: {$path}";;
+
+launcher-read-gui-config-failed
+=> "Failed to read GUI configuration file in the directory: {$path}"
+=> "GUI-Konfigurationsdatei im Verzeichnis konnte nicht gelesen werden: {$path}";;
+
+launcher-unexpected-error => "Unexpected {$error}" => "Unerwarteter Fehler: {$error}"
+
+launcher-wallet-deleted
+=> "Wallet successfully deleted"
+=> "Wallet erfolgreich gelöscht";;
+
+launcher-wallet-id-not-found
+=> "Wallet {$wallet_id} not found"
+=> "Wallet {$wallet_id} nicht gefunden";;
+
+launcher-wallet-not-found => "Wallet not found" => "Wallet nicht gefunden"
+
+launcher-welcome => "Welcome" => "Willkommen"
+
+launcher-welcome-back => "Welcome back" => "Willkommen zurück"
+
+lianalite-auth-sent
+=> "An authentication was sent to your email:"
+=> "Eine Anmeldung wurde an Ihre E-Mail gesendet:";;
+
+lianalite-token-expired
+=> "Token is expired or is invalid"
+=> "Der Code ist abgelaufen oder ungültig";;
+
+lianalite-token-has-expired-or-invalid
+=> "Token has expired or is invalid"
+=> "Der Code ist abgelaufen oder ungültig";;
+
+lianalite-token-invalid => "Token is not valid" => "Der Code ist ungültig"
+
+lianalite-wallet-deleted
+=> "This wallet was deleted by its creator for all participants and cannot be opened. To access it again, restore it using a backup file or the wallet descriptor."
+=> "Diese Wallet wurde von ihrem Ersteller für alle Beteiligten gelöscht und lässt sich nicht öffnen. Um wieder darauf zuzugreifen, stellen Sie sie aus einer Backup-Datei oder dem Wallet-Deskriptor wieder her.";;
+
+loader-connecting-daemon => "Connecting to daemon..." => "Verbindung zum Daemon..."
+
+loader-failed
+=> "Talia Desktop failed to start"
+=> "Talia Desktop konnte nicht starten";;
+
+loader-failed-bitcoind
+=> "Talia Desktop failed to start, please check if bitcoind is running"
+=> "Talia Desktop konnte nicht starten. Bitte prüfen Sie, ob bitcoind läuft";;
+
+loader-internal-daemon-error
+=> "Error while starting the internal daemon"
+=> "Fehler beim Starten des internen Daemons";;
+
+loader-progress => "Progress {$progress}%" => "Fortschritt {$progress} %"
+
+loader-starting-daemon => "Starting daemon..." => "Daemon wird gestartet..."
+
+loader-sync-progress-1
+=> "Bitcoin Core is synchronising the blockchain. A full synchronisation typically takes a few days and is resource-intensive. Once the initial synchronisation is done, the next ones will be much faster."
+=> "Bitcoin Core synchronisiert die Blockchain. Eine vollständige Synchronisierung dauert meist einige Tage und beansprucht den Computer stark. Danach geht jede weitere Synchronisierung viel schneller.";;
+
+loader-sync-progress-2
+=> "Bitcoin Core is synchronising the blockchain. This will take a while, depending on the last time it was done, your internet connection, and your computer performance."
+=> "Bitcoin Core synchronisiert die Blockchain. Das dauert eine Weile, je nachdem, wann es zuletzt geschah, wie schnell Ihre Internetverbindung und wie leistungsfähig Ihr Computer ist.";;
+
+loader-sync-progress-3
+=> "Bitcoin Core is synchronising the blockchain. This may take a few minutes, depending on the last time it was done, your internet connection, and your computer performance."
+=> "Bitcoin Core synchronisiert die Blockchain. Das kann einige Minuten dauern, je nachdem, wann es zuletzt geschah, wie schnell Ihre Internetverbindung und wie leistungsfähig Ihr Computer ist.";;
+
+menu-coins-utxos => "Coins/UTXOs" => "Coins/UTXOs"
+
+menu-dashboard => "Dashboard" => "Übersicht"
+
+menu-drafts-approvals => "Drafts & approvals" => "Entwürfe & Freigaben"
+
+menu-receive => "Receive" => "Empfangen"
+
+menu-send => "Send" => "Senden"
+
+menu-settings => "Settings" => "Einstellungen"
+
+menu-transactions => "Transactions" => "Transaktionen"
+
+network-coins-have => ", COINS HAVE{ \" \" }" => ", COINS HABEN{ \" \" }"
+
+network-no-value => "NO VALUE" => "KEINEN WERT"
+
+network-this-is-a => "THIS IS A{ \" \" }" => "DIES IST EINE{ \" \" }"
+
+network-wallet => "{$network} WALLET" => "{$network}-WALLET"
+
+node-third-party-warning-body
+=> "A third-party node can show you incorrect balances and transactions."
+=> "Ein fremder Node kann Ihnen falsche Guthaben und Transaktionen anzeigen.";;
+
+node-third-party-warning-title
+=> "Only connect to a node you control."
+=> "Verbinden Sie sich nur mit einem Node, den Sie kontrollieren.";;
+
+pill-active => "Active" => "Aktiv"
+
+pill-always-available => "Always available" => "Immer verfügbar"
+
+pill-available => "Available" => "Verfügbar"
+
+pill-available-compact => "Avail." => "Verf."
+
+pill-batch => "Batch" => "Sammel"
+
+pill-batch-tooltip
+=> "This transaction contains multiple payments"
+=> "Diese Transaktion enthält mehrere Zahlungen";;
+
+pill-confirmed => "Confirmed" => "Bestätigt"
+
+pill-confirmed-tooltip
+=> "This transaction has been included in a block"
+=> "Diese Transaktion ist in einem Block enthalten";;
+
+pill-deprecated => "Deprecated" => "Veraltet"
+
+pill-deprecated-tooltip
+=> "This transaction cannot be included in the blockchain anymore."
+=> "Diese Transaktion kann nicht mehr in die Blockchain aufgenommen werden.";;
+
+pill-draft => "Draft" => "Entwurf"
+
+pill-first-recovery-in
+=> "First recovery path available in {$units}"
+=> "Erster Wiederherstellungspfad verfügbar in {$units}";;
+
+pill-first-recovery-today
+=> "First recovery path available today"
+=> "Erster Wiederherstellungspfad heute verfügbar";;
+
+pill-key-cosigner => "Cosigner" => "Co-Signer"
+
+pill-key-cosigner-tooltip
+=> "Professional third party co-signing key"
+=> "Co-Signer-Schlüssel eines professionellen Dritten";;
+
+pill-key-external => "External" => "Extern"
+
+pill-key-external-tooltip => "Key held by third parties" => "Schlüssel bei Dritten"
+
+pill-key-internal => "Internal" => "Intern"
+
+pill-key-internal-tooltip
+=> "Key held by your organization"
+=> "Schlüssel in Ihrer Organisation";;
+
+pill-key-safety-net => "Safety Net" => "Sicherheitsnetz"
+
+pill-key-safety-net-tooltip
+=> "Professional third party recovery key"
+=> "Wiederherstellungsschlüssel eines professionellen Dritten";;
+
+pill-not-in-policy => "Not in policy yet" => "Noch nicht im Setup"
+
+pill-payjoin => "Payjoin" => "Payjoin"
+
+pill-payjoin-tooltip
+=> "This transaction also spends coins that are not from this wallet"
+=> "Diese Transaktion gibt auch Coins aus, die nicht aus dieser Wallet stammen";;
+
+pill-recovery-available-tooltip
+=> "Recovery path(s) already available"
+=> "Wiederherstellungspfad(e) bereits verfügbar";;
+
+pill-recovery-tooltip
+=> "This transaction is using a recovery path"
+=> "Diese Transaktion nutzt einen Wiederherstellungspfad";;
+
+pill-rescan-progress => "Rescan... {$progress}%" => "Scan... {$progress} %"
+
+pill-signed => "To broadcast" => "Zu senden"
+
+pill-signed-tooltip
+=> "This transaction is signed & ready to broadcast"
+=> "Diese Transaktion ist signiert und bereit zum Senden";;
+
+pill-spent => "Spent" => "Ausgegeben"
+
+pill-spent-tooltip
+=> "The transaction was included in the blockchain."
+=> "Die Transaktion wurde in die Blockchain aufgenommen.";;
+
+pill-timelocked => "Timelocked" => "Timelock aktiv"
+
+pill-timelocked-tooltip
+=> "This recovery transaction is signed but can't be broadcast before its timelock expires"
+=> "Diese Wiederherstellungstransaktion ist signiert, kann aber erst nach Ablauf ihres Timelocks gesendet werden";;
+
+pill-to-approve => "To approve" => "Freizugeben"
+
+pill-today => "Today" => "Heute"
+
+pill-unconfirmed => "Unconfirmed" => "Unbestätigt"
+
+pill-unconfirmed-tooltip
+=> "Do not treat this as a payment until it is confirmed"
+=> "Betrachten Sie dies erst als Zahlung, wenn es bestätigt ist";;
+
+pill-unsigned => "Unsigned" => "Nicht signiert"
+
+pill-unsigned-tooltip
+=> "This transaction is missing signature(s)"
+=> "Dieser Transaktion fehlen Signaturen";;
+
+pill-used-in-spending-paths
+=> "{ $count ->\n    [one] Used in 1 spending path\n   *[other] Used in {$count} spending paths\n}"
+=> "{ $count ->\n    [one] In 1 Ausgabepfad verwendet\n   *[other] In {$count} Ausgabepfaden verwendet\n}";;
+
+pill-ws-admin => "WS Admin" => "WS-Admin"
+
+pill-xpub-not-set => "Not set" => "Nicht festgelegt"
+
+pill-xpub-set => "✓ Set" => "✓ Festgelegt"
+
+policy-block-duration
+=> "{$blocks} blocks (~{$duration})"
+=> "{$blocks} Blöcke (~{$duration})";;
+
+policy-by => "by" => "von"
+
+policy-inactive-for
+=> "can spend coins inactive for"
+=> "kann Coins ausgeben, die unbewegt sind seit";;
+
+policy-out-of-by => "out of {$count} by" => "von {$count} durch"
+
+policy-primary-path
+=> "can always spend this wallet's funds (primary path)"
+=> "kann die Coins dieser Wallet jederzeit ausgeben (Hauptpfad)";;
+
+policy-recovery-path
+=> "(recovery path #{$number})"
+=> "(Wiederherstellungspfad Nr. {$number})";;
+
+policy-safety-net-path => "(Safety Net path)" => "(Sicherheitsnetz-Pfad)"
+
+policy-signatures
+=> "{ $count ->\n    [one] 1 signature\n   *[other] {$count} signatures\n}"
+=> "{ $count ->\n    [one] 1 Signatur\n   *[other] {$count} Signaturen\n}";;
+
+policy-wallet-policy => "The wallet policy:" => "Das Setup der Wallet:"
+
+psbt-already-signed-by => ", already signed by" => ", bereits signiert von"
+
+psbt-broadcast-conflicts-one
+=> "The following transaction is spending one or more inputs from the transaction to be broadcast and will be dropped, along with any other transactions that depend on it:"
+=> "Die folgende Transaktion gibt einen oder mehrere Eingänge der zu sendenden Transaktion aus und wird verworfen, ebenso alle Transaktionen, die von ihr abhängen:";;
+
+psbt-broadcast-conflicts-some
+=> "The following transactions are spending one or more inputs from the transaction to be broadcast and will be dropped, along with any other transactions that depend on them:"
+=> "Die folgenden Transaktionen geben einen oder mehrere Eingänge der zu sendenden Transaktion aus und werden verworfen, ebenso alle Transaktionen, die von ihnen abhängen:";;
+
+psbt-broadcast-invalidates-one
+=> "WARNING: Broadcasting this transaction will invalidate a pending payment."
+=> "ACHTUNG: Wenn Sie diese Transaktion senden, wird eine ausstehende Zahlung ungültig.";;
+
+psbt-broadcast-invalidates-some
+=> "WARNING: Broadcasting this transaction will invalidate some pending payments."
+=> "ACHTUNG: Wenn Sie diese Transaktion senden, werden einige ausstehende Zahlungen ungültig.";;
+
+psbt-broadcast-transaction => "Broadcast the transaction" => "Transaktion senden"
+
+psbt-change => "Change" => "Wechselgeld"
+
+psbt-coins-spent
+=> "{ $count ->\n    [one] 1 coin spent\n   *[other] {$count} coins spent\n}"
+=> "{ $count ->\n    [one] 1 Coin ausgegeben\n   *[other] {$count} Coins ausgegeben\n}";;
+
+psbt-delete-success
+=> "Successfully deleted this transaction."
+=> "Diese Transaktion wurde gelöscht.";;
+
+psbt-delete-this => "Delete this PSBT" => "Dieses PSBT löschen"
+
+psbt-device-sign-failed
+=> "Device failed to sign"
+=> "Das Gerät konnte nicht signieren";;
+
+psbt-fully-signed-by => "Signed by" => "Signiert von"
+
+psbt-payments
+=> "{ $count ->\n    [one] 1 payment\n   *[other] {$count} payments\n}"
+=> "{ $count ->\n    [one] 1 Zahlung\n   *[other] {$count} Zahlungen\n}";;
+
+psbt-requires-signatures
+=> "{ $count ->\n    [one] Requires 1 more signature from\n   *[other] Requires {$count} more signatures from\n}"
+=> "{ $count ->\n    [one] Braucht noch 1 Signatur von\n   *[other] Braucht noch {$count} Signaturen von\n}";;
+
+psbt-save-transaction => "Save this transaction" => "Diese Transaktion speichern"
+
+psbt-select-signing-device
+=> "Select signing device to sign with:"
+=> "Signiergerät zum Signieren wählen:";;
+
+psbt-sign-save-before-export
+=> "Sign or save the transaction first to enable export"
+=> "Signieren oder speichern Sie die Transaktion zuerst, um sie zu exportieren";;
+
+psbt-signatures => "Signatures" => "Signaturen"
+
+psbt-signatures-count => "{$count} of {$threshold}" => "{$count} von {$threshold}"
+
+psbt-transaction-broadcast
+=> "Transaction is broadcast"
+=> "Transaktion ist gesendet";;
+
+psbt-transaction-saved => "Transaction is saved" => "Transaktion ist gespeichert"
+
+psbts-hide-confirmed
+=> "Hide confirmed transactions"
+=> "Bestätigte Transaktionen ausblenden";;
+
+psbts-signatures-collected
+=> "{ $threshold ->\n    [one] {$count}/{$threshold} signature collected\n   *[other] {$count}/{$threshold} signatures collected\n}"
+=> "{ $threshold ->\n    [one] {$count}/{$threshold} Signatur gesammelt\n   *[other] {$count}/{$threshold} Signaturen gesammelt\n}";;
+
+receive-address-label-placeholder
+=> "Enter an address label"
+=> "Label für die Adresse eingeben";;
+
+receive-derivation-index => "Derivation index:" => "Ableitungsindex:"
+
+receive-generate-new-address-help
+=> "Always generate a new address for each deposit."
+=> "Erzeugen Sie für jede Einzahlung immer eine neue Adresse.";;
+
+receive-generating-address => "Generating address ..." => "Adresse wird erzeugt ..."
+
+receive-generating-address-title => "Generating address" => "Adresse wird erzeugt"
+
+receive-previous-addresses
+=> "Previously generated addresses still awaiting deposit"
+=> "Früher erzeugte Adressen, die noch auf eine Einzahlung warten";;
+
+receive-select-device
+=> "Select device to verify address on:"
+=> "Gerät zum Prüfen der Adresse wählen:";;
+
+receive-specter-diy-tooltip => "For Specter DIY devices" => "Für Specter-DIY-Geräte"
+
+receive-verify-address => "Verify address" => "Adresse prüfen"
+
+recovery-coins-total
+=> "{ $count ->\n    [one] Can recover 1 coin totalling\n   *[other] Can recover {$count} coins totalling\n}"
+=> "{ $count ->\n    [one] Kann 1 Coin wiederherstellen, insgesamt\n   *[other] Kann {$count} Coins wiederherstellen, insgesamt\n}";;
+
+recovery-info
+=> "Recover your funds by sending them to another wallet if you have lost access to your primary spending path."
+=> "Stellen Sie Ihre Coins wieder her, indem Sie sie an eine andere Wallet senden, falls Sie keinen Zugriff mehr auf Ihren Hauptpfad haben.";;
+
+recovery-none-available
+=> "No recovery path is currently available."
+=> "Derzeit ist kein Wiederherstellungspfad verfügbar.";;
+
+recovery-paths-available
+=> "{ $count ->\n    [one] 1 recovery path is available\n   *[other] {$count} recovery paths are available\n}"
+=> "{ $count ->\n    [one] 1 Wiederherstellungspfad ist verfügbar\n   *[other] {$count} Wiederherstellungspfade sind verfügbar\n}";;
+
+recovery-signatures-from
+=> "{ $count ->\n    [one] 1 signature from\n   *[other] {$count} signatures from\n}"
+=> "{ $count ->\n    [one] 1 Signatur von\n   *[other] {$count} Signaturen von\n}";;
+
+settings-alias => "Alias" => "Name"
+
+settings-alias-too-long
+=> "Please enter alias that is not too long"
+=> "Bitte geben Sie einen kürzeren Namen ein";;
+
+settings-backup-encrypted-descriptor-tooltip
+=> "An encrypted descriptor file (.bip138) you can store anywhere. To decrypt it, you need one of your signing devices or extended public keys."
+=> "Eine verschlüsselte Deskriptor-Datei (.bip138), die Sie überall aufbewahren können. Zum Entschlüsseln brauchen Sie eines Ihrer Signiergeräte oder einen erweiterten öffentlichen Schlüssel.";;
+
+settings-block-height => "Block height:" => "Blockhöhe:"
+
+settings-blockchain-rescan => "Blockchain rescan" => "Blockchain erneut scannen"
+
+settings-change-node-or-connect
+=> "I want to change node type or use Liana Connect"
+=> "Ich möchte den Node-Typ ändern oder Liana Connect nutzen";;
+
+settings-connect-own-node
+=> "I want to connect to my own node"
+=> "Ich möchte mich mit meinem eigenen Node verbinden";;
+
+settings-cookie-file-path => "Cookie file path" => "Pfad zur Cookie-Datei"
+
+settings-correct-alias
+=> "Please enter correct alias"
+=> "Bitte geben Sie einen gültigen Namen ein";;
+
+settings-currency => "Currency:" => "Währung:"
+
+settings-date-before-prune
+=> "Provided date earlier than the node prune height"
+=> "Das Datum liegt vor der Pruning-Höhe des Nodes";;
+
+settings-date-future
+=> "Provided date is in the future"
+=> "Das Datum liegt in der Zukunft";;
+
+settings-date-invalid => "Provided date is invalid" => "Das Datum ist ungültig"
+
+settings-day => "Day:" => "Tag:"
+
+settings-email-invalid => "Email is invalid" => "Die E-Mail-Adresse ist ungültig"
+
+settings-exchange-rate-source
+=> "Exchange rate source:"
+=> "Quelle des Wechselkurses:";;
+
+settings-export-descriptor
+=> "Descriptor only - plain-text"
+=> "Nur Deskriptor, Klartext";;
+
+settings-export-descriptor-description
+=> "Plain-text (not encrypted) descriptor file only, to use with other wallets."
+=> "Nur die Deskriptor-Datei als Klartext (nicht verschlüsselt), für andere Wallets.";;
+
+settings-export-encrypted-descriptor
+=> "Encrypted descriptor"
+=> "Verschlüsselter Deskriptor";;
+
+settings-export-encrypted-descriptor-description
+=> ".bip138 file, can be decrypted with one of your signing devices or extended public keys."
+=> ".bip138-Datei, entschlüsselbar mit einem Ihrer Signiergeräte oder erweiterten öffentlichen Schlüssel.";;
+
+settings-export-labels => "BIP 329 labels" => "BIP-329-Labels"
+
+settings-export-labels-description
+=> "BIP 329 label export, compatible with other wallets."
+=> "Export der Labels nach BIP 329, kompatibel mit anderen Wallets.";;
+
+settings-export-transactions => "Transactions table" => "Transaktionstabelle"
+
+settings-export-transactions-description
+=> ".CSV file of past transactions, for accounting purposes."
+=> ".CSV-Datei der bisherigen Transaktionen, für die Buchhaltung.";;
+
+settings-export-wallet => "Export wallet" => "Wallet exportieren"
+
+settings-export-wallet-description
+=> "File (not encrypted) with wallet info useful to sync labels and data on other devices."
+=> "Datei (nicht verschlüsselt) mit Wallet-Informationen, um Labels und Daten auf anderen Geräten abzugleichen.";;
+
+settings-fiat-price => "Fiat price:" => "Fiat-Preis:"
+
+settings-fiat-price-tooltip
+=> "Fiat price data is provided by third-party services. Availability and accuracy are not guaranteed."
+=> "Fiat-Preise stammen von Drittanbietern. Verfügbarkeit und Genauigkeit sind nicht garantiert.";;
+
+settings-fingerprint-aliases => "Fingerprint aliases:" => "Namen der Fingerprints:"
+
+settings-grant-wallet-access
+=> "Grant access to wallet to another user"
+=> "Einem anderen Benutzer Zugriff auf die Wallet geben";;
+
+settings-import-export-description
+=> "A collection of the export and import functions present in Talia Desktop."
+=> "Alle Export- und Importfunktionen von Talia Desktop an einem Ort.";;
+
+settings-import-wallet => "Import wallet" => "Wallet importieren"
+
+settings-import-wallet-description
+=> "Upload a backup file to update wallet info."
+=> "Laden Sie eine Backup-Datei hoch, um die Wallet-Informationen zu aktualisieren.";;
+
+settings-invitation-sent => "Invitation was sent" => "Einladung wurde gesendet"
+
+settings-language => "Language" => "Sprache"
+
+settings-language-description
+=> "Choose the language used by the application."
+=> "Wählen Sie die Sprache der App.";;
+
+settings-month => "Month:" => "Monat:"
+
+settings-network => "Network:" => "Netzwerk:"
+
+settings-not-running => "Not running" => "Läuft nicht"
+
+settings-other-formats => "Other formats" => "Andere Formate"
+
+settings-rescan-success
+=> "Successfully rescanned the blockchain"
+=> "Blockchain erfolgreich erneut gescannt";;
+
+settings-rescanning
+=> "Rescanning...{$progress}%"
+=> "Wird erneut gescannt...{$progress} %";;
+
+settings-running => "Running" => "Läuft"
+
+settings-section-about => "About" => "Über"
+
+settings-section-backend => "Backend" => "Backend"
+
+settings-section-general => "General" => "Allgemein"
+
+settings-section-import-export => "Import/export" => "Import/Export"
+
+settings-section-node => "Node" => "Node"
+
+settings-select-device => "Select device:" => "Gerät wählen:"
+
+settings-socket-address => "Socket address:" => "Socket-Adresse:"
+
+settings-updated => "Updated" => "Aktualisiert"
+
+settings-user-email => "User email" => "E-Mail des Benutzers"
+
+settings-valid-address
+=> "Please enter a valid address"
+=> "Bitte geben Sie eine gültige Adresse ein";;
+
+settings-valid-filesystem-path
+=> "Please enter a valid filesystem path"
+=> "Bitte geben Sie einen gültigen Dateipfad ein";;
+
+settings-valid-password
+=> "Please enter a valid password"
+=> "Bitte geben Sie ein gültiges Passwort ein";;
+
+settings-valid-user
+=> "Please enter a valid user"
+=> "Bitte geben Sie einen gültigen Benutzer ein";;
+
+settings-version => "Version" => "Version"
+
+settings-wallet-alias => "Wallet alias:" => "Name der Wallet:"
+
+settings-wallet-descriptor => "Wallet descriptor:" => "Wallet-Deskriptor:"
+
+settings-year => "Year:" => "Jahr:"
+
+spend-amount-btc => "Amount (BTC)" => "Betrag (BTC)"
+
+spend-amount-truncated
+=> "Amount has been truncated to 8 decimal places"
+=> "Der Betrag wurde auf 8 Nachkommastellen gekürzt";;
+
+spend-btc-placeholder => "0.001 (in BTC)" => "0.001 (in BTC)"
+
+spend-coins-selection => "Coins selection" => "Auswahl der Coins"
+
+spend-could-not-convert-btc
+=> "Could not convert to BTC"
+=> "Umrechnung in BTC nicht möglich";;
+
+spend-duplicate-addresses
+=> "Two payment addresses are the same"
+=> "Zwei Zahlungsadressen sind gleich";;
+
+spend-dust-add-funds
+=> "Minimum amount is 0.00 000 500 BTC. Add funds to your wallet to spend the coin(s)."
+=> "Der Mindestbetrag ist 0.00 000 500 BTC. Laden Sie Ihre Wallet auf, um die Coin(s) auszugeben.";;
+
+spend-dust-select-more-coins
+=> "Minimum amount is 0.00 000 500 BTC. Select more coins to continue."
+=> "Der Mindestbetrag ist 0.00 000 500 BTC. Wählen Sie weitere Coins aus, um fortzufahren.";;
+
+spend-fee => "Fee:" => "Gebühr:"
+
+spend-fee-manual => "Manual" => "Manuell"
+
+spend-fee-rate => "Fee ({$feerate} sats/vb):" => "Gebühr ({$feerate} sats/vb):"
+
+spend-fee-smart-select => "Smart select" => "Automatisch"
+
+spend-fee-smart-select-tooltip
+=> "Pick a preset feerate instead of entering one manually."
+=> "Wählen Sie einen voreingestellten Gebührensatz, statt ihn selbst einzugeben.";;
+
+spend-feerate => "Feerate:" => "Gebührensatz:"
+
+spend-feerate-example => "e.g. 5 (in sats/vb)" => "z. B. 5 (in sats/vb)"
+
+spend-feerate-max-warning
+=> "Feerate must be an integer less than or equal to {$max_feerate} sats/vbyte"
+=> "Der Gebührensatz muss eine ganze Zahl bis höchstens {$max_feerate} sats/vbyte sein";;
+
+spend-feerate-missing-invalid
+=> "The feerate is missing or invalid"
+=> "Der Gebührensatz fehlt oder ist ungültig";;
+
+spend-fiat-placeholder
+=> "Enter amount in {$currency}"
+=> "Betrag in {$currency} eingeben";;
+
+spend-invalid-address
+=> "Invalid address (maybe it is for another network?)"
+=> "Ungültige Adresse (vielleicht für ein anderes Netzwerk?)";;
+
+spend-invalid-amount
+=> "Invalid amount. (Note amounts lower than 0.000005 BTC are invalid.)"
+=> "Ungültiger Betrag. (Beträge unter 0.000005 BTC sind ungültig.)";;
+
+spend-left-to-select => "left to select" => "noch auszuwählen"
+
+spend-max => "MAX" => "MAX"
+
+spend-max-tooltip
+=> "Total amount remaining after paying fee and any other recipients"
+=> "Restbetrag nach Gebühr und allen anderen Empfängern";;
+
+spend-payment-description
+=> "Description of the payment"
+=> "Beschreibung der Zahlung";;
+
+spend-payment-description-invalid
+=> "Payment description is missing or invalid"
+=> "Die Beschreibung der Zahlung fehlt oder ist ungültig";;
+
+spend-payment-label => "Payment label" => "Label der Zahlung"
+
+spend-recipient-address-invalid
+=> "A recipient address is missing or invalid"
+=> "Eine Empfängeradresse fehlt oder ist ungültig";;
+
+spend-recipient-amount-invalid
+=> "A recipient amount is missing or invalid"
+=> "Ein Empfängerbetrag fehlt oder ist ungültig";;
+
+spend-select-coins-to-cover-amount
+=> "Select coins to cover the amount"
+=> "Wählen Sie Coins, die den Betrag abdecken";;
+
+spend-select-one-coin
+=> "Select at least one coin."
+=> "Wählen Sie mindestens einen Coin.";;
+
+spend-select-or-add-funds
+=> "Select or add more funds."
+=> "Wählen Sie weitere Coins oder laden Sie die Wallet auf.";;
+
+spend-self-transfer-info
+=> "Send funds to another address of this wallet, to refresh timelocks or consolidate coins. The selected coins are merged into a single new coin."
+=> "Senden Sie Coins an eine andere Adresse dieser Wallet, um Timelocks zu erneuern oder Coins zusammenzuführen. Die gewählten Coins werden zu einem neuen Coin zusammengefasst.";;
+
+spend-tx-description
+=> "Description of the transaction"
+=> "Beschreibung der Transaktion";;
+
+spend-tx-label => "Transaction label" => "Label der Transaktion"
+
+spend-warning-recovery-own-address
+=> "Recovery address belongs to the same wallet. If you can no longer spend with the primary path, use an address from a different wallet instead."
+=> "Die Wiederherstellungsadresse gehört zu derselben Wallet. Wenn Sie mit dem Hauptpfad nicht mehr ausgeben können, nutzen Sie stattdessen eine Adresse einer anderen Wallet.";;
+
+tab-installer => "Installer" => "Einrichtung"
+
+tab-launcher => "Launcher" => "Start"
+
+tab-pending => "Pending" => "Ausstehend"
+
+time-days-ago
+=> "{ $count ->\n    [one] 1 day ago\n   *[other] {$count} days ago\n}"
+=> "{ $count ->\n    [one] vor 1 Tag\n   *[other] vor {$count} Tagen\n}";;
+
+time-hours-ago
+=> "{ $count ->\n    [one] 1 hour ago\n   *[other] {$count} hours ago\n}"
+=> "{ $count ->\n    [one] vor 1 Stunde\n   *[other] vor {$count} Stunden\n}";;
+
+time-just-now => "just now" => "gerade eben"
+
+time-minutes-ago
+=> "{ $count ->\n    [one] 1 minute ago\n   *[other] {$count} minutes ago\n}"
+=> "{ $count ->\n    [one] vor 1 Minute\n   *[other] vor {$count} Minuten\n}";;
+
+time-months-ago
+=> "{ $count ->\n    [one] 1 month ago\n   *[other] {$count} months ago\n}"
+=> "{ $count ->\n    [one] vor 1 Monat\n   *[other] vor {$count} Monaten\n}";;
+
+time-seconds-ago
+=> "{ $count ->\n    [one] 1 second ago\n   *[other] {$count} seconds ago\n}"
+=> "{ $count ->\n    [one] vor 1 Sekunde\n   *[other] vor {$count} Sekunden\n}";;
+
+time-weeks-ago
+=> "{ $count ->\n    [one] 1 week ago\n   *[other] {$count} weeks ago\n}"
+=> "{ $count ->\n    [one] vor 1 Woche\n   *[other] vor {$count} Wochen\n}";;
+
+transactions-cancel-tooltip
+=> "Best effort attempt at double spending an unconfirmed outgoing transaction"
+=> "Versuch, eine unbestätigte ausgehende Transaktion durch eine Doppelausgabe zu ersetzen";;
+
+transactions-date => "Date:" => "Datum:"
+
+transactions-date-unconfirmed
+=> "not included in a block yet"
+=> "noch in keinem Block";;
+
+transactions-miner-fee => "Miner fee:" => "Mining-Gebühr:"
+
+transactions-rbf-bump-help
+=> "Replace the transaction with one paying a higher feerate to incentivize faster confirmation. New inputs may be used for the replacement transaction."
+=> "Ersetzen Sie die Transaktion durch eine mit höherem Gebührensatz, damit sie schneller bestätigt wird. Für die Ersatztransaktion können weitere Eingänge verwendet werden.";;
+
+transactions-rbf-cancel-help
+=> "Replace the transaction with one paying a higher feerate that sends the coins back to your wallet. There is no guarantee the original transaction won't get mined first. New inputs may be used for the replacement transaction."
+=> "Ersetzen Sie die Transaktion durch eine mit höherem Gebührensatz, die die Coins an Ihre Wallet zurücksendet. Es ist nicht garantiert, dass die ursprüngliche Transaktion nicht doch zuerst bestätigt wird. Für die Ersatztransaktion können weitere Eingänge verwendet werden.";;
+
+transactions-rbf-created
+=> "Replacement PSBT created successfully and ready to be signed"
+=> "Ersatz-PSBT erstellt und bereit zum Signieren";;
+
+transactions-rbf-descendants-one
+=> "The following transaction is spending one or more outputs from the transaction to be replaced and will be dropped when the replacement is broadcast, along with any other transactions that depend on it:"
+=> "Die folgende Transaktion gibt einen oder mehrere Ausgänge der zu ersetzenden Transaktion aus und wird beim Senden des Ersatzes verworfen, ebenso alle Transaktionen, die von ihr abhängen:";;
+
+transactions-rbf-descendants-some
+=> "The following transactions are spending one or more outputs from the transaction to be replaced and will be dropped when the replacement is broadcast, along with any other transactions that depend on them:"
+=> "Die folgenden Transaktionen geben einen oder mehrere Ausgänge der zu ersetzenden Transaktion aus und werden beim Senden des Ersatzes verworfen, ebenso alle Transaktionen, die von ihnen abhängen:";;
+
+transactions-rbf-disabled-body
+=> "Its signatures don't match your coins, so the node you are connected to may be providing false data. Connect to a different node, ideally your own, in Settings > Node and check your payment."
+=> "Ihre Signaturen passen nicht zu Ihren Coins. Der verbundene Node liefert also womöglich falsche Daten. Verbinden Sie sich unter Einstellungen > Node mit einem anderen Node, am besten Ihrem eigenen, und prüfen Sie Ihre Zahlung.";;
+
+transactions-rbf-disabled-title
+=> "This transaction can't be bumped or cancelled."
+=> "Diese Transaktion kann weder beschleunigt noch abgebrochen werden.";;
+
+transactions-rbf-feerate-warning
+=> "Feerate must be greater than previous value and less than or equal to 1000 sats/vbyte"
+=> "Der Gebührensatz muss höher als der bisherige sein und darf höchstens 1000 sats/vbyte betragen";;
+
+transactions-rbf-invalidates-one
+=> "WARNING: Replacing this transaction will invalidate a later payment."
+=> "ACHTUNG: Wenn Sie diese Transaktion ersetzen, wird eine spätere Zahlung ungültig.";;
+
+transactions-rbf-invalidates-some
+=> "WARNING: Replacing this transaction will invalidate some later payments."
+=> "ACHTUNG: Wenn Sie diese Transaktion ersetzen, werden einige spätere Zahlungen ungültig.";;
+
+transactions-replacement => "Transaction replacement" => "Ersatztransaktion"
+
+transactions-transaction => "Transaction" => "Transaktion"
+
+transactions-txid => "Tx ID:" => "Tx-ID:"
+
+warning-coin-selection
+=> "Error when selecting coins for spend"
+=> "Fehler bei der Auswahl der Coins";;
+
+warning-daemon-communication
+=> "Communication with Daemon failed"
+=> "Verbindung zum Daemon fehlgeschlagen";;
+
+warning-daemon-start => "Daemon failed to start" => "Der Daemon konnte nicht starten"
+
+warning-daemon-stopped => "Daemon stopped" => "Daemon gestoppt"
+
+warning-daemon-unsupported
+=> "Daemon client is not supported"
+=> "Dieser Daemon-Client wird nicht unterstützt";;
+
+warning-descriptor-analysis
+=> "Descriptor analysis error: '{$error}'."
+=> "Fehler bei der Analyse des Deskriptors: „{$error}“.";;
+
+warning-fiat-price
+=> "Fiat price error: {$error}"
+=> "Fehler beim Fiat-Preis: {$error}";;
+
+warning-hardware-wallet-error => "Signing device error" => "Fehler am Signiergerät"
+
+warning-http-error => "HTTP error: {$error}" => "HTTP-Fehler: {$error}"
+
+warning-http-error-code
+=> "HTTP error {$code}: {$error}"
+=> "HTTP-Fehler {$code}: {$error}";;
+
+warning-internal-error => "Internal error" => "Interner Fehler"
+
+warning-invalid-fields => "Some fields are invalid" => "Einige Felder sind ungültig"
+
+warning-not-implemented
+=> "Feature not implemented for this backend"
+=> "Diese Funktion gibt es für dieses Backend nicht";;
+
+warning-restore-backup
+=> "Failed to restore backup: {$error}"
+=> "Backup konnte nicht wiederhergestellt werden: {$error}";;
+
+warning-spend-creation
+=> "Spend creation error: '{$error}'."
+=> "Fehler beim Erstellen der Ausgabe: „{$error}“.";;
+
+warning-unknown-error => "Unknown error" => "Unbekannter Fehler"
+
+warning-wallet-error => "Wallet error" => "Wallet-Fehler"

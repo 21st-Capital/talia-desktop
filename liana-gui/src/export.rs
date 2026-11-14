@@ -1372,14 +1372,14 @@ pub async fn export_labels(
 pub async fn get_path(filename: String, write: bool) -> Option<PathBuf> {
     if write {
         rfd::AsyncFileDialog::new()
-            .set_title("Choose a location to export...")
+            .set_title(crate::t!("export-choose-location"))
             .set_file_name(filename)
             .save_file()
             .await
             .map(|fh| fh.path().to_path_buf())
     } else {
         rfd::AsyncFileDialog::new()
-            .set_title("Choose a file to import...")
+            .set_title(crate::t!("export-choose-file"))
             .set_file_name(filename)
             .pick_file()
             .await

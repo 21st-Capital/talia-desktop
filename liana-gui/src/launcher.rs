@@ -312,7 +312,7 @@ fn launcher_layout<'a>(
                 selected_network,
                 on_network_selected: |network| Message::View(ViewMessage::SelectNetwork(network)),
             },
-            on_language_selected: None, // English only
+            on_language_selected: Some(|locale| Message::View(ViewMessage::LanguageEdited(locale))),
             content_width: 800.0,
         },
         content,

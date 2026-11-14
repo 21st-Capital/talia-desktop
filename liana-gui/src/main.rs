@@ -10,6 +10,7 @@ use liana::miniscript::bitcoin::Network;
 use liana_ui::theme;
 
 use liana_gui::{
+    app::settings::global::GlobalSettings,
     args::{args_to_config, parse_args},
     dir::LianaDirectory,
     gui::LianaGUI,
@@ -37,9 +38,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let config = args_to_config(&args, None, "Talia Desktop".into())?;
     let log_level = parse_log_level()?;
-    // Talia Desktop is English only (decided 2026-11-14): no language
-    // switcher, and a language saved by Liana is not applied.
-    i18n::init(i18n::SupportedLocale::En);
+    // The language the client chose, else the computer's; English or German
+    // only (decided 2026-11-14), anything else runs in English.
+    i18n::init(
+        GlobalSettings::load_locale(&GlobalSettings::path(&config.liana_directory)).offered(),
+    );
 
     setup_panic_hook(&config.liana_directory);
 

@@ -1791,7 +1791,7 @@ pub fn connection_step_select_account<'a>(
                 title: t!("common-login"),
                 previous_message: (!processing).then_some(Message::Previous),
             },
-            on_language_selected: None, // English only
+            on_language_selected: Some(Message::LanguageEdited),
             content_width: list::STANDARD_ENTRY_WIDTH,
         },
         Some(header_content),
@@ -2018,7 +2018,7 @@ fn layout<'a>(
                 title: title.to_string(),
                 previous_message,
             },
-            on_language_selected: None, // English only
+            on_language_selected: Some(Message::LanguageEdited),
             content_width: 800.0,
         },
         content,
