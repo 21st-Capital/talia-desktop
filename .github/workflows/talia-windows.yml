@@ -1,0 +1,41 @@
+# Talia Desktop for Windows: builds the program on GitHub's Windows machines
+# (free for this public repository). Started by hand only (Actions tab, "Run
+# workflow"). Not code-signed (decided 2026-11-14): Windows shows "Windows
+# protected your PC" on first start; "More info" > "Run anyway".
+name: Talia Desktop for Windows
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Rust (the version in rust-toolchain.toml)
+        shell: bash
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - name: Build
+        shell: bash
+        run: cargo build --release -p liana-gui --bin liana-gui
+
+      - name: Name the download
+        shell: bash
+        run: |
+          VERSION="$(grep -m1 '^version' liana-gui/Cargo.toml | sed -E 's/.*"([0-9]+)\.([0-9]+)\..*/\1.\2/')"
+          mkdir -p dist
+          cp target/release/liana-gui.exe "dist/talia-desktop-${VERSION}-windows.exe"
+          cd dist && sha256sum *.exe | tee SHA256SUMS.txt
+
+      - name: Keep the download
+        uses: actions/upload-artifact@v4
+        with:
+          name: talia-desktop-windows
+          path: dist/
+          if-no-files-found: error
