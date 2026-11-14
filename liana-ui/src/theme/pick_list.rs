@@ -30,7 +30,7 @@ pub fn primary(theme: &Theme, status: Status) -> Style {
     Style {
         text_color: style.text,
         placeholder_color: style.text,
-        background: style.background.into(),
+        background: super::gloss::fill(style.background, super::gloss::BUTTON),
         border: if let Some(color) = style.border {
             Border {
                 radius: PICK_LIST_RADIUS.into(),

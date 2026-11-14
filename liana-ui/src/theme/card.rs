@@ -2,6 +2,7 @@ use iced::widget::container::Style;
 use iced::{Background, Border, Shadow, Vector};
 
 use super::button::BUTTON_RADIUS;
+use super::gloss;
 use super::palette::ContainerPalette;
 use super::styles;
 use super::Theme;
@@ -23,7 +24,7 @@ pub const CARD_SHADOW_HOVER: Shadow = Shadow {
 
 fn card(palette: &ContainerPalette) -> Style {
     Style {
-        background: Some(Background::Color(palette.background)),
+        background: Some(gloss::fill(palette.background, gloss::CARD)),
         text_color: palette.text,
         border: Border {
             radius: CARD_RADIUS.into(),
@@ -51,14 +52,20 @@ fn card_note(palette: &ContainerPalette) -> Style {
 
 fn card_with_shadow(palette: &ContainerPalette, btn: bool) -> Style {
     let radius = if btn { BUTTON_RADIUS } else { CARD_RADIUS }.into();
+    let glass = gloss::is_glass(palette.background);
     Style {
-        background: Some(Background::Color(palette.background)),
+        background: Some(gloss::fill(palette.background, gloss::CARD)),
         text_color: palette.text,
         border: if let Some(color) = palette.border {
             Border {
                 radius,
                 width: 1.0,
-                color,
+                // Talia: the pane's light edge replaces the hairline.
+                color: if glass {
+                    gloss::edge(palette.background)
+                } else {
+                    color
+                },
                 ..Default::default()
             }
         } else {

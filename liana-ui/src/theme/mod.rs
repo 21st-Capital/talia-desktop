@@ -7,6 +7,7 @@ pub mod checkbox;
 pub mod combobox;
 pub mod container;
 pub mod context_menu;
+pub mod gloss;
 pub mod notification;
 pub mod overlay;
 pub mod palette;

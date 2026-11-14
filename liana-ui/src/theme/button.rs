@@ -2,7 +2,7 @@ use iced::border::Dash;
 use iced::widget::button::{Catalog, Status, Style, StyleFn};
 use iced::{Background, Border, Color};
 
-use super::{card::CARD_RADIUS, palette::Button, Theme};
+use super::{card::CARD_RADIUS, gloss, palette::Button, Theme};
 
 pub const BUTTON_RADIUS: f32 = 12.0;
 /// On/off length of the auxiliary button's dashed border, in logical pixels.
@@ -62,10 +62,16 @@ pub fn auxiliary(theme: &Theme, status: Status) -> Style {
 }
 
 pub fn list_entry(theme: &Theme, status: Status) -> Style {
-    let mut style = button(
-        &theme.colors.buttons.list_entry,
+    // Talia: a list row is a card, so it carries the card's finish and light edge.
+    let mut style = glossed(
+        flat(
+            &theme.colors.buttons.list_entry,
+            status,
+            theme.button_border_width,
+        ),
         status,
-        theme.button_border_width,
+        gloss::CARD,
+        status == Status::Active,
     );
     if let Some(radius) = theme.colors.buttons.list_entry_radius {
         style.border.radius = radius.into();
@@ -164,7 +170,22 @@ pub fn round_icon_btn(theme: &Theme, status: Status, radius: f32) -> Style {
     )
 }
 
+/// Talia: the glass finish over a flat style. A button that cannot be pressed stays flat.
+fn glossed(mut style: Style, status: Status, strength: f32, lip: bool) -> Style {
+    if let (Some(Background::Color(base)), true) = (style.background, status != Status::Disabled) {
+        style.background = Some(gloss::fill(base, strength));
+        if gloss::is_glass(base) && (lip || style.border.color.a == 0.0) {
+            style.border.color = gloss::edge(base);
+        }
+    }
+    style
+}
+
 fn button(p: &Button, status: Status, width: f32) -> Style {
+    glossed(flat(p, status, width), status, gloss::BUTTON, false)
+}
+
+fn flat(p: &Button, status: Status, width: f32) -> Style {
     match status {
         Status::Active => Style {
             background: Some(Background::Color(p.active.background)),
@@ -205,7 +226,7 @@ fn button(p: &Button, status: Status, width: f32) -> Style {
                     snap: false,
                 }
             } else {
-                button(p, Status::Active, width)
+                flat(p, Status::Active, width)
             }
         }
         Status::Hovered => Style {
@@ -247,7 +268,7 @@ fn button(p: &Button, status: Status, width: f32) -> Style {
                     snap: false,
                 }
             } else {
-                let active: Style = button(p, Status::Active, width);
+                let active: Style = flat(p, Status::Active, width);
 
                 Style {
                     text_color: Color {

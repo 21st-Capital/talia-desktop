@@ -1,4 +1,4 @@
-use super::{card::CARD_SHADOW, Theme};
+use super::{card::CARD_SHADOW, gloss, Theme};
 use crate::color;
 use iced::{
     border::Radius,
@@ -18,19 +18,27 @@ impl Catalog for Theme {
     }
 }
 
+/// Talia: the page glow, on the wallet theme only.
+fn ground(theme: &Theme) -> Background {
+    let ground = theme.colors.general.background;
+    if theme.is_business() {
+        return Background::Color(ground);
+    }
+    gloss::page(ground)
+}
+
 pub fn background(theme: &Theme) -> Style {
     Style {
-        background: Some(Background::Color(theme.colors.general.background)),
+        background: Some(ground(theme)),
         ..Default::default()
     }
 }
 
 pub fn panel_background(theme: &Theme) -> Style {
-    let bg_color = theme.colors.general.background;
     Style {
-        background: Some(Background::Color(bg_color)),
+        background: Some(ground(theme)),
         border: Border {
-            color: bg_color,
+            color: color::TRANSPARENT,
             width: 1.0,
             radius: Radius {
                 top_left: 24.0,
@@ -115,12 +123,18 @@ pub fn tab_menu_panel(theme: &Theme) -> Style {
 }
 
 pub fn form_field(theme: &Theme) -> Style {
+    let fill = theme.colors.general.form_field_background;
+    let glass = !theme.is_business() && gloss::is_glass(fill);
     Style {
-        background: Some(Background::Color(
-            theme.colors.general.form_field_background,
-        )),
+        background: Some(if glass {
+            gloss::fill(fill, gloss::BUTTON)
+        } else {
+            Background::Color(fill)
+        }),
         border: Border {
             radius: 4.0.into(),
+            width: if glass { 1.0 } else { 0.0 },
+            color: gloss::edge(fill),
             ..Default::default()
         },
         shadow: CARD_SHADOW,
