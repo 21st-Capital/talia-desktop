@@ -16,8 +16,8 @@ color!(BTN_PRIMARY_PRESSED_TEXT, 0x01120F);
 color!(BTN_PRIMARY_DISABLED_TEXT, 0x556762);
 color!(BTN_PRIMARY_DISABLED_BORDER, 0x23312D);
 
-color!(BTN_SECONDARY_HOVER_BGD, 0xF4F1E8, 0.18);
-color!(BTN_SECONDARY_PRESSED_BGD, 0xF4F1E8, 0.07);
+color!(BTN_SECONDARY_HOVER_BGD, 0x314640);
+color!(BTN_SECONDARY_PRESSED_BGD, 0x173029);
 color!(BTN_SECONDARY_TEXT, 0x16C784);
 color!(BTN_SECONDARY_HOVER_TEXT, 0x4FD9A3);
 color!(BTN_SECONDARY_PRESSED_TEXT, 0x8BE8C4);
@@ -29,9 +29,9 @@ color!(TIMELINE_NEUTRAL_FILL, 0x1E2D29);
 color!(TIMELINE_LOCKED_INK, 0xA9B5B1);
 color!(TIMELINE_RAIL_LOCKED, 0x556762);
 
-color!(BTN_TERTIARY_BGD, 0xF4F1E8, 0.12);
-color!(BTN_TERTIARY_HOVER_BGD, 0xF4F1E8, 0.18);
-color!(BTN_TERTIARY_PRESSED_BGD, 0xF4F1E8, 0.07);
+color!(BTN_TERTIARY_BGD, 0x233A34);
+color!(BTN_TERTIARY_HOVER_BGD, 0x314640);
+color!(BTN_TERTIARY_PRESSED_BGD, 0x173029);
 color!(BTN_TERTIARY_TEXT, 0xE5E9E8);
 const BTN_TERTIARY_HOVER_TEXT: Color = color::WHITE;
 color!(BTN_TERTIARY_PRESSED_TEXT, 0xA9B5B1);
@@ -40,17 +40,18 @@ color!(BTN_TERTIARY_PRESSED_TEXT, 0xA9B5B1);
 // A button that cannot be pressed is a muted colour, never an opacity.
 color!(BTN_ACTION_DISABLED_BGD, 0x737D7B);
 color!(BTN_ACTION_DISABLED_TEXT, 0x404D4A);
-color!(BTN_SECONDARY_BGD, 0xF4F1E8, 0.12);
+color!(BTN_SECONDARY_BGD, 0x233A34);
 color!(BTN_SECONDARY_INK, 0xF8F9F9);
-color!(BTN_SECONDARY_RIM, 0xF4F1E8, 0.24);
-// Cards, rows and fields: the app's glass (off-white over the ground) and its light edge.
-color!(CARD_BGD, 0xF4F1E8, 0.07);
-color!(CARD_EDGE, 0xF4F1E8, 0.14);
-color!(FIELD_BGD, 0xF4F1E8, 0.12);
+color!(BTN_SECONDARY_RIM, 0x3F534B);
+// Cards, rows and fields: the app's glass (off-white over the glowing ground) as solid
+// colours, because a see-through card shows whatever Liana draws behind it.
+color!(CARD_BGD, 0x173029);
+color!(CARD_EDGE, 0x273E38);
+color!(FIELD_BGD, 0x233A34);
 // The sidebar and the top bar, and the sidebar's hovered and selected item.
 color!(MENU_BGD, 0x01120F);
-color!(MENU_HOVER_BGD, 0xF4F1E8, 0.07);
-color!(MENU_ACTIVE_BGD, 0x16C784, 0.16);
+color!(MENU_HOVER_BGD, 0x12221E);
+color!(MENU_ACTIVE_BGD, 0x042F22);
 color!(MENU_ACTIVE_TEXT, 0x16C784);
 
 fn btn_action_disabled() -> Option<ButtonPalette> {
