@@ -11,16 +11,17 @@ mkdir -p "$OUT"
 OUT="$(cd "$OUT" && pwd)"
 
 cd "$ROOT"
+TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT/target}"
 if [ "${UNIVERSAL:-0}" = "1" ]; then
     cargo build --release -p liana-gui --bin liana-gui --target aarch64-apple-darwin
     cargo build --release -p liana-gui --bin liana-gui --target x86_64-apple-darwin
     BIN="$OUT/liana-gui-universal"
     lipo -create -output "$BIN" \
-        target/aarch64-apple-darwin/release/liana-gui \
-        target/x86_64-apple-darwin/release/liana-gui
+        "$TARGET_DIR/aarch64-apple-darwin/release/liana-gui" \
+        "$TARGET_DIR/x86_64-apple-darwin/release/liana-gui"
 else
     cargo build --release -p liana-gui --bin liana-gui
-    BIN="target/release/liana-gui"
+    BIN="$TARGET_DIR/release/liana-gui"
 fi
 
 APP="$OUT/Talia Desktop.app"
