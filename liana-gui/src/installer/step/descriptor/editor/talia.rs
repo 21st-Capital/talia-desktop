@@ -2,6 +2,15 @@
 //! primary path, one recovery path per heir and one for the 21st Capital
 //! Rescue Key. Liana composes the descriptor (taproot) and orders the recovery
 //! paths by their wait.
+//!
+//! Liana refuses two paths opening at the same block, while the iPhone app
+//! allows a 15-month heir next to the Rescue Key and heirs of equal months
+//! (decided 2026-11-14). So the months become blocks here: the Rescue Key always
+//! opens at exactly 65535 blocks, and an heir whose wait would equal another
+//! path's opens one block earlier per collision, the later-listed heir giving
+//! way. The client still sees the months everywhere.
+
+use std::collections::HashSet;
 
 use std::ops::RangeInclusive;
 
@@ -28,11 +37,6 @@ pub const MAX_HEIRS: usize = 5;
 /// maximum (15 months is the cap itself).
 pub fn months_to_blocks(months: u8) -> u16 {
     (months as u32 * BLOCKS_PER_MONTH).min(MAX_OLDER_BLOCKS) as u16
-}
-
-/// The heir wait a lock stands for.
-pub fn blocks_to_months(blocks: u16) -> Option<u8> {
-    HEIR_MONTHS.clone().find(|m| months_to_blocks(*m) == blocks)
 }
 
 /// A shape of the iPhone app.
@@ -94,6 +98,8 @@ pub struct TaliaShape {
     pub rescue_answer: Option<bool>,
     /// Whether the last path is the Rescue Key's.
     pub rescue_path: bool,
+    /// Each heir's wait in months, in the order of their paths.
+    heir_months: Vec<u8>,
 }
 
 impl TaliaShape {
@@ -103,6 +109,7 @@ impl TaliaShape {
             cosigner_21c: true,
             rescue_answer: None,
             rescue_path: true,
+            heir_months: Vec::new(),
         }
     }
 
@@ -141,7 +148,8 @@ impl TaliaShape {
         self.rescue_required(heirs) || self.rescue_answer.is_some()
     }
 
-    /// Adds or drops the Rescue Key's path so the paths match the answers.
+    /// Adds or drops the Rescue Key's path so the paths match the answers,
+    /// then gives every heir's path its lock.
     pub fn sync_rescue_path(&mut self, paths: &mut Vec<Path>) {
         let want = self.rescue(self.heirs(paths));
         if want && !self.rescue_path {
@@ -150,6 +158,28 @@ impl TaliaShape {
         } else if !want && self.rescue_path {
             paths.pop();
             self.rescue_path = false;
+        }
+        self.sync_heir_locks(paths);
+    }
+
+    /// Each heir's months as blocks, every path at a block of its own: the
+    /// Rescue Key keeps exactly 65535, and an heir whose wait is already
+    /// taken by the Rescue Key or an heir listed before opens one block earlier
+    /// per collision.
+    fn sync_heir_locks(&self, paths: &mut [Path]) {
+        let mut taken = HashSet::new();
+        if self.rescue_path {
+            taken.insert(months_to_blocks(RESCUE_MONTHS));
+        }
+        for (i, months) in self.heir_months.iter().enumerate() {
+            let mut blocks = months_to_blocks(*months);
+            while taken.contains(&blocks) {
+                blocks -= 1;
+            }
+            taken.insert(blocks);
+            if let Some(path) = paths.get_mut(self.heir_path(i)) {
+                path.sequence = PathSequence::Recovery(blocks);
+            }
         }
     }
 
@@ -168,28 +198,24 @@ impl TaliaShape {
         (self.template.has_cosigner_slot() && self.cosigner_21c).then(|| paths[0].keys.len() - 1)
     }
 
-    /// The heirs' waits, in the order of their paths.
-    pub fn heir_months(&self, paths: &[Path]) -> Vec<u8> {
-        (0..self.heirs(paths))
-            .filter_map(|i| blocks_to_months(paths[self.heir_path(i)].sequence.as_u16()))
-            .collect()
+    /// The heirs' waits in months, in the order of their paths.
+    pub fn heir_months(&self) -> &[u8] {
+        &self.heir_months
     }
 
-    /// A new heir's path, at the first free wait nearest the default.
+    /// A new heir's path, at the first wait no heir has yet nearest the default.
     pub fn add_heir(&mut self, paths: &mut Vec<Path>) {
         let heirs = self.heirs(paths);
         if heirs >= MAX_HEIRS {
             return;
         }
-        let taken = self.heir_months(paths);
         let months = [12, 11, 13, 10, 14, 9, 8]
             .iter()
             .copied()
-            .find(|m| !taken.contains(m))
+            .find(|m| !self.heir_months.contains(m))
             .unwrap_or(DEFAULT_HEIR_MONTHS);
-        let mut path = Path::new_recovery_path();
-        path.sequence = PathSequence::Recovery(months_to_blocks(months));
-        paths.insert(self.heir_path(heirs), path);
+        paths.insert(self.heir_path(heirs), Path::new_recovery_path());
+        self.heir_months.push(months);
         self.sync_rescue_path(paths);
     }
 
@@ -198,6 +224,7 @@ impl TaliaShape {
             return;
         }
         paths.remove(self.heir_path(i));
+        self.heir_months.remove(i);
         if self.heirs(paths) == 0 {
             // The Rescue Key is required again: the next heir asks afresh.
             self.rescue_answer = None;
@@ -205,9 +232,10 @@ impl TaliaShape {
         self.sync_rescue_path(paths);
     }
 
-    pub fn set_heir_months(&self, paths: &mut [Path], i: usize, months: u8) {
-        if i < self.heirs(paths) && HEIR_MONTHS.contains(&months) {
-            paths[self.heir_path(i)].sequence = PathSequence::Recovery(months_to_blocks(months));
+    pub fn set_heir_months(&mut self, paths: &mut [Path], i: usize, months: u8) {
+        if i < self.heir_months.len() && HEIR_MONTHS.contains(&months) {
+            self.heir_months[i] = months;
+            self.sync_heir_locks(paths);
         }
     }
 
@@ -219,12 +247,12 @@ impl TaliaShape {
     }
 
     /// What the website is asked for.
-    pub fn vault_shape(&self, paths: &[Path]) -> VaultShape {
+    pub fn vault_shape(&self) -> VaultShape {
         VaultShape {
             config: self.template.config(),
             cosigner: self.template.has_cosigner_slot() && self.cosigner_21c,
             rescue: self.rescue_path,
-            heirs: self.heir_months(paths),
+            heirs: self.heir_months.clone(),
         }
     }
 
@@ -274,10 +302,6 @@ mod tests {
         assert_eq!(months_to_blocks(14), 61_362);
         // 15 months would be 65_745 blocks: capped.
         assert_eq!(months_to_blocks(15), 65_535);
-        for m in HEIR_MONTHS {
-            assert_eq!(blocks_to_months(months_to_blocks(m)), Some(m));
-        }
-        assert_eq!(blocks_to_months(52_597), None);
     }
 
     fn sequences(paths: &[Path]) -> Vec<u16> {
@@ -296,7 +320,7 @@ mod tests {
         assert!(shape.rescue_required(0));
         assert!(shape.complete(0));
         assert_eq!(
-            shape.vault_shape(&paths),
+            shape.vault_shape(),
             VaultShape {
                 config: VaultConfig::Multi2of3,
                 cosigner: true,
@@ -326,8 +350,8 @@ mod tests {
         shape.add_heir(&mut paths);
         assert_eq!(sequences(&paths), vec![0, 52_596, 48_213, 65_535]);
         shape.set_heir_months(&mut paths, 1, 9);
-        assert_eq!(shape.heir_months(&paths), vec![12, 9]);
-        assert_eq!(shape.vault_shape(&paths).heirs, vec![12, 9]);
+        assert_eq!(shape.heir_months(), &[12, 9]);
+        assert_eq!(shape.vault_shape().heirs, vec![12, 9]);
 
         shape.set_rescue(&mut paths, false);
         assert_eq!(sequences(&paths), vec![0, 52_596, 39_447]);
@@ -350,8 +374,8 @@ mod tests {
         assert!(shape.rescue_path);
         assert!(shape.complete(1));
         assert_eq!(sequences(&paths), vec![0, 52_596, 65_535]);
-        assert_eq!(shape.vault_shape(&paths).config, VaultConfig::Single);
-        assert!(!shape.vault_shape(&paths).cosigner);
+        assert_eq!(shape.vault_shape().config, VaultConfig::Single);
+        assert!(!shape.vault_shape().cosigner);
     }
 
     #[test]
@@ -362,7 +386,7 @@ mod tests {
             shape.add_heir(&mut paths);
         }
         assert_eq!(shape.heirs(&paths), MAX_HEIRS);
-        assert_eq!(shape.heir_months(&paths), vec![12, 11, 13, 10, 14]);
+        assert_eq!(shape.heir_months(), &[12, 11, 13, 10, 14]);
     }
 
     #[test]
@@ -374,5 +398,41 @@ mod tests {
         shape.set_rescue(&mut paths, false);
         assert!(!shape.uses_21c(&paths));
         assert_eq!(shape.cosigner_slot(&paths), None);
+    }
+
+    #[test]
+    fn a_15_month_heir_gives_way_to_the_rescue_key() {
+        let mut shape = TaliaShape::new(TaliaTemplate::TwoOfThree);
+        let mut paths = shape.initial_paths();
+        shape.add_heir(&mut paths);
+        shape.set_heir_months(&mut paths, 0, 15);
+        // No Rescue Key yet: the heir has 65535 to itself.
+        assert_eq!(sequences(&paths), vec![0, 65_535]);
+        shape.set_rescue(&mut paths, true);
+        // The Rescue Key keeps exactly 65535; the heir opens a block earlier.
+        assert_eq!(sequences(&paths), vec![0, 65_534, 65_535]);
+        shape.add_heir(&mut paths);
+        shape.set_heir_months(&mut paths, 1, 15);
+        assert_eq!(sequences(&paths), vec![0, 65_534, 65_533, 65_535]);
+        // The client still reads 15 months, and so does the website.
+        assert_eq!(shape.heir_months(), &[15, 15]);
+        assert_eq!(shape.vault_shape().heirs, vec![15, 15]);
+        // The first heir gone, the other moves up to the free block.
+        shape.remove_heir(&mut paths, 0);
+        assert_eq!(sequences(&paths), vec![0, 65_534, 65_535]);
+    }
+
+    #[test]
+    fn heirs_of_equal_months_open_a_block_apart() {
+        let mut shape = TaliaShape::new(TaliaTemplate::TwoOfTwo);
+        let mut paths = shape.initial_paths();
+        shape.add_heir(&mut paths);
+        shape.add_heir(&mut paths);
+        shape.set_heir_months(&mut paths, 1, 12);
+        shape.set_rescue(&mut paths, false);
+        assert_eq!(sequences(&paths), vec![0, 52_596, 52_595]);
+        assert_eq!(shape.heir_months(), &[12, 12]);
+        shape.set_heir_months(&mut paths, 1, 9);
+        assert_eq!(sequences(&paths), vec![0, 52_596, 39_447]);
     }
 }

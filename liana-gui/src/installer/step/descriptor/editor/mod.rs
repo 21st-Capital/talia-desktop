@@ -333,7 +333,7 @@ impl DefineDescriptor {
         let Some(shape) = &self.talia else {
             return Task::none();
         };
-        let vault_shape = shape.vault_shape(&self.paths);
+        let vault_shape = shape.vault_shape();
         let pages = BrowserPages {
             title: t!("installer-talia-browser-title"),
             done: t!("installer-talia-browser-done"),
@@ -1396,7 +1396,7 @@ mod tests {
             // Our two slots are still empty.
             assert!(!step.valid());
             assert_eq!(
-                step.talia.as_ref().unwrap().vault_shape(&step.paths),
+                step.talia.as_ref().unwrap().vault_shape(),
                 talia_keys::VaultShape {
                     config: talia_keys::VaultConfig::Multi2of3,
                     cosigner: true,
@@ -1533,21 +1533,64 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn heirs_on_the_same_wait_are_refused_by_liana() {
-        let (ctx, sandbox) = talia_sandbox(DescriptorTemplate::TwoOfThree);
+    async fn equal_waits_compile_with_the_rescue_key_at_65535() {
+        let (mut ctx, sandbox) = talia_sandbox(DescriptorTemplate::TwoOfThree);
         sandbox.load(&ctx).await;
-        sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
-        sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
+        // A 15-month heir next to the Rescue Key, and two 12-month heirs.
+        for _ in 0..3 {
+            sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
+        }
+        for (i, months) in [(0, 15u8), (1, 12), (2, 12)] {
+            sandbox
+                .update(talia_message(TaliaMessage::HeirMonths(i, months)))
+                .await;
+        }
         sandbox
-            .update(talia_message(TaliaMessage::HeirMonths(1, 12)))
+            .update(talia_message(TaliaMessage::Rescue(true)))
             .await;
+        let heirs = [
+            test_key(3, "Heir 1"),
+            test_key(6, "Heir 2"),
+            test_key(7, "Heir 3"),
+        ];
+        sandbox.update(set_key(0, 0, &test_key(1, "Mine 1"))).await;
+        sandbox.update(set_key(0, 1, &test_key(2, "Mine 2"))).await;
+        for (i, heir) in heirs.iter().enumerate() {
+            sandbox.update(set_key(1 + i, 0, heir)).await;
+        }
+        let (cosigner, rescue) = (test_key(4, "co"), test_key(5, "rescue"));
         sandbox.check(|step| {
-            assert_eq!(step.paths[1].warning, Some(PathWarning::DuplicateSequence));
-            assert_eq!(step.paths[2].warning, Some(PathWarning::DuplicateSequence));
+            let waits: Vec<u16> = step.paths.iter().map(|p| p.sequence.as_u16()).collect();
+            assert_eq!(waits, vec![0, 65_534, 52_596, 52_595, 65_535]);
+            assert!(step.paths.iter().all(|p| p.warning.is_none()));
+            // The website is asked for the months the client chose.
+            assert_eq!(
+                step.talia.as_ref().unwrap().vault_shape().heirs,
+                vec![15, 12, 12]
+            );
+            waiting(step, 1);
         });
         sandbox
-            .update(talia_message(TaliaMessage::HeirMonths(1, 15)))
+            .update(fetched(Some(&cosigner), Some(&rescue)))
             .await;
-        sandbox.check(|step| assert!(step.paths.iter().all(|p| p.warning.is_none())));
+        sandbox.check(|step| assert!(step.valid()));
+
+        assert!(run_apply(&sandbox, &mut ctx).await);
+        let policy = ctx.descriptor.as_ref().unwrap().policy();
+        let paths = policy.recovery_paths();
+        assert_eq!(
+            paths.keys().copied().collect::<Vec<_>>(),
+            vec![52_595, 52_596, 65_534, 65_535]
+        );
+        let opens_at = |wait: u16, key: &Key| {
+            paths[&wait]
+                .thresh_origins()
+                .1
+                .contains_key(&key.fingerprint)
+        };
+        assert!(opens_at(65_535, &rescue));
+        assert!(opens_at(65_534, &heirs[0]));
+        assert!(opens_at(52_596, &heirs[1]));
+        assert!(opens_at(52_595, &heirs[2]));
     }
 }

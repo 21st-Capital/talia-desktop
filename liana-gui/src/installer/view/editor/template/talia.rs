@@ -285,7 +285,7 @@ fn primary_path<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
 
 fn heirs<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
     let count = e.shape.heirs(e.paths);
-    let months = e.shape.heir_months(e.paths);
+    let months = e.shape.heir_months();
     let mut col = column![
         p1_bold(t!("installer-talia-heirs")),
         new::caption(t!("installer-talia-heirs-caption")).style(theme::text::secondary),
