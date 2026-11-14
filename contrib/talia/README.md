@@ -1,9 +1,9 @@
 # Talia Desktop
 
-Talia Desktop is [Liana](https://github.com/wizardsardine/liana) by Wizardsardine with the
-Talia name and logo. Nothing else is changed: same features, same signing devices, same wallet
-files and folder, same engine (`lianad`). Liana is BSD 3-Clause licensed; its copyright notice
-is kept in `LICENCE`, next to ours.
+Talia Desktop is [Liana](https://github.com/wizardsardine/liana) by Wizardsardine with the Talia
+design: name, logo, colours and glass finish, fonts, icons and the Talia vault graph. How it works is
+Liana's: same features, same signing devices, same wallet files and folder, same engine (`lianad`).
+Liana is BSD 3-Clause licensed; its copyright notice is kept in `LICENCE`, next to ours.
 
 ## What this branch changes
 
@@ -22,6 +22,9 @@ is kept in `LICENCE`, next to ours.
 | `liana-i18n/i18n/*.lang` | Sentences that name the app say "Talia Desktop"; the "hardware wallet" aside is dropped (our wording says "signing device") (all languages) |
 | `liana-gui/src/app/view/warning.rs`, `liana-gui/src/installer/mod.rs` | Two error titles say "Signing device" |
 | `liana-ui/src/font.rs`, `liana-ui/static/fonts/` | Talia iPhone app type: Figtree for text, Bricolage Grotesque for headings and bold (SIL OFL, licences beside the fonts) |
+| `liana-ui/src/color.rs`, `liana-ui/src/theme/` (incl. `gloss.rs`) | Talia colours (the iPhone app's palette) and its glass finish: glow, sheen and light edge |
+| `liana-ui/src/component/timeline.rs` | The setup screens' diagram drawn as the Talia vault graph (Estate Plan style) |
+| `liana-ui/src/icon.rs`, `liana-ui/static/icons/talia-icons/` | The iPhone app's icons: Tabler outline (MIT) plus our own key and vault glyphs |
 | `LICENCE` | Our copyright line under Wizardsardine's |
 
 Kept on purpose: "Liana Connect" (Wizardsardine's own online service), "Liana descriptor"

@@ -1,4 +1,29 @@
 <div align="center">
+  <img src="contrib/talia/talia-desktop-icon-1024.png" width="140px" />
+
+# Talia Desktop
+
+*21st Capital's desktop app for Talia Vaults, on Mac and Windows.*
+
+</div>
+
+Talia Desktop is [Liana](https://github.com/wizardsardine/liana), the Bitcoin wallet made by
+[Wizardsardine](https://wizardsardine.com), with 21st Capital's Talia design: name, logo, colours,
+fonts and icons, and the Talia vault graph. Wallets, signing devices and the wallet folder work exactly as in Liana, so a vault made in
+Liana opens in Talia Desktop and the other way round.
+
+- Talia for iPhone: [21st-Capital/talia](https://github.com/21st-Capital/talia)
+- What this fork changes, and how it follows each Liana release: [contrib/talia/README.md](contrib/talia/README.md)
+- Licence: BSD 3-Clause, the same as Liana. Wizardsardine's copyright notice is kept in
+  [LICENCE](LICENCE), next to ours.
+
+Downloads will be published under Releases.
+
+---
+
+*The original Liana README follows.*
+
+<div align="center">
   <a href="https://wizardsardine.com/liana" target="_blank">
     <img src="liana-ui/static/logos/liana-app-icon.svg" width="140px" />
   </a>
