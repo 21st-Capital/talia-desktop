@@ -142,6 +142,7 @@ fn key_note<'a>(text: String, url: String) -> Element<'a, message::DefineKey> {
     )
 }
 
+#[allow(dead_code)] // Liana's; the Talia slots draw their filled row themselves
 pub fn uneditable_defined_key<'a>(
     alias: &'a str,
     color: iced::Color,

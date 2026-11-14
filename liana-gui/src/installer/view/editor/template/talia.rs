@@ -17,6 +17,7 @@ use liana_ui::{
         pick_list::pick_list,
         text::{new, p1_bold, p2_regular, H3_SIZE},
         timeline::{spending_timeline, Template},
+        tooltip::tooltip,
     },
     icon,
     spacing::{HSpacing, VSpacing},
@@ -33,12 +34,12 @@ use crate::installer::{
     view::{
         defined_threshold,
         editor::{
-            defined_key,
+            defined_key, descriptor_type,
             template::{
                 caption_block, key_legend, row_next, BOTTOM_PADDING, DESCRIPTION_BOTTOM_PADDING,
                 FOOTER_SPACING, KEY_LEGEND_SPACING,
             },
-            undefined_key, uneditable_defined_key,
+            undefined_key,
         },
         layout,
     },
@@ -123,6 +124,9 @@ pub struct TaliaEditor<'a> {
     pub locked: bool,
     /// 21st Capital issues keys on the wallet's network.
     pub keys_available: bool,
+    /// Taproot or SegWit v0, the client's choice as in Liana's own templates.
+    pub use_taproot: bool,
+    pub editing_descriptor_type: bool,
     pub valid: bool,
     pub processing: bool,
 }
@@ -148,14 +152,15 @@ fn key_slot<'a>(
     label: String,
     path: usize,
     index: usize,
+    use_taproot: bool,
 ) -> Element<'a, Message> {
     match key {
         Some(key) => defined_key(
             &key.name,
             color,
             label,
-            key.source.taproot_warning(),
-            key.source.taproot_note(),
+            use_taproot.then(|| key.source.taproot_warning()).flatten(),
+            use_taproot.then(|| key.source.taproot_note()).flatten(),
             true,
         ),
         None => undefined_key(color, label, true, true),
@@ -172,8 +177,19 @@ fn key_slot<'a>(
 /// by hand.
 fn our_slot<'a>(key: Option<&'a Key>, label: String) -> Element<'a, Message> {
     if let Some(key) = key {
-        // Nothing on it to press: the key came with its slot.
-        return uneditable_defined_key(&key.name, OURS, label, None, None).map(|_| Message::None);
+        // Nothing on it to press: the key came with its slot. Its name is
+        // already the slot's label ("21st Capital Rescue Key"), so it is
+        // written once, not as label and name side by side.
+        return card::simple(
+            row![
+                icon::round_key_icon().size(H3_SIZE).color(OURS),
+                p1_bold(&key.name).width(Length::Fill),
+                icon::check_icon().style(theme::text::success),
+            ]
+            .spacing(10)
+            .align_y(Alignment::Center),
+        )
+        .into();
     }
     card::simple(
         row![
@@ -189,6 +205,15 @@ fn our_slot<'a>(key: Option<&'a Key>, label: String) -> Element<'a, Message> {
         .align_y(Alignment::Center),
     )
     .into()
+}
+
+/// A section's heading. Its explanation sits behind the info dot, never as a
+/// paragraph under it: the screen shows headings and controls only.
+fn heading<'a>(title: String, help: String) -> Element<'a, Message> {
+    row![p1_bold(title), tooltip(help)]
+        .spacing(6)
+        .align_y(Alignment::Center)
+        .into()
 }
 
 fn section<'a>(content: impl Into<Element<'a, Message>>) -> Element<'a, Message> {
@@ -211,7 +236,7 @@ fn primary_path<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
             } else {
                 t!("installer-talia-your-key")
             };
-            key_slot(key.as_ref(), OWN, label, 0, j)
+            key_slot(key.as_ref(), OWN, label, 0, j, e.use_taproot)
         } else if e.shape.cosigner_21c {
             our_slot(key.as_ref(), t!("installer-talia-cosigner"))
         } else {
@@ -221,6 +246,7 @@ fn primary_path<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
                 t!("installer-talia-your-extra-key"),
                 0,
                 j,
+                e.use_taproot,
             )
         });
     }
@@ -272,10 +298,10 @@ fn primary_path<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
     });
 
     section(
-        column![
-            p1_bold(t!("installer-talia-primary-keys")),
-            new::caption(t!("installer-able-to-move-any-time")).style(theme::text::secondary),
-        ]
+        column![heading(
+            t!("installer-talia-primary-keys"),
+            t!("installer-able-to-move-any-time"),
+        )]
         .push_maybe(holder)
         .push(keys)
         .push_maybe(threshold)
@@ -283,13 +309,17 @@ fn primary_path<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
     )
 }
 
-fn heirs<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
+fn heirs<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
     let count = e.shape.heirs(e.paths);
+    // A vault that can no longer change and has no heir: nothing to show.
+    if e.locked && count == 0 {
+        return None;
+    }
     let months = e.shape.heir_months();
-    let mut col = column![
-        p1_bold(t!("installer-talia-heirs")),
-        new::caption(t!("installer-talia-heirs-caption")).style(theme::text::secondary),
-    ]
+    let mut col = column![heading(
+        t!("installer-talia-heirs"),
+        t!("installer-talia-heirs-caption"),
+    )]
     .spacing(10);
 
     for i in 0..count {
@@ -329,6 +359,7 @@ fn heirs<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
                         t!("installer-talia-heir-key-number", number = i + 1),
                         path_index,
                         0,
+                        e.use_taproot,
                     ))
                     .spacing(10),
             )
@@ -342,35 +373,34 @@ fn heirs<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
                 .on_press(talia(TaliaMessage::AddHeir)),
         );
     }
-    section(col)
+    Some(section(col))
 }
 
 fn rescue<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
     let template = e.shape.template;
     let heirs = e.shape.heirs(e.paths);
-    let mut col = column![p1_bold(t!("installer-talia-rescue-key"))].spacing(10);
+    let required =
+        template != TaliaTemplate::SingleWithRescue && e.shape.rescue_required(heirs);
 
-    col = col.push(
-        new::caption(match template {
-            TaliaTemplate::SingleWithRescue => t!("installer-talia-rescue-single"),
-            _ => t!("installer-talia-rescue-caption"),
-        })
-        .style(theme::text::secondary),
-    );
+    // Everything there is to say about the Rescue Key, behind the info dot.
+    let mut help = Vec::new();
+    if required {
+        help.push(format!("{}.", t!("installer-talia-rescue-required")));
+        help.push(match template {
+            TaliaTemplate::TwoOfTwo => t!("installer-talia-rescue-required-2-2"),
+            _ => t!("installer-talia-rescue-required-2-3"),
+        });
+    }
+    help.push(match template {
+        TaliaTemplate::SingleWithRescue => t!("installer-talia-rescue-single"),
+        _ => t!("installer-talia-rescue-caption"),
+    });
+    help.push(t!("installer-talia-rescue-opens", months = RESCUE_MONTHS));
+    let mut col = column![heading(t!("installer-talia-rescue-key"), help.join(" "))].spacing(10);
 
     if template != TaliaTemplate::SingleWithRescue {
-        if e.shape.rescue_required(heirs) {
-            col = col.push(card::simple(
-                column![
-                    p1_bold(t!("installer-talia-rescue-required")),
-                    new::caption(match template {
-                        TaliaTemplate::TwoOfTwo => t!("installer-talia-rescue-required-2-2"),
-                        _ => t!("installer-talia-rescue-required-2-3"),
-                    })
-                    .style(theme::text::secondary),
-                ]
-                .spacing(5),
-            ));
+        if required {
+            // Nothing to answer: the info dot says why.
         } else if !e.locked {
             col = col.push(
                 row![
@@ -392,15 +422,10 @@ fn rescue<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
 
     if let Some(i) = e.shape.rescue_path_index(e.paths) {
         let path = &e.paths[i];
-        col = col
-            .push(our_slot(
-                path.keys.first().and_then(Option::as_ref),
-                t!("installer-talia-rescue-key"),
-            ))
-            .push(
-                new::caption(t!("installer-talia-rescue-opens", months = RESCUE_MONTHS))
-                    .style(theme::text::secondary),
-            );
+        col = col.push(our_slot(
+            path.keys.first().and_then(Option::as_ref),
+            t!("installer-talia-rescue-key"),
+        ));
         if let Some(w) = path.warning {
             col = col.push(new::small_caption(w.message()).style(theme::text::error));
         }
@@ -409,10 +434,10 @@ fn rescue<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
 }
 
 fn our_keys<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
-    let mut col = column![
-        p1_bold(t!("installer-talia-keys-title")),
-        new::caption(t!("installer-talia-keys-caption")).style(theme::text::secondary),
-    ]
+    let mut col = column![heading(
+        t!("installer-talia-keys-title"),
+        t!("installer-talia-keys-caption"),
+    )]
     .spacing(10);
 
     let get = |enabled: bool| {
@@ -443,12 +468,17 @@ fn our_keys<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
                 );
         }
         KeysFlow::Done if e.locked => {
-            col = col
-                .push(new::caption(t!("installer-talia-keys-done")).style(theme::text::success))
-                .push(
+            col = col.push(
+                row![
+                    new::caption(t!("installer-talia-keys-done"))
+                        .style(theme::text::success)
+                        .width(Length::Fill),
                     button::tertiary(None, t!("installer-talia-keys-change-shape"))
                         .on_press(talia(TaliaMessage::ChangeShape)),
-                );
+                ]
+                .spacing(HSpacing::M)
+                .align_y(Alignment::Center),
+            );
         }
         flow => {
             if let KeysFlow::Failed(error) = flow {
@@ -475,7 +505,12 @@ pub fn talia_template<'a>(
     let ours = e.shape.uses_21c(e.paths).then(|| our_keys(&e));
     let footer = super::template_footer(e.valid, e.processing, false);
 
-    let content = column![primary_path(&e), heirs(&e), rescue(&e)]
+    let content = column![
+        descriptor_type(e.use_taproot, e.editing_descriptor_type),
+        primary_path(&e)
+    ]
+        .push_maybe(heirs(&e))
+        .push(rescue(&e))
         .push_maybe(ours)
         .push(Space::with_height(FOOTER_SPACING))
         .push(footer)

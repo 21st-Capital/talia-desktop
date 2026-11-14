@@ -1,6 +1,6 @@
 //! The three vault shapes of the iPhone app, built on Liana's own paths: a
 //! primary path, one recovery path per heir and one for the 21st Capital
-//! Rescue Key. Liana composes the descriptor (taproot) and orders the recovery
+//! Rescue Key. Liana composes the descriptor (Taproot or SegWit) and orders the recovery
 //! paths by their wait.
 //!
 //! Liana refuses two paths opening at the same block, while the iPhone app

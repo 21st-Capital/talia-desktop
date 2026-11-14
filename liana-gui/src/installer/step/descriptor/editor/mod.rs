@@ -171,7 +171,8 @@ impl DefineDescriptor {
                     let shape = TaliaShape::new(talia);
                     self.paths = shape.initial_paths();
                     self.talia = Some(shape);
-                    // Every vault holding a 21st Capital key or a timelock is taproot.
+                    // Taproot unless the client picks SegWit (a Jade cannot
+                    // sign a taproot vault), as in Liana's own templates.
                     self.use_taproot = true;
                     self.editing_descriptor_type = false;
                 }
@@ -847,6 +848,8 @@ impl Step for DefineDescriptor {
                     flow: &self.keys_flow,
                     locked: self.talia_locked(),
                     keys_available: talia_keys::contract_network(self.network).is_some(),
+                    use_taproot: self.use_taproot,
+                    editing_descriptor_type: self.editing_descriptor_type,
                     valid: self.valid(),
                     processing: self.processing,
                 },
