@@ -92,9 +92,10 @@ const PILL_RADIUS: f32 = 5.0;
 /// A pill keeps this far from a dot or an arrowhead.
 const PILL_CLEAR: f32 = 14.0;
 
-/// Bootstrap Icons, the font liana-ui registers for [`crate::icon`].
-const ICONS: Font = Font::with_name("bootstrap-icons");
-const KEY_GLYPH: char = '\u{F44E}';
+/// The Talia icon font liana-ui registers for [`crate::icon`]: the key is the
+/// iPhone app's own key glyph.
+const ICONS: Font = Font::with_name("talia-icons");
+const KEY_GLYPH: char = '\u{E000}';
 const KEY_GLYPH_SIZE: f32 = 16.0;
 
 const CARD_SIZES: &[f32] = &[13.0, 12.0, 11.0, 10.0];
