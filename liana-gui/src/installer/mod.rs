@@ -3,6 +3,7 @@ mod decrypt;
 mod descriptor;
 mod message;
 pub(crate) mod step;
+mod talia_keys;
 mod view;
 
 pub use context::{CompileInputs, Context, RemoteBackend};

@@ -57,12 +57,18 @@ impl RemoteBackend {
     }
 }
 
+/// The wallet shapes the installer offers: the iPhone app's three, built with
+/// 21st Capital, and Liana's own "Build your own".
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum DescriptorTemplate {
+    /// Multi-Signature, 2 of 3.
     #[default]
-    SimpleInheritance,
+    TwoOfThree,
+    /// Multi-Signature, 2 of 2.
+    TwoOfTwo,
+    /// Single Signature with the 21st Capital Rescue Key.
+    SingleWithRescue,
     Custom,
-    MultisigSecurity,
 }
 
 #[derive(Clone)]

@@ -17,15 +17,19 @@ use crate::{font, theme::Theme, widget::Element};
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Template {
     Custom,
-    Inheritance,
-    MultisigSecurity,
+    /// Multi-Signature, 2 of 3, with an heir and the 21st Capital Rescue Key.
+    TwoOfThree,
+    /// Multi-Signature, 2 of 2, with an heir and the 21st Capital Rescue Key.
+    TwoOfTwo,
+    /// Single Signature, with an heir and the 21st Capital Rescue Key.
+    SingleWithRescue,
 }
 
 /// The spending policies of a wallet template over time.
 pub fn spending_timeline<'a, M: 'a>(template: Template) -> Element<'a, M> {
     Canvas::<Template, M, Theme, Renderer>::new(template)
         .width(CANVAS_WIDTH)
-        .height(CANVAS_HEIGHT)
+        .height(Rows::of(template).canvas_height())
         .into()
 }
 
@@ -43,7 +47,6 @@ const GRIDLINE: Color = Color::from_rgba8(0xFF, 0xFF, 0xFF, 0.16);
 const GROUND_BORDER: Color = Color::from_rgba8(0xFF, 0xFF, 0xFF, 0.08);
 
 const CANVAS_WIDTH: f32 = 800.0;
-const CANVAS_HEIGHT: f32 = 320.0;
 const PAD: f32 = 28.0;
 const GROUND_RADIUS: f32 = 16.0;
 const HAIRLINE: f32 = 1.0;
@@ -55,12 +58,20 @@ const AXIS_WIDTH_MAX: f32 = 170.0;
 const AXIS_STEP_INSET: f32 = 16.0;
 /// Gridlines start under the axis text, never level with it.
 const GRID_TOP: f32 = 68.0;
-const GRID_BOTTOM: f32 = 258.0;
 const GRID_WIDTH: f32 = 2.0;
 const LANES_TOP: f32 = 76.0;
-const LANES_BOTTOM: f32 = 252.0;
+/// The room the lanes share at least; a template with more lanes or keys
+/// grows the graph by what it needs beyond it.
+const LANES_ROOM_MIN: f32 = 176.0;
 const LANE_GAP_MAX: f32 = 36.0;
-const FOOTNOTE_TOP: f32 = 270.0;
+/// Lanes never sit closer than this when the graph grows for them.
+const LANE_GAP_MIN: f32 = 14.0;
+/// The gridlines reach this far below the lanes' room.
+const GRID_OVERHANG: f32 = 6.0;
+/// The footnote sits this far below the gridlines.
+const FOOTNOTE_GAP: f32 = 12.0;
+/// Room for two lines of footnote and the panel's bottom edge.
+const FOOTNOTE_ROOM: f32 = 50.0;
 
 const TILE_WIDTH: f32 = 36.0;
 const TILE_GAP: f32 = 5.0;
@@ -79,6 +90,9 @@ const KEY_SPACE: f32 = 3.0;
 const LINE_GAP: f32 = 34.0;
 /// Where the waiting path opens, as a fraction of the timeline.
 const OPENING_RATIO: f32 = 0.52;
+/// Where an heir's path opens, and the Rescue Key's after it.
+const HEIR_RATIO: f32 = 0.46;
+const RESCUE_RATIO: f32 = 0.76;
 const LINE_WIDTH: f32 = 2.0;
 const DASH: [f32; 2] = [6.0, 5.0];
 const DOT_RADIUS: f32 = 5.0;
@@ -109,12 +123,14 @@ const BISECT_STEPS: usize = 8;
 /// Slack absorbing the rounding of a laid-out line height.
 const ROUNDING: f32 = 0.5;
 
-const EVENTS: [Event; 2] = [Event::Receipt, Event::Timelock];
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Event {
     Receipt,
     Timelock,
+    /// An heir's wait: 8 to 15 months.
+    Heir,
+    /// The 21st Capital Rescue Key's wait: 15 months.
+    Rescue,
 }
 
 impl Event {
@@ -122,6 +138,18 @@ impl Event {
         match self {
             Event::Receipt => t!("installer-template-event-receipt"),
             Event::Timelock => t!("installer-template-event-timelock"),
+            Event::Heir => t!("installer-talia-event-heir"),
+            Event::Rescue => t!("installer-talia-event-rescue"),
+        }
+    }
+
+    /// Where the event sits, as a fraction of the timeline.
+    fn ratio(self) -> f32 {
+        match self {
+            Event::Receipt => 0.0,
+            Event::Timelock => OPENING_RATIO,
+            Event::Heir => HEIR_RATIO,
+            Event::Rescue => RESCUE_RATIO,
         }
     }
 }
@@ -147,47 +175,129 @@ impl Policy {
 }
 
 impl Template {
-    /// The path that always spends, then the one the timelock opens.
-    fn policies(self) -> [Policy; 2] {
-        let (threshold, primary, recovery) = match self {
-            Template::Custom => (
-                1,
-                vec![t!("installer-template-custom-primary")],
-                vec![t!("installer-template-custom-recovery")],
-            ),
-            Template::Inheritance => (
-                1,
-                vec![t!("installer-primary-key")],
-                vec![t!("installer-inheritance-key")],
-            ),
-            Template::MultisigSecurity => (
-                2,
-                vec![
-                    t!("installer-primary-key-number", number = 1),
-                    t!("installer-primary-key-number", number = 2),
-                ],
-                vec![
-                    t!("installer-primary-key-number", number = 1),
-                    t!("installer-primary-key-number", number = 2),
-                    t!("installer-recovery-key"),
-                ],
-            ),
+    /// The path that always spends, then the ones a timelock opens, soonest
+    /// first.
+    fn policies(self) -> Vec<Policy> {
+        let primary = |name: String, keys: Vec<String>| Policy {
+            name,
+            threshold: if keys.len() > 1 { 2 } else { 1 },
+            keys,
+            opens: Event::Receipt,
         };
-        [
-            Policy {
-                name: t!("installer-template-policy-primary"),
-                threshold,
-                keys: primary,
-                opens: Event::Receipt,
-            },
-            Policy {
-                name: t!("installer-template-policy-recovery"),
-                threshold,
-                keys: recovery,
-                opens: Event::Timelock,
-            },
-        ]
+        let single = |name: String, key: String, opens: Event| Policy {
+            name,
+            threshold: 1,
+            keys: vec![key],
+            opens,
+        };
+        // The heir's own path, then 21st Capital's: our keys always come last.
+        let heir_and_rescue = || {
+            [
+                single(
+                    t!("installer-talia-lane-heir"),
+                    t!("installer-talia-heir-key"),
+                    Event::Heir,
+                ),
+                single(
+                    t!("installer-talia-lane-rescue"),
+                    t!("installer-talia-rescue-key"),
+                    Event::Rescue,
+                ),
+            ]
+        };
+        match self {
+            Template::Custom => vec![
+                primary(
+                    t!("installer-template-policy-primary"),
+                    vec![t!("installer-template-custom-primary")],
+                ),
+                single(
+                    t!("installer-template-policy-recovery"),
+                    t!("installer-template-custom-recovery"),
+                    Event::Timelock,
+                ),
+            ],
+            Template::TwoOfThree => std::iter::once(primary(
+                t!("installer-talia-lane-primary-keys"),
+                vec![
+                    t!("installer-talia-your-key-number", number = 1),
+                    t!("installer-talia-your-key-number", number = 2),
+                    t!("installer-talia-cosigner"),
+                ],
+            ))
+            .chain(heir_and_rescue())
+            .collect(),
+            Template::TwoOfTwo => std::iter::once(primary(
+                t!("installer-talia-lane-primary-keys"),
+                vec![
+                    t!("installer-talia-your-key"),
+                    t!("installer-talia-cosigner"),
+                ],
+            ))
+            .chain(heir_and_rescue())
+            .collect(),
+            Template::SingleWithRescue => std::iter::once(primary(
+                t!("installer-talia-lane-primary-key"),
+                vec![t!("installer-talia-your-key")],
+            ))
+            .chain(heir_and_rescue())
+            .collect(),
+        }
     }
+
+    /// The events on the axis, in time order.
+    fn events(self) -> Vec<Event> {
+        match self {
+            Template::Custom => vec![Event::Receipt, Event::Timelock],
+            _ => vec![Event::Receipt, Event::Heir, Event::Rescue],
+        }
+    }
+
+    fn footnote(self) -> String {
+        match self {
+            Template::Custom => t!("installer-template-footnote"),
+            Template::SingleWithRescue => t!("installer-talia-footnote-single"),
+            Template::TwoOfThree | Template::TwoOfTwo => t!("installer-talia-footnote-multi"),
+        }
+    }
+}
+
+/// The graph's vertical layout: the lanes' room grows with what a template
+/// draws, and everything under it moves down with it.
+struct Rows {
+    room: f32,
+}
+
+impl Rows {
+    fn of(template: Template) -> Self {
+        let policies = template.policies();
+        let taken: f32 = policies.iter().map(|p| lane_height(p.keys.len())).sum();
+        let gaps = LANE_GAP_MIN * (policies.len() as f32 - 1.0);
+        Self {
+            room: LANES_ROOM_MIN.max((taken + gaps).ceil()),
+        }
+    }
+
+    fn lanes_bottom(&self) -> f32 {
+        LANES_TOP + self.room
+    }
+
+    fn grid_bottom(&self) -> f32 {
+        self.lanes_bottom() + GRID_OVERHANG
+    }
+
+    fn footnote_top(&self) -> f32 {
+        self.grid_bottom() + FOOTNOTE_GAP
+    }
+
+    fn canvas_height(&self) -> f32 {
+        self.footnote_top() + FOOTNOTE_ROOM
+    }
+}
+
+/// A lane's height: its title line, then one line per key.
+fn lane_height(keys: usize) -> f32 {
+    2.0 * CARD_PAD_V + TEXT_LINE + (KEY_SPACE + TEXT_LINE) * keys as f32
 }
 
 /// A policy laid out: its texts at the size they fit, and the height its card
@@ -228,6 +338,7 @@ struct Painter<'a> {
 
 impl Painter<'_> {
     fn draw(&mut self, template: Template) {
+        let rows = Rows::of(template);
         let lanes = lanes(template);
         let card_width = lanes
             .iter()
@@ -237,22 +348,30 @@ impl Painter<'_> {
             .min(CARD_WIDTH_MAX);
         let x_start = PAD + TILE_WIDTH + TILE_GAP + card_width + LINE_GAP;
         let x_end = CANVAS_WIDTH - PAD;
-        let x_opening = x_start + ((x_end - x_start) * OPENING_RATIO).round();
-        let x_of = |event: Event| match event {
-            Event::Receipt => x_start,
-            Event::Timelock => x_opening,
-        };
+        let x_of = |event: Event| x_start + ((x_end - x_start) * event.ratio()).round();
 
         self.ground();
-        let axis_width = (x_opening - x_start - AXIS_STEP_INSET).min(AXIS_WIDTH_MAX);
-        for event in EVENTS {
-            self.gridline(x_of(event));
-            self.axis_label(x_of(event), event, axis_width);
+        let events = template.events();
+        // Every label keeps to the narrowest step between two gridlines.
+        let step = events
+            .windows(2)
+            .map(|pair| x_of(pair[1]) - x_of(pair[0]))
+            .fold(f32::INFINITY, f32::min);
+        let axis_width = (step - AXIS_STEP_INSET).min(AXIS_WIDTH_MAX);
+        for event in &events {
+            self.gridline(x_of(*event), rows.grid_bottom());
+            self.axis_label(x_of(*event), *event, axis_width);
         }
+        // A lane open from the start wears its pill before the next gridline.
+        let x_next = events
+            .iter()
+            .map(|event| x_of(*event))
+            .filter(|x| *x > x_start)
+            .fold(x_end, f32::min);
 
         // The lanes share the room evenly, stacked around its middle.
         let taken: f32 = lanes.iter().map(|lane| lane.height).sum();
-        let room = LANES_BOTTOM - LANES_TOP;
+        let room = rows.room;
         let gap = ((room - taken) / (lanes.len() as f32 - 1.0)).clamp(0.0, LANE_GAP_MAX);
         let stack = taken + gap * (lanes.len() as f32 - 1.0);
         let mut top = (LANES_TOP + (room - stack) / 2.0).round();
@@ -260,10 +379,10 @@ impl Painter<'_> {
             let y = (top + lane.height / 2.0).round();
             self.key_tile(top, lane);
             self.key_card(top, card_width, lane);
-            self.timeline(x_start, x_of(lane.opens), x_end, y);
+            self.timeline(x_start, x_of(lane.opens), x_next, x_end, y);
             top += lane.height + gap;
         }
-        self.footnote();
+        self.footnote(template, rows.footnote_top());
     }
 
     /// The panel the graph sits on. It keeps its own dark ground so the green
@@ -284,10 +403,10 @@ impl Painter<'_> {
     }
 
     /// One flat colour from top to bottom: nothing in the graph fades.
-    fn gridline(&mut self, x: f32) {
+    fn gridline(&mut self, x: f32, bottom: f32) {
         self.frame.fill_rectangle(
             Point::new(x - GRID_WIDTH / 2.0, GRID_TOP),
-            Size::new(GRID_WIDTH, GRID_BOTTOM - GRID_TOP),
+            Size::new(GRID_WIDTH, bottom - GRID_TOP),
             GRIDLINE,
         );
     }
@@ -364,7 +483,7 @@ impl Painter<'_> {
 
     /// Dashed grey while the path waits, then solid amber from the opening dot
     /// to the arrowhead, with the ACTIVE pill where it opens.
-    fn timeline(&mut self, x_start: f32, x_open: f32, x_end: f32, y: f32) {
+    fn timeline(&mut self, x_start: f32, x_open: f32, x_next: f32, x_end: f32, y: f32) {
         if x_open > x_start {
             self.frame.stroke(
                 &Path::line(Point::new(x_start, y), Point::new(x_open, y)),
@@ -396,11 +515,7 @@ impl Painter<'_> {
 
         // A path open from the start wears its pill before the next gridline;
         // one that opens later wears it between its dot and its arrowhead.
-        let x_until = if x_open > x_start {
-            x_arrow
-        } else {
-            x_start + (x_end - x_start) * OPENING_RATIO
-        };
+        let x_until = if x_open > x_start { x_arrow } else { x_next };
         self.active_pill(x_open + PILL_CLEAR, x_until - PILL_CLEAR, y);
     }
 
@@ -437,20 +552,16 @@ impl Painter<'_> {
         );
     }
 
-    fn footnote(&mut self) {
+    fn footnote(&mut self, template: Template, top: f32) {
         let note = fit(
-            label(
-                t!("installer-template-footnote"),
-                font::REGULAR,
-                FOOTNOTE_INK,
-            ),
+            label(template.footnote(), font::REGULAR, FOOTNOTE_INK),
             FOOTNOTE_SIZES,
             CANVAS_WIDTH - 2.0 * PAD,
             2,
         );
         self.text(
             &note.text,
-            Point::new(PAD, FOOTNOTE_TOP),
+            Point::new(PAD, top),
             advanced_text::Alignment::Left,
             Vertical::Top,
         );
@@ -500,8 +611,7 @@ fn lanes(template: Template) -> Vec<Lane> {
                     fit(label(name, font::REGULAR, WHITE), CARD_SIZES, text_max, 1)
                 })
                 .collect();
-            let height =
-                2.0 * CARD_PAD_V + TEXT_LINE + (KEY_SPACE + TEXT_LINE) * names.len() as f32;
+            let height = lane_height(names.len());
             Lane {
                 title,
                 names,

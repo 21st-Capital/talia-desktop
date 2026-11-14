@@ -72,20 +72,11 @@ impl Step for DescriptorTemplateDescription {
         network: Network,
         _email: Option<&'a str>,
     ) -> Element<'a, Message> {
-        match self.template {
-            DescriptorTemplate::SimpleInheritance => {
-                view::editor::template::inheritance::inheritance_template_description(
-                    progress, network,
-                )
-            }
-            DescriptorTemplate::MultisigSecurity => {
-                view::editor::template::multisig_security_wallet::multisig_security_template_description(
-                    progress, network,
-                )
-            }
-            DescriptorTemplate::Custom => {
-                view::editor::template::custom::custom_template_description(progress, network)
-            }
+        match super::talia::TaliaTemplate::from_template(self.template) {
+            Some(template) => view::editor::template::talia::talia_template_description(
+                template, progress, network,
+            ),
+            None => view::editor::template::custom::custom_template_description(progress, network),
         }
     }
 }

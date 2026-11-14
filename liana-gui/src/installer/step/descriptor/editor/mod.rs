@@ -1,4 +1,5 @@
 pub mod key;
+pub mod talia;
 pub mod template;
 
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -37,6 +38,12 @@ use crate::{
 use liana_connect::keys::api::KeyKind;
 
 use key::{new_multixkey_from_xpub, EditKeyAlias, PathData, SelectKeySource, ALIAS_INPUT_ID};
+use talia::{KeysFlow, TaliaShape, TaliaTemplate};
+
+use crate::installer::{
+    message::TaliaMessage,
+    talia_keys::{self, listener::BrowserPages, proof::default_pins, Endpoints, FetchedKeys},
+};
 
 pub trait DescriptorEditModal {
     fn processing(&self) -> bool {
@@ -67,6 +74,13 @@ pub struct DefineDescriptor {
     error: Option<String>,
     processing: bool,
     compiled: Option<LianaDescriptor>,
+
+    /// The client's choices when the template is one of the iPhone app's.
+    talia: Option<TaliaShape>,
+    keys_flow: KeysFlow,
+    keys_attempt: u64,
+    /// The 21st Capital keys placed in their slots.
+    our_keys: Vec<Fingerprint>,
 }
 
 impl DefineDescriptor {
@@ -85,6 +99,10 @@ impl DefineDescriptor {
             accounts: Default::default(),
             processing: false,
             compiled: None,
+            talia: None,
+            keys_flow: KeysFlow::Idle,
+            keys_attempt: 0,
+            our_keys: Vec::new(),
         }
     }
 
@@ -121,6 +139,11 @@ impl DefineDescriptor {
     }
 
     fn valid(&self) -> bool {
+        if let Some(shape) = &self.talia {
+            if !shape.complete(shape.heirs(&self.paths)) {
+                return false;
+            }
+        }
         !self.paths.iter().any(|path| {
             !path.valid()
                 || (self.use_taproot
@@ -138,22 +161,209 @@ impl DefineDescriptor {
 
     fn load_template(&mut self, template: DescriptorTemplate) {
         if self.descriptor_template != template || self.paths.is_empty() {
-            match template {
-                DescriptorTemplate::SimpleInheritance => {
-                    self.paths = vec![Path::new_primary_path(), Path::new_recovery_path()];
+            self.keys_flow = KeysFlow::Idle;
+            // Our keys belong to the shape they were fetched for.
+            for fingerprint in self.our_keys.drain(..) {
+                self.keys.remove(&fingerprint);
+            }
+            match TaliaTemplate::from_template(template) {
+                Some(talia) => {
+                    let shape = TaliaShape::new(talia);
+                    self.paths = shape.initial_paths();
+                    self.talia = Some(shape);
+                    // Every vault holding a 21st Capital key or a timelock is taproot.
+                    self.use_taproot = true;
+                    self.editing_descriptor_type = false;
                 }
-                DescriptorTemplate::MultisigSecurity => {
-                    self.paths = vec![
-                        Path::new_primary_path().with_n_keys(2).with_threshold(2),
-                        Path::new_recovery_path().with_n_keys(3).with_threshold(2),
-                    ];
-                }
-                DescriptorTemplate::Custom => {
+                None => {
+                    self.talia = None;
                     self.paths = vec![Path::new_primary_path(), Path::new_recovery_path()];
                 }
             }
+            self.check_for_warning();
         }
         self.descriptor_template = template;
+    }
+
+    /// Whether the shape may still change: not once the website was asked
+    /// for keys of this shape, nor while it is being asked.
+    fn talia_locked(&self) -> bool {
+        self.keys_flow.is_waiting() || self.talia_keys_placed()
+    }
+
+    /// Whether a 21st Capital key sits in one of its slots.
+    fn talia_keys_placed(&self) -> bool {
+        let Some(shape) = &self.talia else {
+            return false;
+        };
+        let cosigner = shape
+            .cosigner_slot(&self.paths)
+            .is_some_and(|j| self.paths[0].keys[j].is_some());
+        let rescue = shape
+            .rescue_path_index(&self.paths)
+            .is_some_and(|i| self.paths[i].keys[0].is_some());
+        cosigner || rescue
+    }
+
+    /// Takes the 21st Capital keys out of their slots.
+    fn remove_talia_keys(&mut self, hws: &mut HardwareWallets) {
+        let Some(shape) = &self.talia else {
+            return;
+        };
+        let mut slots = Vec::new();
+        if let Some(j) = shape.cosigner_slot(&self.paths) {
+            slots.push((0, j));
+        }
+        if let Some(i) = shape.rescue_path_index(&self.paths) {
+            slots.push((i, 0));
+        }
+        for (i, j) in slots {
+            if let Some(key) = self.paths[i].keys[j].take() {
+                self.keys.remove(&key.fingerprint);
+                hws.aliases.remove(&key.fingerprint);
+            }
+        }
+        self.our_keys.clear();
+        self.keys_flow = KeysFlow::Idle;
+        self.check_setup();
+    }
+
+    /// Puts the fetched keys in their slots, our keys last on every path.
+    fn place_talia_keys(
+        &mut self,
+        hws: &mut HardwareWallets,
+        fetched: FetchedKeys,
+    ) -> Result<(), String> {
+        let Some(shape) = &self.talia else {
+            return Err(t!("installer-talia-keys-missing"));
+        };
+        let mut placements = Vec::new();
+        match (shape.cosigner_slot(&self.paths), fetched.cosigner) {
+            (Some(j), Some(key)) => placements.push(((0, j), key)),
+            (Some(_), None) => return Err(t!("installer-talia-keys-missing")),
+            _ => {}
+        }
+        match (shape.rescue_path_index(&self.paths), fetched.rescue) {
+            (Some(i), Some(key)) => placements.push(((i, 0), key)),
+            (Some(_), None) => return Err(t!("installer-talia-keys-missing")),
+            _ => {}
+        }
+        // One of ours must never be one of the client's keys too.
+        let in_vault = |fingerprint: &Fingerprint| {
+            self.paths
+                .iter()
+                .flat_map(|path| path.keys.iter().flatten())
+                .any(|key| key.fingerprint == *fingerprint)
+        };
+        if placements.iter().any(|(_, key)| in_vault(&key.fingerprint)) {
+            return Err(t!("installer-talia-keys-already-used"));
+        }
+        for ((i, j), key) in placements {
+            self.keys.insert(key.fingerprint, key.clone());
+            hws.aliases.insert(key.fingerprint, key.name.clone());
+            self.our_keys.push(key.fingerprint);
+            self.paths[i].keys[j] = Some(key);
+        }
+        self.check_setup();
+        Ok(())
+    }
+
+    fn update_talia(&mut self, hws: &mut HardwareWallets, message: TaliaMessage) -> Task<Message> {
+        let locked = self.talia_locked();
+        let Some(shape) = self.talia.as_mut() else {
+            return Task::none();
+        };
+        match message {
+            TaliaMessage::CosignerOurs(ours) if !locked && shape.cosigner_21c != ours => {
+                shape.cosigner_21c = ours;
+                // The slot changes hands: whatever key it held goes.
+                if let Some(slot) = self.paths[0].keys.last_mut() {
+                    *slot = None;
+                }
+            }
+            TaliaMessage::Rescue(include) if !locked => {
+                shape.set_rescue(&mut self.paths, include);
+            }
+            TaliaMessage::AddHeir if !locked => shape.add_heir(&mut self.paths),
+            TaliaMessage::RemoveHeir(i) if !locked => shape.remove_heir(&mut self.paths, i),
+            TaliaMessage::HeirMonths(i, months) if !locked => {
+                shape.set_heir_months(&mut self.paths, i, months);
+            }
+            TaliaMessage::GetKeys
+                if !locked
+                    && shape.complete(shape.heirs(&self.paths))
+                    && shape.uses_21c(&self.paths) =>
+            {
+                return self.get_talia_keys()
+            }
+            TaliaMessage::OpenKeysPage => {
+                if let KeysFlow::Waiting { url, .. } = &self.keys_flow {
+                    return Task::done(Message::OpenUrl(url.clone()));
+                }
+            }
+            TaliaMessage::CancelKeys => {
+                if self.keys_flow.is_waiting() {
+                    self.keys_flow = KeysFlow::Idle;
+                }
+            }
+            TaliaMessage::KeysFetched(attempt, res) => {
+                let current = matches!(
+                    &self.keys_flow,
+                    KeysFlow::Waiting { attempt: a, .. } if *a == attempt
+                );
+                if current {
+                    self.keys_flow = match res {
+                        Ok(fetched) => match self.place_talia_keys(hws, *fetched) {
+                            Ok(()) => KeysFlow::Done,
+                            Err(e) => KeysFlow::Failed(e),
+                        },
+                        Err(e) => KeysFlow::Failed(e.message()),
+                    };
+                }
+            }
+            TaliaMessage::ChangeShape => self.remove_talia_keys(hws),
+            _ => {}
+        }
+        self.check_for_warning();
+        Task::none()
+    }
+
+    /// Opens the website and waits for the keys to come back.
+    fn get_talia_keys(&mut self) -> Task<Message> {
+        let Some(shape) = &self.talia else {
+            return Task::none();
+        };
+        let vault_shape = shape.vault_shape(&self.paths);
+        let pages = BrowserPages {
+            title: t!("installer-talia-browser-title"),
+            done: t!("installer-talia-browser-done"),
+            wrong_request: t!("installer-talia-browser-wrong-request"),
+        };
+        let started = Endpoints::from_env().and_then(|endpoints| {
+            talia_keys::start(self.network, vault_shape, pages, endpoints, default_pins())
+        });
+        match started {
+            Err(e) => {
+                self.keys_flow = KeysFlow::Failed(e.message());
+                Task::none()
+            }
+            Ok(started) => {
+                self.keys_attempt += 1;
+                let attempt = self.keys_attempt;
+                let (wait, handle) = Task::perform(started.keys, move |res| {
+                    Message::DefineDescriptor(message::DefineDescriptor::Talia(
+                        TaliaMessage::KeysFetched(attempt, res.map(Box::new)),
+                    ))
+                })
+                .abortable();
+                self.keys_flow = KeysFlow::Waiting {
+                    attempt,
+                    url: started.url.clone(),
+                    _abort: handle.abort_on_drop(),
+                };
+                Task::batch([Task::done(Message::OpenUrl(started.url)), wait])
+            }
+        }
     }
 
     fn keys(&self) -> HashMap<Fingerprint, (Vec<(usize, usize)>, Key)> {
@@ -206,7 +416,13 @@ impl DefineDescriptor {
         {
             token_kind.push(KeyKind::Cosigner);
         }
-        let keys = self.path_keys(coordinates.iter().map(|c| c.0).collect());
+        // Our templates take 21st Capital's keys, never another provider's.
+        if self.talia.is_some() {
+            token_kind.clear();
+        }
+        let mut keys = self.path_keys(coordinates.iter().map(|c| c.0).collect());
+        // 21st Capital's keys are never offered for the client's own slots.
+        keys.extend(self.our_keys.iter().copied());
         let actual_path = PathData {
             coordinates,
             keys,
@@ -250,6 +466,11 @@ impl Step for DefineDescriptor {
             }
             Message::DefineDescriptor(message::DefineDescriptor::ChangeTemplate(template)) => {
                 self.descriptor_template = template;
+                if TaliaTemplate::from_template(template).is_none() {
+                    // Customized: the paths stay, as Liana's own editor has them.
+                    self.talia = None;
+                    self.keys_flow = KeysFlow::Idle;
+                }
             }
             Message::DefineDescriptor(message::DefineDescriptor::AddRecoveryPath) => {
                 self.paths.push(Path::new_recovery_path());
@@ -347,6 +568,9 @@ impl Step for DefineDescriptor {
                 self.paths.clear();
                 self.load_template(self.descriptor_template);
                 self.modal = None;
+            }
+            Message::DefineDescriptor(message::DefineDescriptor::Talia(msg)) => {
+                return self.update_talia(hws, msg);
             }
             Message::DefineDescriptor(message::DefineDescriptor::Path(i, msg)) => {
                 match msg {
@@ -613,32 +837,21 @@ impl Step for DefineDescriptor {
         network: Network,
         _email: Option<&'a str>,
     ) -> Element<'a, Message> {
-        let content = match self.descriptor_template {
-            DescriptorTemplate::SimpleInheritance => {
-                view::editor::template::inheritance::inheritance_template(
-                    progress,
-                    network,
-                    self.use_taproot,
-                    self.editing_descriptor_type,
-                    &self.paths[0],
-                    &self.paths[1],
-                    self.valid(),
-                    self.processing,
-                )
-            }
-            DescriptorTemplate::MultisigSecurity => {
-                view::editor::template::multisig_security_wallet::multisig_security_template(
-                    progress,
-                    network,
-                    self.use_taproot,
-                    self.editing_descriptor_type,
-                    &self.paths[0],
-                    &self.paths[1],
-                    self.valid(),
-                    self.processing,
-                )
-            }
-            DescriptorTemplate::Custom => view::editor::template::custom::custom_template(
+        let content = match (&self.talia, self.descriptor_template) {
+            (Some(shape), _) => view::editor::template::talia::talia_template(
+                progress,
+                network,
+                view::editor::template::talia::TaliaEditor {
+                    shape,
+                    paths: &self.paths,
+                    flow: &self.keys_flow,
+                    locked: self.talia_locked(),
+                    keys_available: talia_keys::contract_network(self.network).is_some(),
+                    valid: self.valid(),
+                    processing: self.processing,
+                },
+            ),
+            (None, _) => view::editor::template::custom::custom_template(
                 progress,
                 network,
                 self.use_taproot,
@@ -897,6 +1110,8 @@ mod tests {
             LianaDirectory::new(PathBuf::from_str("/").unwrap()),
             crate::installer::context::RemoteBackend::None,
         );
+        // One primary key and one recovery key, as "Build your own" starts.
+        ctx.descriptor_template = DescriptorTemplate::Custom;
         let sandbox: Sandbox<DefineDescriptor> = Sandbox::new(DefineDescriptor::new(
             Network::Signet,
             Arc::new(Mutex::new(Signer::generate(Network::Bitcoin).unwrap())),
@@ -979,6 +1194,8 @@ mod tests {
             LianaDirectory::new(PathBuf::from_str("/").unwrap()),
             crate::installer::context::RemoteBackend::None,
         );
+        // One primary key and one recovery key, as "Build your own" starts.
+        ctx.descriptor_template = DescriptorTemplate::Custom;
         let sandbox: Sandbox<DefineDescriptor> = Sandbox::new(DefineDescriptor::new(
             Network::Testnet,
             Arc::new(Mutex::new(Signer::generate(Network::Testnet).unwrap())),
@@ -1070,5 +1287,267 @@ mod tests {
             .await;
         assert!(run_apply(&sandbox, &mut ctx).await);
         assert!(ctx.hw_is_used);
+    }
+
+    /// A key of a throwaway test seed at 48'/1'/0'/2', entered as an xpub.
+    fn test_key(seed: u8, name: &str) -> Key {
+        use liana::miniscript::bitcoin::{
+            bip32::{DerivationPath, Xpriv, Xpub},
+            secp256k1::Secp256k1,
+            NetworkKind,
+        };
+        let secp = Secp256k1::new();
+        let master = Xpriv::new_master(NetworkKind::Test, &[seed; 32]).unwrap();
+        let path = DerivationPath::from_str("m/48'/1'/0'/2'").unwrap();
+        let xpub = Xpub::from_priv(&secp, &master.derive_priv(&secp, &path).unwrap());
+        let fingerprint = master.fingerprint(&secp);
+        let key =
+            DescriptorPublicKey::from_str(&format!("[{fingerprint}/48'/1'/0'/2']{xpub}")).unwrap();
+        Key {
+            source: KeySource::Manual,
+            name: name.to_string(),
+            fingerprint,
+            key,
+            account: None,
+        }
+    }
+
+    fn talia_message(msg: TaliaMessage) -> Message {
+        Message::DefineDescriptor(message::DefineDescriptor::Talia(msg))
+    }
+
+    fn set_key(path: usize, index: usize, key: &Key) -> Message {
+        Message::DefineDescriptor(message::DefineDescriptor::KeysEdited(
+            vec![(path, index)],
+            SelectedKey::New(Box::new(key.clone())),
+        ))
+    }
+
+    /// Puts the step in the state "Get my 21st Capital keys" leaves it in
+    /// while it waits, for attempt `attempt`.
+    fn waiting(step: &mut DefineDescriptor, attempt: u64) {
+        let (_, handle) = Task::<Message>::none().abortable();
+        step.keys_attempt = attempt;
+        step.keys_flow = KeysFlow::Waiting {
+            attempt,
+            url: "https://www.21stcapital.com/desktop/keys".to_string(),
+            _abort: handle,
+        };
+    }
+
+    fn fetched(cosigner: Option<&Key>, rescue: Option<&Key>) -> Message {
+        talia_message(TaliaMessage::KeysFetched(
+            1,
+            Ok(Box::new(FetchedKeys {
+                network: talia_keys::proof::ProofNet::Testnet4,
+                vault_number: Some(1),
+                account: Some(1000),
+                cosigner: cosigner.cloned(),
+                rescue: rescue.cloned(),
+            })),
+        ))
+    }
+
+    fn talia_sandbox(template: DescriptorTemplate) -> (Context, Sandbox<DefineDescriptor>) {
+        let mut ctx = Context::new(
+            Network::Testnet4,
+            LianaDirectory::new(PathBuf::from_str("/").unwrap()),
+            crate::installer::context::RemoteBackend::None,
+        );
+        ctx.descriptor_template = template;
+        let sandbox = Sandbox::new(DefineDescriptor::new(
+            Network::Testnet4,
+            Arc::new(Mutex::new(Signer::generate(Network::Testnet4).unwrap())),
+        ));
+        (ctx, sandbox)
+    }
+
+    #[tokio::test]
+    async fn a_two_of_three_with_an_heir_and_our_keys() {
+        let (mut ctx, sandbox) = talia_sandbox(DescriptorTemplate::TwoOfThree);
+        sandbox.load(&ctx).await;
+        let (mine1, mine2, heir) = (
+            test_key(1, "Mine 1"),
+            test_key(2, "Mine 2"),
+            test_key(3, "Heir"),
+        );
+        let (cosigner, rescue) = (
+            test_key(4, "21st Capital co-signer"),
+            test_key(5, "21st Capital Rescue Key"),
+        );
+
+        sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
+        sandbox.check(|step| {
+            // The Rescue Key is a question now that an heir is the way back.
+            assert!(!step.valid());
+            assert_eq!(step.paths.len(), 2);
+        });
+        sandbox
+            .update(talia_message(TaliaMessage::Rescue(true)))
+            .await;
+        sandbox
+            .update(talia_message(TaliaMessage::HeirMonths(0, 9)))
+            .await;
+        sandbox.update(set_key(0, 0, &mine1)).await;
+        sandbox.update(set_key(0, 1, &mine2)).await;
+        sandbox.update(set_key(1, 0, &heir)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths.len(), 3);
+            // Our two slots are still empty.
+            assert!(!step.valid());
+            assert_eq!(
+                step.talia.as_ref().unwrap().vault_shape(&step.paths),
+                talia_keys::VaultShape {
+                    config: talia_keys::VaultConfig::Multi2of3,
+                    cosigner: true,
+                    rescue: true,
+                    heirs: vec![9],
+                }
+            );
+            waiting(step, 1);
+        });
+
+        // A stale answer changes nothing; the current one fills our slots.
+        sandbox
+            .update(talia_message(TaliaMessage::KeysFetched(
+                0,
+                Err(talia_keys::HandoffError::TimedOut),
+            )))
+            .await;
+        sandbox.check(|step| assert!(step.keys_flow.is_waiting()));
+        sandbox
+            .update(fetched(Some(&cosigner), Some(&rescue)))
+            .await;
+        sandbox.check(|step| {
+            assert!(matches!(step.keys_flow, KeysFlow::Done));
+            assert!(step.talia_locked());
+            assert!(step.valid());
+        });
+
+        // The shape no longer changes under our keys.
+        sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
+        sandbox
+            .update(talia_message(TaliaMessage::Rescue(false)))
+            .await;
+        sandbox.check(|step| assert_eq!(step.paths.len(), 3));
+
+        assert!(run_apply(&sandbox, &mut ctx).await);
+        let desc = ctx.descriptor.as_ref().unwrap();
+        assert!(desc.is_taproot());
+        let text = desc.to_string();
+        let at = |key: &Key| text.find(&key.fingerprint.to_string()).unwrap();
+        // The client's keys first, ours last.
+        assert!(at(&mine1) < at(&mine2) && at(&mine2) < at(&cosigner));
+        let policy = desc.policy();
+        assert!(matches!(policy.primary_path(), PathInfo::Multi(2, keys) if keys.len() == 3));
+        let waits: Vec<u16> = policy.recovery_paths().keys().copied().collect();
+        assert_eq!(waits, vec![39_447, 65_535]);
+        let (_, heir_origins) = policy.recovery_paths()[&39_447].thresh_origins();
+        assert!(heir_origins.contains_key(&heir.fingerprint));
+        let (_, rescue_origins) = policy.recovery_paths()[&65_535].thresh_origins();
+        assert!(rescue_origins.contains_key(&rescue.fingerprint));
+        assert_eq!(
+            ctx.keys[&cosigner.fingerprint].name,
+            "21st Capital co-signer"
+        );
+        assert_eq!(
+            ctx.keys[&rescue.fingerprint].name,
+            "21st Capital Rescue Key"
+        );
+    }
+
+    #[tokio::test]
+    async fn changing_the_shape_takes_our_keys_out() {
+        let (ctx, sandbox) = talia_sandbox(DescriptorTemplate::TwoOfTwo);
+        sandbox.load(&ctx).await;
+        let (cosigner, rescue) = (test_key(4, "co"), test_key(5, "rescue"));
+        sandbox.check(|step| waiting(step, 1));
+        sandbox
+            .update(fetched(Some(&cosigner), Some(&rescue)))
+            .await;
+        sandbox.check(|step| {
+            assert!(step.talia_keys_placed());
+            assert!(step.keys.contains_key(&rescue.fingerprint));
+        });
+        sandbox
+            .update(talia_message(TaliaMessage::ChangeShape))
+            .await;
+        sandbox.check(|step| {
+            assert!(!step.talia_keys_placed());
+            assert!(!step.talia_locked());
+            assert!(!step.keys.contains_key(&cosigner.fingerprint));
+            assert!(step.paths.iter().flat_map(|p| &p.keys).all(Option::is_none));
+        });
+        // Unlocked: an heir can be added again.
+        sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
+        sandbox.check(|step| assert_eq!(step.talia.as_ref().unwrap().heirs(&step.paths), 1));
+    }
+
+    #[tokio::test]
+    async fn our_keys_never_take_the_place_of_the_clients() {
+        let (ctx, sandbox) = talia_sandbox(DescriptorTemplate::SingleWithRescue);
+        sandbox.load(&ctx).await;
+        let mine = test_key(1, "Mine");
+        sandbox.update(set_key(0, 0, &mine)).await;
+        sandbox.check(|step| waiting(step, 1));
+        // The backend hands back the client's own key as the Rescue Key.
+        sandbox.update(fetched(None, Some(&mine))).await;
+        sandbox.check(|step| {
+            assert!(matches!(step.keys_flow, KeysFlow::Failed(_)));
+            assert!(!step.talia_keys_placed());
+        });
+        // A Rescue Key that did not come back is a failure too.
+        sandbox.check(|step| waiting(step, 1));
+        sandbox
+            .update(fetched(Some(&test_key(9, "co")), None))
+            .await;
+        sandbox.check(|step| assert!(matches!(step.keys_flow, KeysFlow::Failed(_))));
+    }
+
+    #[tokio::test]
+    async fn a_self_held_co_signer_needs_no_21c_key() {
+        let (mut ctx, sandbox) = talia_sandbox(DescriptorTemplate::TwoOfTwo);
+        sandbox.load(&ctx).await;
+        sandbox
+            .update(talia_message(TaliaMessage::CosignerOurs(false)))
+            .await;
+        sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
+        sandbox
+            .update(talia_message(TaliaMessage::Rescue(false)))
+            .await;
+        for (slot, seed) in [((0, 0), 1u8), ((0, 1), 2), ((1, 0), 3)] {
+            sandbox
+                .update(set_key(slot.0, slot.1, &test_key(seed, "k")))
+                .await;
+        }
+        sandbox.check(|step| {
+            assert!(!step.talia.as_ref().unwrap().uses_21c(&step.paths));
+            assert!(step.valid());
+        });
+        assert!(run_apply(&sandbox, &mut ctx).await);
+        let policy = ctx.descriptor.as_ref().unwrap().policy();
+        assert_eq!(
+            policy.recovery_paths().keys().copied().collect::<Vec<_>>(),
+            vec![52_596]
+        );
+    }
+
+    #[tokio::test]
+    async fn heirs_on_the_same_wait_are_refused_by_liana() {
+        let (ctx, sandbox) = talia_sandbox(DescriptorTemplate::TwoOfThree);
+        sandbox.load(&ctx).await;
+        sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
+        sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
+        sandbox
+            .update(talia_message(TaliaMessage::HeirMonths(1, 12)))
+            .await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths[1].warning, Some(PathWarning::DuplicateSequence));
+            assert_eq!(step.paths[2].warning, Some(PathWarning::DuplicateSequence));
+        });
+        sandbox
+            .update(talia_message(TaliaMessage::HeirMonths(1, 15)))
+            .await;
+        sandbox.check(|step| assert!(step.paths.iter().all(|p| p.warning.is_none())));
     }
 }

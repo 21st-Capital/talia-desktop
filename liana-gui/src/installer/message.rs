@@ -14,6 +14,7 @@ use std::collections::HashMap;
 use super::{
     context,
     step::descriptor::editor::key::{EditKeyAliasMessage, SelectKeySourceMessage, SelectedKey},
+    talia_keys::{FetchedKeys, HandoffError},
     Error,
 };
 use crate::{
@@ -198,6 +199,25 @@ pub enum DefineDescriptor {
     ShowImportDescriptor(bool),
     AliasEdited(Fingerprint, String /* alias*/),
     Compiled(Result<Box<LianaDescriptor>, String>),
+    Talia(TaliaMessage),
+}
+
+/// The choices of the iPhone app's vault shapes, and "Get my 21st Capital keys".
+#[derive(Debug, Clone)]
+pub enum TaliaMessage {
+    /// Who holds the co-signer slot: 21st Capital (true) or the client.
+    CosignerOurs(bool),
+    /// The answer to the Rescue Key question.
+    Rescue(bool),
+    AddHeir,
+    RemoveHeir(usize),
+    HeirMonths(usize, u8),
+    GetKeys,
+    OpenKeysPage,
+    CancelKeys,
+    KeysFetched(u64, Result<Box<FetchedKeys>, HandoffError>),
+    /// Takes the 21st Capital keys out, so the shape can change again.
+    ChangeShape,
 }
 
 #[allow(clippy::large_enum_variant)]

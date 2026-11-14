@@ -1,6 +1,5 @@
 pub mod custom;
-pub mod inheritance;
-pub mod multisig_security_wallet;
+pub mod talia;
 
 use std::fmt::Display;
 
@@ -61,22 +60,27 @@ pub fn template_footer<'a>(valid: bool, processing: bool, customize: bool) -> Ro
 }
 
 pub fn choose_descriptor_template(network: Network) -> Element<'static, Message> {
-    let simple_inheritance = template_option(
-        t!("installer-simple-inheritance"),
-        t!("installer-simple-inheritance-description"),
-        context::DescriptorTemplate::SimpleInheritance,
+    let two_of_three = template_option(
+        t!("installer-talia-multi-2-3"),
+        t!("installer-talia-multi-2-3-description"),
+        context::DescriptorTemplate::TwoOfThree,
     );
-    let expanding_multisig = template_option(
-        t!("installer-expanding-multisig"),
-        t!("installer-expanding-multisig-description"),
-        context::DescriptorTemplate::MultisigSecurity,
+    let two_of_two = template_option(
+        t!("installer-talia-multi-2-2"),
+        t!("installer-talia-multi-2-2-description"),
+        context::DescriptorTemplate::TwoOfTwo,
+    );
+    let single = template_option(
+        t!("installer-talia-single"),
+        t!("installer-talia-single-description"),
+        context::DescriptorTemplate::SingleWithRescue,
     );
     let custom = template_option(
         t!("installer-build-your-own"),
         t!("installer-build-your-own-description"),
         context::DescriptorTemplate::Custom,
     );
-    let content = column![simple_inheritance, expanding_multisig, custom,]
+    let content = column![two_of_three, two_of_two, single, custom]
         .align_x(Alignment::Center)
         .width(Length::Fill)
         .spacing(20);

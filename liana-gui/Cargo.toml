@@ -34,7 +34,8 @@ iced_runtime = { workspace = true }
 # Used to verify RFC-compliance of an email
 email_address = { workspace = true }
 
-tokio = { workspace = true, features = ["signal"] }
+# "net", "time" and "io-util" serve the loopback end of the 21st Capital key handoff.
+tokio = { workspace = true, features = ["signal", "net", "time", "io-util"] }
 async-fd-lock = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
