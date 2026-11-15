@@ -60,6 +60,9 @@ pub enum VaultConfig {
     Multi2of3,
     Multi2of2,
     Single,
+    /// Build your own, when none of the three describes the vault: its
+    /// [`Layout`] does (decided 2026-11-15).
+    Custom,
 }
 
 impl VaultConfig {
@@ -68,7 +71,90 @@ impl VaultConfig {
             Self::Multi2of3 => "multi-2-3",
             Self::Multi2of2 => "multi-2-2",
             Self::Single => "single-1-1",
+            Self::Custom => "custom",
         }
+    }
+}
+
+/// What the 2 of 2's backup way in is, in the website's words.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BackupKind {
+    /// The 2 of 2 becomes a 2 of 3.
+    ExpandMultisig,
+    /// One key of the client's spends alone.
+    SingleSig,
+}
+
+impl BackupKind {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::ExpandMultisig => "expand-multisig",
+            Self::SingleSig => "single-sig",
+        }
+    }
+}
+
+/// The 2 of 2's backup way in, as the website's configurator records it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Backup {
+    pub kind: BackupKind,
+    /// 21st Capital holds the added key, else the client.
+    pub holder_21c: bool,
+    /// Months before it opens (3 to 10).
+    pub months: u8,
+}
+
+/// One key of a [`Layout`]: never the key itself, only who holds it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LayoutKey {
+    /// The client's `n`th key (from 1), counted in the order the layers name
+    /// them, so a key on several layers keeps its number.
+    Own(usize),
+    /// The 21st Capital co-signer.
+    Cosigner,
+    /// The 21st Capital Rescue Key.
+    Rescue,
+}
+
+/// One spending path of a [`Layout`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LayoutLayer {
+    /// Blocks of inactivity before it opens; 0 for the everyday path.
+    pub after_blocks: u16,
+    /// Signatures needed.
+    pub need: usize,
+    pub keys: Vec<LayoutKey>,
+}
+
+/// A Build your own vault, layer by layer: the signatures each path needs,
+/// who holds each key and the waits. No key, fingerprint or descriptor ever
+/// leaves the app this way (decided 2026-11-15).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Layout {
+    pub layers: Vec<LayoutLayer>,
+}
+
+impl Layout {
+    /// The website's form: layers by `;`, each `after_blocks:need:keys`,
+    /// keys by `.` as `k<n>` (the client's), `c` (our co-signer) or `r` (our
+    /// Rescue Key). For example `0:2:k1.k2;26298:2:k1.k2.c;65535:1:r`.
+    pub fn encode(&self) -> String {
+        self.layers
+            .iter()
+            .map(|layer| {
+                let keys: Vec<String> = layer
+                    .keys
+                    .iter()
+                    .map(|key| match key {
+                        LayoutKey::Own(n) => format!("k{n}"),
+                        LayoutKey::Cosigner => "c".to_string(),
+                        LayoutKey::Rescue => "r".to_string(),
+                    })
+                    .collect();
+                format!("{}:{}:{}", layer.after_blocks, layer.need, keys.join("."))
+            })
+            .collect::<Vec<_>>()
+            .join(";")
     }
 }
 
@@ -83,6 +169,18 @@ pub struct VaultShape {
     pub rescue: bool,
     /// Each heir's wait, in whole months (8 to 15).
     pub heirs: Vec<u8>,
+    /// The 2 of 2's backup way in, when it has one.
+    pub backup: Option<Backup>,
+    /// Build your own: the vault layer by layer, with [`VaultConfig::Custom`].
+    pub layout: Option<Layout>,
+}
+
+impl VaultShape {
+    /// Whether the vault takes our co-signer anywhere: on the everyday path,
+    /// or as the added key of the 2 of 2's backup way in.
+    pub fn needs_cosigner(&self) -> bool {
+        self.cosigner || self.backup.as_ref().is_some_and(|b| b.holder_21c)
+    }
 }
 
 /// The PKCE pair and the state, kept in memory only.
@@ -144,8 +242,30 @@ pub fn website_url(
     let mut heirs = shape.heirs.clone();
     heirs.sort_unstable();
     let heirs: Vec<String> = heirs.iter().map(u8::to_string).collect();
+    // Present only when the vault has them, so a plain vault's address stays
+    // exactly what it was.
+    let mut extra = String::new();
+    if let Some(backup) = &shape.backup {
+        extra.push_str(&format!(
+            "&backup={}&backup_holder={}&backup_months={}",
+            backup.kind.as_str(),
+            if backup.holder_21c {
+                "company"
+            } else {
+                "client"
+            },
+            backup.months,
+        ));
+    }
+    if let Some(layout) = &shape.layout {
+        // Digits, letters and ".:;" only; ";" and ":" escaped for the query.
+        extra.push_str(&format!(
+            "&layout={}",
+            layout.encode().replace(':', "%3A").replace(';', "%3B")
+        ));
+    }
     format!(
-        "{site}{SITE_PATH}?v=1&network={}&config={}&cosigner={}&rescue={}&heirs={}&challenge={}&state={}&port={port}",
+        "{site}{SITE_PATH}?v=1&network={}&config={}&cosigner={}&rescue={}&heirs={}{extra}&challenge={}&state={}&port={port}",
         network.as_str(),
         shape.config.as_str(),
         u8::from(shape.cosigner),
@@ -329,7 +449,7 @@ pub fn parse_answer(
     if theirs != ours {
         return Err(HandoffError::WrongNetwork { theirs, ours });
     }
-    let cosigner = if shape.cosigner {
+    let cosigner = if shape.needs_cosigner() {
         Some(
             answer
                 .co_signer
@@ -500,6 +620,8 @@ mod tests {
             cosigner: true,
             rescue: true,
             heirs: vec![14, 9],
+            backup: None,
+            layout: None,
         };
         assert_eq!(
             website_url(DEFAULT_SITE, ProofNet::Mainnet, &shape, &pkce, 50123),
@@ -514,6 +636,8 @@ mod tests {
             cosigner: false,
             rescue: true,
             heirs: vec![],
+            backup: None,
+            layout: None,
         };
         let url = website_url(
             "http://127.0.0.1:8000",
@@ -525,6 +649,64 @@ mod tests {
         assert!(url.starts_with("http://127.0.0.1:8000/desktop/keys?v=1&network=testnet4"));
         assert!(url.contains("&config=single-1-1&cosigner=0&rescue=1&heirs=&challenge="));
         assert!(url.ends_with("&port=1024"));
+    }
+
+    #[test]
+    fn the_backup_and_the_layout_ride_along_only_when_there() {
+        let pkce = Pkce::from_bytes([1; 32], [2; 32]);
+        let expanding = VaultShape {
+            config: VaultConfig::Multi2of2,
+            cosigner: false,
+            rescue: false,
+            heirs: vec![],
+            backup: Some(Backup {
+                kind: BackupKind::ExpandMultisig,
+                holder_21c: true,
+                months: 6,
+            }),
+            layout: None,
+        };
+        assert!(expanding.needs_cosigner());
+        let url = website_url(DEFAULT_SITE, ProofNet::Mainnet, &expanding, &pkce, 50123);
+        assert!(url.contains(
+            "&config=multi-2-2&cosigner=0&rescue=0&heirs=\
+             &backup=expand-multisig&backup_holder=company&backup_months=6&challenge="
+        ));
+        assert!(!url.contains("layout"));
+
+        let custom = VaultShape {
+            config: VaultConfig::Custom,
+            cosigner: true,
+            rescue: true,
+            heirs: vec![],
+            backup: None,
+            layout: Some(Layout {
+                layers: vec![
+                    LayoutLayer {
+                        after_blocks: 0,
+                        need: 3,
+                        keys: (1..=5).map(LayoutKey::Own).collect(),
+                    },
+                    LayoutLayer {
+                        after_blocks: 52_596,
+                        need: 2,
+                        keys: vec![LayoutKey::Own(1), LayoutKey::Own(2), LayoutKey::Cosigner],
+                    },
+                    LayoutLayer {
+                        after_blocks: 65_535,
+                        need: 1,
+                        keys: vec![LayoutKey::Rescue],
+                    },
+                ],
+            }),
+        };
+        let url = website_url(DEFAULT_SITE, ProofNet::Mainnet, &custom, &pkce, 50123);
+        assert!(url.contains("&config=custom&cosigner=1&rescue=1&"));
+        assert!(!url.contains("backup"));
+        assert_eq!(
+            query(&url, "layout"),
+            "0:3:k1.k2.k3.k4.k5;52596:2:k1.k2.c;65535:1:r"
+        );
     }
 
     #[test]
@@ -714,6 +896,8 @@ mod tests {
             cosigner: true,
             rescue: true,
             heirs: vec![12],
+            backup: None,
+            layout: None,
         }
     }
 
@@ -760,6 +944,8 @@ mod tests {
             cosigner: false,
             rescue: true,
             heirs: vec![],
+            backup: None,
+            layout: None,
         };
         let keys = parse_answer(&body, Network::Testnet4, &single, &pins).unwrap();
         assert!(keys.cosigner.is_none());

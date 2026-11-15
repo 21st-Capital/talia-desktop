@@ -29,7 +29,7 @@ use crate::installer::{
     descriptor::{Key, Path},
     message::{self, Message, TaliaMessage},
     step::descriptor::editor::talia::{
-        KeysFlow, TaliaShape, TaliaTemplate, HEIR_MONTHS, MAX_HEIRS, RESCUE_MONTHS,
+        BackupKind, KeysFlow, TaliaShape, TaliaTemplate, BACKUP_MONTHS, MAX_HEIRS, RESCUE_MONTHS,
     },
     view::{
         defined_threshold,
@@ -309,6 +309,198 @@ fn primary_path<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
     )
 }
 
+/// The 2 of 2's "What happens if you lose one of your two keys?": the
+/// website configurator's backup way in, its words and its rules (decided
+/// 2026-11-15). Explanations sit behind the info dots.
+fn backup<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
+    let shape = e.shape;
+    if !shape.asks_backup() || (e.locked && !shape.backup_path) {
+        return None;
+    }
+    let mut col = column![heading(
+        t!("installer-talia-backup"),
+        t!("installer-talia-backup-help"),
+    )]
+    .spacing(10);
+    if !e.locked {
+        col = col.push(
+            row![
+                labelled_radio(
+                    t!("installer-talia-backup-yes"),
+                    shape.backup_answer == Some(true),
+                    talia(TaliaMessage::Backup(true)),
+                ),
+                labelled_radio(
+                    t!("installer-talia-backup-no"),
+                    shape.backup_answer == Some(false),
+                    talia(TaliaMessage::Backup(false)),
+                ),
+            ]
+            .spacing(HSpacing::XL),
+        );
+    }
+    if shape.backup_answer != Some(true) {
+        return Some(section(col));
+    }
+
+    // Which kind.
+    let kind = shape.backup.kind;
+    let kind_title = |k: BackupKind| match k {
+        BackupKind::TwoOfThree => t!("installer-talia-backup-expand"),
+        BackupKind::OneKey => t!("installer-talia-backup-single"),
+    };
+    let kind_help = |k: BackupKind| match k {
+        BackupKind::TwoOfThree => t!("installer-talia-backup-expand-help"),
+        BackupKind::OneKey => t!("installer-talia-backup-single-help"),
+    };
+    if e.locked {
+        if let Some(k) = kind {
+            col = col.push(
+                row![
+                    new::caption(format!(
+                        "{} {}",
+                        t!("installer-talia-backup-kind"),
+                        kind_title(k)
+                    ))
+                    .style(theme::text::secondary),
+                    tooltip(kind_help(k)),
+                ]
+                .spacing(6)
+                .align_y(Alignment::Center),
+            );
+        }
+    } else {
+        let choice = |k: BackupKind| -> Element<'a, Message> {
+            row![
+                labelled_radio(
+                    kind_title(k),
+                    kind == Some(k),
+                    talia(TaliaMessage::BackupKind(k))
+                ),
+                tooltip(kind_help(k)),
+            ]
+            .spacing(6)
+            .align_y(Alignment::Center)
+            .into()
+        };
+        col = col.push(
+            column![
+                new::caption(t!("installer-talia-backup-kind")).style(theme::text::secondary),
+                choice(BackupKind::TwoOfThree),
+                choice(BackupKind::OneKey),
+            ]
+            .spacing(8),
+        );
+    }
+    if kind.is_none() {
+        return Some(section(col));
+    }
+
+    // Who holds the added key.
+    let holder = shape.backup_holder_21c();
+    let holder_words = |ours: bool| {
+        if ours {
+            t!("installer-talia-backup-holder-21c")
+        } else {
+            t!("installer-talia-backup-holder-own")
+        }
+    };
+    if shape.backup_holder_forced() || e.locked {
+        let reason = if kind == Some(BackupKind::OneKey) {
+            Some(t!("installer-talia-backup-holder-forced-single"))
+        } else if shape.cosigner_21c {
+            Some(t!("installer-talia-backup-holder-forced-cosigner"))
+        } else {
+            None
+        };
+        col = col.push(
+            row![new::caption(format!(
+                "{} {}",
+                t!("installer-talia-backup-holder"),
+                holder.map(holder_words).unwrap_or_default()
+            ))
+            .style(theme::text::secondary)]
+            .push_maybe(reason.map(tooltip))
+            .spacing(6)
+            .align_y(Alignment::Center),
+        );
+    } else {
+        col = col.push(
+            row![
+                new::caption(t!("installer-talia-backup-holder")).style(theme::text::secondary),
+                labelled_radio(
+                    holder_words(true),
+                    holder == Some(true),
+                    talia(TaliaMessage::BackupHolderOurs(true)),
+                ),
+                labelled_radio(
+                    holder_words(false),
+                    holder == Some(false),
+                    talia(TaliaMessage::BackupHolderOurs(false)),
+                ),
+            ]
+            .spacing(HSpacing::L)
+            .align_y(Alignment::Center),
+        );
+    }
+
+    // The wait.
+    let months = shape.backup.months;
+    let floor = *shape.heir_months_range().start();
+    let picker: Element<'a, Message> = if e.locked {
+        new::caption(Months(months).to_string()).into()
+    } else {
+        pick_list(
+            BACKUP_MONTHS.map(Months).collect::<Vec<_>>(),
+            Some(Months(months)),
+            |m: Months| talia(TaliaMessage::BackupMonths(m.0)),
+        )
+        .into()
+    };
+    col = col.push(
+        row![
+            new::caption(t!("installer-talia-backup-wait")).style(theme::text::secondary),
+            picker,
+            tooltip(t!(
+                "installer-talia-backup-order",
+                months = months,
+                floor = floor,
+                rescue = RESCUE_MONTHS
+            )),
+        ]
+        .spacing(10)
+        .align_y(Alignment::Center),
+    );
+
+    // The added key, once its holder is known.
+    if let (Some((i, j)), Some(ours)) = (shape.backup_added_slot(), holder) {
+        let key = e.paths[i].keys.get(j).and_then(Option::as_ref);
+        col = col.push(
+            new::caption(match kind {
+                Some(BackupKind::OneKey) => t!("installer-talia-backup-alone"),
+                _ => t!("installer-talia-backup-any-two"),
+            })
+            .style(theme::text::secondary),
+        );
+        col = col.push(if ours {
+            our_slot(key, t!("installer-talia-cosigner"))
+        } else {
+            key_slot(
+                key,
+                OWN,
+                t!("installer-talia-backup-key"),
+                i,
+                j,
+                e.use_taproot,
+            )
+        });
+        if let Some(w) = e.paths[i].warning {
+            col = col.push(new::small_caption(w.message()).style(theme::text::error));
+        }
+    }
+    Some(section(col))
+}
+
 fn heirs<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
     let count = e.shape.heirs(e.paths);
     // A vault that can no longer change and has no heir: nothing to show.
@@ -330,7 +522,7 @@ fn heirs<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
             new::caption(wait.map(|m| Months(m).to_string()).unwrap_or_default()).into()
         } else {
             pick_list(
-                HEIR_MONTHS.map(Months).collect::<Vec<_>>(),
+                e.shape.heir_months_range().map(Months).collect::<Vec<_>>(),
                 wait.map(Months),
                 move |m: Months| talia(TaliaMessage::HeirMonths(i, m.0)),
             )
@@ -486,8 +678,12 @@ fn our_keys<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
             let complete = e.shape.complete(e.shape.heirs(e.paths));
             if !complete {
                 col = col.push(
-                    new::caption(t!("installer-talia-keys-answer-rescue-first"))
-                        .style(theme::text::secondary),
+                    new::caption(if e.shape.backup_complete() {
+                        t!("installer-talia-keys-answer-rescue-first")
+                    } else {
+                        t!("installer-talia-keys-answer-first")
+                    })
+                    .style(theme::text::secondary),
                 );
             }
             col = col.push(get(complete));
@@ -508,6 +704,7 @@ pub fn talia_template<'a>(
         descriptor_type(e.use_taproot, e.editing_descriptor_type),
         primary_path(&e)
     ]
+    .push_maybe(backup(&e))
     .push_maybe(heirs(&e))
     .push(rescue(&e))
     .push_maybe(ours)

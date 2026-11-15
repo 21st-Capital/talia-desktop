@@ -44,6 +44,18 @@ use crate::installer::{
     talia_keys::{self, listener::BrowserPages, proof::default_pins, Endpoints, FetchedKeys},
 };
 
+/// Whether two asks are for the same vault. The layout only records what the
+/// layers looked like when the keys were asked for: editing a layer later
+/// (a wait, a key of the client's) never takes our keys out, since each new
+/// fetch takes another of the client's vault slots.
+fn same_vault(a: Option<&talia_keys::VaultShape>, b: Option<&talia_keys::VaultShape>) -> bool {
+    let strip = |shape: &talia_keys::VaultShape| talia_keys::VaultShape {
+        layout: None,
+        ..shape.clone()
+    };
+    a.map(strip) == b.map(strip)
+}
+
 pub trait DescriptorEditModal {
     fn processing(&self) -> bool {
         false
@@ -235,7 +247,10 @@ impl DefineDescriptor {
         let rescue = shape
             .rescue_path_index(&self.paths)
             .is_some_and(|i| self.paths[i].keys[0].is_some());
-        cosigner || rescue
+        let backup = shape
+            .backup_21c_slot()
+            .is_some_and(|(i, j)| self.paths[i].keys[j].is_some());
+        cosigner || rescue || backup
     }
 
     /// Takes the 21st Capital keys out of their slots.
@@ -250,12 +265,15 @@ impl DefineDescriptor {
         if let Some(i) = shape.rescue_path_index(&self.paths) {
             slots.push((i, 0));
         }
+        slots.extend(shape.backup_21c_slot());
         for (i, j) in slots {
             if let Some(key) = self.paths[i].keys[j].take() {
                 self.keys.remove(&key.fingerprint);
                 hws.aliases.remove(&key.fingerprint);
             }
         }
+        // The backup way in's copy of the primary path's keys follows.
+        shape.sync_backup_keys(&mut self.paths);
         self.our_keys.clear();
         self.keys_flow = KeysFlow::Idle;
         self.check_setup();
@@ -271,10 +289,21 @@ impl DefineDescriptor {
             return Err(t!("installer-talia-keys-missing"));
         };
         let mut placements = Vec::new();
-        match (shape.cosigner_slot(&self.paths), fetched.cosigner) {
-            (Some(j), Some(key)) => placements.push(((0, j), key)),
-            (Some(_), None) => return Err(t!("installer-talia-keys-missing")),
-            _ => {}
+        // Our co-signer on the primary path and as the added key of the
+        // backup way in: one key for both.
+        let mut cosigner_slots: Vec<(usize, usize)> = shape
+            .cosigner_slot(&self.paths)
+            .map(|j| (0, j))
+            .into_iter()
+            .collect();
+        cosigner_slots.extend(shape.backup_21c_slot());
+        if !cosigner_slots.is_empty() {
+            let Some(key) = fetched.cosigner else {
+                return Err(t!("installer-talia-keys-missing"));
+            };
+            for slot in cosigner_slots {
+                placements.push((slot, key.clone()));
+            }
         }
         match (shape.rescue_path_index(&self.paths), fetched.rescue) {
             (Some(i), Some(key)) => placements.push(((i, 0), key)),
@@ -294,8 +323,13 @@ impl DefineDescriptor {
         for ((i, j), key) in placements {
             self.keys.insert(key.fingerprint, key.clone());
             hws.aliases.insert(key.fingerprint, key.name.clone());
-            self.our_keys.push(key.fingerprint);
+            if !self.our_keys.contains(&key.fingerprint) {
+                self.our_keys.push(key.fingerprint);
+            }
             self.paths[i].keys[j] = Some(key);
+        }
+        if let Some(shape) = &self.talia {
+            shape.sync_backup_keys(&mut self.paths);
         }
         self.check_setup();
         Ok(())
@@ -311,11 +345,32 @@ impl DefineDescriptor {
         };
         match message {
             TaliaMessage::CosignerOurs(ours) if !locked && shape.cosigner_21c != ours => {
+                let backup_holder = shape.backup_holder_21c();
                 shape.cosigner_21c = ours;
                 // The slot changes hands: whatever key it held goes.
                 if let Some(slot) = self.paths[0].keys.last_mut() {
                     *slot = None;
                 }
+                // So does the backup way in's added key when its holder changes
+                // with it (our co-signer in the vault makes the third key the
+                // client's).
+                if shape.backup_holder_21c() != backup_holder {
+                    if let Some((i, j)) = shape.backup_added_slot() {
+                        self.paths[i].keys[j] = None;
+                    }
+                }
+            }
+            TaliaMessage::Backup(include) if !locked => {
+                shape.set_backup(&mut self.paths, include);
+            }
+            TaliaMessage::BackupKind(kind) if !locked => {
+                shape.set_backup_kind(&mut self.paths, kind);
+            }
+            TaliaMessage::BackupHolderOurs(ours) if !locked => {
+                shape.set_backup_holder(&mut self.paths, ours);
+            }
+            TaliaMessage::BackupMonths(months) if !locked => {
+                shape.set_backup_months(&mut self.paths, months);
             }
             TaliaMessage::Rescue(include) if !locked => {
                 shape.set_rescue(&mut self.paths, include);
@@ -464,9 +519,11 @@ impl DefineDescriptor {
         cosigner && rescue
     }
 
-    /// Build your own: what to ask the website for, every key reserved. The
-    /// vault type follows the primary path, as on the website's configurator
-    /// (a 2 of 2 that expands to a 2 of 3 with our co-signer is a 2 of 2).
+    /// Build your own: what to ask the website for, every key reserved. A
+    /// vault that is one of the website's types (a primary path of 1 key, 2 of
+    /// 2 or 2 of 3, and at most our Rescue Key besides) is asked for as that
+    /// type; any other is "custom" with its layout, layer by layer (decided
+    /// 2026-11-15).
     fn custom_shape(&self) -> Option<talia_keys::VaultShape> {
         let cosigner = !self.custom_cosigner_paths().is_empty();
         let rescue = self.custom_rescue_path().is_some();
@@ -474,20 +531,72 @@ impl DefineDescriptor {
             return None;
         }
         let primary = self.paths.first()?;
-        let config = if primary.keys.len() < 2 {
-            talia_keys::VaultConfig::Single
-        } else if primary.threshold >= primary.keys.len() {
-            talia_keys::VaultConfig::Multi2of2
-        } else {
-            talia_keys::VaultConfig::Multi2of3
+        let rescue_path = self.custom_rescue_path();
+        let primary_only = (1..self.paths.len()).all(|i| Some(i) == rescue_path);
+        let config = match (primary_only, primary.keys.len(), primary.threshold) {
+            (true, 1, _) => talia_keys::VaultConfig::Single,
+            (true, 2, 2) => talia_keys::VaultConfig::Multi2of2,
+            (true, 3, 2) => talia_keys::VaultConfig::Multi2of3,
+            _ => talia_keys::VaultConfig::Custom,
         };
+        let layout = (config == talia_keys::VaultConfig::Custom).then(|| self.custom_layout());
         Some(talia_keys::VaultShape {
             config,
             cosigner,
             rescue,
             // The client's own recovery paths are not heirs to us.
             heirs: Vec::new(),
+            backup: None,
+            layout,
         })
+    }
+
+    /// Build your own: the vault layer by layer, in the order the layers
+    /// open. The client's keys are numbered as they first appear, so a key
+    /// on several layers keeps its number; a slot not filled yet counts as a
+    /// key of its own. Never a key, fingerprint or name.
+    fn custom_layout(&self) -> talia_keys::Layout {
+        use talia_keys::{LayoutKey, LayoutLayer};
+        let rescue_path = self.custom_rescue_path();
+        let mut own: Vec<Option<Fingerprint>> = Vec::new();
+        let mut layers: Vec<LayoutLayer> = self
+            .paths
+            .iter()
+            .enumerate()
+            .map(|(i, path)| {
+                let cosigner_slot = self.custom_cosigner_slot(i);
+                let keys = path
+                    .keys
+                    .iter()
+                    .enumerate()
+                    .map(|(j, key)| {
+                        if Some(j) == cosigner_slot {
+                            return LayoutKey::Cosigner;
+                        }
+                        if Some(i) == rescue_path && j == 0 {
+                            return LayoutKey::Rescue;
+                        }
+                        let fingerprint = key.as_ref().map(|k| k.fingerprint);
+                        let known =
+                            fingerprint.and_then(|f| own.iter().position(|o| *o == Some(f)));
+                        LayoutKey::Own(match known {
+                            Some(n) => n + 1,
+                            None => {
+                                own.push(fingerprint);
+                                own.len()
+                            }
+                        })
+                    })
+                    .collect();
+                LayoutLayer {
+                    after_blocks: path.sequence.as_u16(),
+                    need: path.threshold,
+                    keys,
+                }
+            })
+            .collect();
+        layers.sort_by_key(|layer| layer.after_blocks);
+        talia_keys::Layout { layers }
     }
 
     /// Build your own: reserves the slot (i, j) for one of our keys.
@@ -552,7 +661,9 @@ impl DefineDescriptor {
                 }
             }
         }
-        if self.custom_fetched.is_some() && self.custom_fetched != self.custom_shape() {
+        if self.custom_fetched.is_some()
+            && !same_vault(self.custom_fetched.as_ref(), self.custom_shape().as_ref())
+        {
             self.remove_custom_keys(hws);
         }
         if let Some(key) = self
@@ -610,7 +721,7 @@ impl DefineDescriptor {
             return Err(t!("installer-talia-keys-missing"));
         };
         // The vault must still be the one the keys were asked for.
-        if self.custom_shape().as_ref() != Some(&asked) {
+        if !same_vault(self.custom_shape().as_ref(), Some(&asked)) {
             return Err(t!("installer-talia-keys-vault-changed"));
         }
         let mut placements = Vec::new();
@@ -1115,6 +1226,12 @@ impl Step for DefineDescriptor {
         let task = self.update_editor(hws, message);
         // Build your own: our keys follow what is reserved.
         self.sync_custom_ours(hws);
+        // The 2 of 2's expanding backup holds the primary path's keys.
+        if let Some(shape) = &self.talia {
+            if shape.sync_backup_keys(&mut self.paths) {
+                self.check_setup();
+            }
+        }
         task
     }
 
@@ -1824,6 +1941,8 @@ mod tests {
                     cosigner: true,
                     rescue: true,
                     heirs: vec![9],
+                    backup: None,
+                    layout: None,
                 }
             );
             waiting(step, 1);
@@ -1932,6 +2051,9 @@ mod tests {
         sandbox.load(&ctx).await;
         sandbox
             .update(talia_message(TaliaMessage::CosignerOurs(false)))
+            .await;
+        sandbox
+            .update(talia_message(TaliaMessage::Backup(false)))
             .await;
         sandbox.update(talia_message(TaliaMessage::AddHeir)).await;
         sandbox
@@ -2195,15 +2317,14 @@ mod tests {
         sandbox.update(our_key(2, 0)).await;
         sandbox.check(|step| {
             assert!(!step.keys_flow.is_waiting());
+            // The client's own recovery layer makes it a custom vault, sent
+            // layer by layer.
             let shape = ask_website(step);
+            assert_eq!(shape.config, talia_keys::VaultConfig::Custom);
+            assert!(shape.cosigner && shape.rescue);
             assert_eq!(
-                shape,
-                talia_keys::VaultShape {
-                    config: talia_keys::VaultConfig::Multi2of2,
-                    cosigner: true,
-                    rescue: true,
-                    heirs: vec![],
-                }
+                shape.layout.unwrap().encode(),
+                "0:2:k1.c;52596:1:k2;65535:1:r"
             );
         });
         sandbox
@@ -2279,7 +2400,13 @@ mod tests {
 
         let (_ctx, sandbox) = build_your_own(Network::Testnet4).await;
         sandbox.update(add_rescue_path()).await;
-        sandbox.update(our_key(2, 0)).await;
+        // Without Liana's first recovery path the vault is one of ours: a
+        // single key with the Rescue Key.
+        sandbox.update(delete_key(1, 0)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths.len(), 2);
+            assert_eq!(step.custom_rescue_path(), Some(1));
+        });
         sandbox.check(|step| {
             assert_eq!(
                 step.custom_shape(),
@@ -2288,6 +2415,8 @@ mod tests {
                     cosigner: false,
                     rescue: true,
                     heirs: vec![],
+                    backup: None,
+                    layout: None,
                 })
             );
         });
@@ -2314,37 +2443,42 @@ mod tests {
     #[tokio::test]
     async fn a_changed_vault_drops_our_keys_or_refuses_a_late_answer() {
         let (_ctx, sandbox) = build_your_own(Network::Testnet4).await;
-        let (mine, mine2, own_recovery) = (
-            test_key(1, "Mine"),
-            test_key(2, "Mine 2"),
-            test_key(3, "My recovery"),
-        );
-        let (cosigner, cosigner2) = (
+        let (mine, mine2) = (test_key(1, "Mine"), test_key(2, "Mine 2"));
+        let (cosigner, cosigner2, rescue, rescue2) = (
             test_key(4, "21st Capital co-signer"),
             test_key(6, "21st Capital co-signer"),
+            test_key(7, "21st Capital Rescue Key"),
+            test_key(8, "21st Capital Rescue Key"),
         );
         sandbox.update(add_key(0)).await;
         sandbox.update(add_key(0)).await;
         sandbox.update(set_key(0, 0, &mine)).await;
         sandbox.update(set_key(0, 1, &mine2)).await;
-        sandbox.update(set_key(1, 0, &own_recovery)).await;
+        // The primary path and our Rescue Key only, no layer of the client's.
+        sandbox.update(add_rescue_path()).await;
+        sandbox.update(delete_key(1, 0)).await;
         sandbox.update(our_key(0, 2)).await;
         sandbox.check(|step| {
-            assert_eq!(ask_website(step).config, talia_keys::VaultConfig::Multi2of2);
+            // 3 of 3 is none of the website's types.
+            assert_eq!(ask_website(step).config, talia_keys::VaultConfig::Custom);
         });
         // 2 of 3 instead of 3 of 3 while the website is open: refused.
         sandbox.update(threshold(0, 2)).await;
-        sandbox.update(fetched(Some(&cosigner), None)).await;
+        sandbox
+            .update(fetched(Some(&cosigner), Some(&rescue)))
+            .await;
         sandbox.check(|step| {
             assert!(matches!(step.keys_flow, KeysFlow::Failed(_)));
             assert!(step.paths[0].keys[2].is_none());
             assert!(step.our_keys.is_empty());
         });
-        // Fetched for the 2 of 3; back to 3 of 3, our key leaves its slot.
+        // Fetched for the 2 of 3; back to 3 of 3, our keys leave their slots.
         sandbox.check(|step| {
             assert_eq!(ask_website(step).config, talia_keys::VaultConfig::Multi2of3);
         });
-        sandbox.update(fetched(Some(&cosigner2), None)).await;
+        sandbox
+            .update(fetched(Some(&cosigner2), Some(&rescue2)))
+            .await;
         sandbox.check(|step| assert_eq!(step.paths[0].keys[2].as_ref(), Some(&cosigner2)));
         sandbox.update(threshold(0, 3)).await;
         sandbox.check(|step| {
@@ -2352,6 +2486,30 @@ mod tests {
             assert!(step.our_keys.is_empty());
             assert!(matches!(step.keys_flow, KeysFlow::Idle));
             assert_eq!(step.custom_cosigner_slot(0), Some(2));
+        });
+    }
+
+    #[tokio::test]
+    async fn a_custom_layer_edited_later_keeps_our_keys() {
+        // The layout is a record of the ask: editing a later layer does not
+        // fetch again (each fetch takes another vault slot).
+        let (_ctx, sandbox) = build_your_own(Network::Testnet4).await;
+        let (mine, own_recovery) = (test_key(1, "Mine"), test_key(2, "My recovery"));
+        let cosigner = test_key(4, "21st Capital co-signer");
+        sandbox.update(add_key(0)).await;
+        sandbox.update(set_key(0, 0, &mine)).await;
+        sandbox.update(our_key(0, 1)).await;
+        sandbox.check(|step| {
+            let shape = ask_website(step);
+            assert_eq!(shape.config, talia_keys::VaultConfig::Custom);
+            assert_eq!(shape.layout.unwrap().encode(), "0:2:k1.c;52596:1:k2");
+        });
+        sandbox.update(fetched(Some(&cosigner), None)).await;
+        sandbox.update(set_key(1, 0, &own_recovery)).await;
+        sandbox.update(sequence(1, 30_000)).await;
+        sandbox.check(|step| {
+            assert!(matches!(step.keys_flow, KeysFlow::Done));
+            assert_eq!(step.paths[0].keys[1].as_ref(), Some(&cosigner));
         });
     }
 
@@ -2392,17 +2550,12 @@ mod tests {
             assert!(step.paths[1].keys[2].is_none());
             // Once per layer.
             assert_eq!(step.path_data(PathKind::Recovery, vec![(1, 0)]).ours, None);
-            // As on the website, a 2 of 2 that expands is a 2 of 2.
+            // Built by hand, it is a custom vault: the website gets it layer
+            // by layer, the client's two keys numbered once.
             let shape = ask_website(step);
-            assert_eq!(
-                shape,
-                talia_keys::VaultShape {
-                    config: talia_keys::VaultConfig::Multi2of2,
-                    cosigner: true,
-                    rescue: false,
-                    heirs: vec![],
-                }
-            );
+            assert_eq!(shape.config, talia_keys::VaultConfig::Custom);
+            assert!(shape.cosigner && !shape.rescue);
+            assert_eq!(shape.layout.unwrap().encode(), "0:2:k1.k2;52596:2:k1.k2.c");
         });
         sandbox.update(fetched(Some(&cosigner), None)).await;
         sandbox.check(|step| {
@@ -2531,6 +2684,72 @@ mod tests {
             assert_eq!(step.paths[1].sequence.as_u16(), 30_000);
             assert_eq!(step.custom_cosigner_slot(1), Some(1));
             assert_eq!(step.custom_cosigner_slot(2), None);
+        });
+    }
+
+    #[tokio::test]
+    async fn a_two_of_two_that_expands_takes_our_cosigner_as_its_third_key() {
+        // The client's own 2 of 2, which after 6 months becomes a 2 of 3
+        // with our co-signer: the website configurator's expanding multisig.
+        let (mut ctx, sandbox) = talia_sandbox(DescriptorTemplate::TwoOfTwo);
+        sandbox.load(&ctx).await;
+        let (a, b) = (test_key(1, "Mine A"), test_key(2, "Mine B"));
+        let cosigner = test_key(4, "21st Capital co-signer");
+        for msg in [
+            TaliaMessage::CosignerOurs(false),
+            TaliaMessage::Backup(true),
+            TaliaMessage::BackupKind(talia::BackupKind::TwoOfThree),
+            TaliaMessage::BackupHolderOurs(true),
+            TaliaMessage::Rescue(false),
+        ] {
+            sandbox.update(talia_message(msg)).await;
+        }
+        sandbox.update(set_key(0, 0, &a)).await;
+        sandbox.update(set_key(0, 1, &b)).await;
+        sandbox.check(|step| {
+            // The backup way in holds the primary path's two keys as they are.
+            assert_eq!(step.paths[1].keys[0].as_ref(), Some(&a));
+            assert_eq!(step.paths[1].keys[1].as_ref(), Some(&b));
+            assert!(step.paths[1].keys[2].is_none());
+            let asked = step.talia.as_ref().unwrap().vault_shape();
+            assert_eq!(asked.config, talia_keys::VaultConfig::Multi2of2);
+            assert!(!asked.cosigner && !asked.rescue);
+            assert_eq!(
+                asked.backup,
+                Some(talia_keys::Backup {
+                    kind: talia_keys::BackupKind::ExpandMultisig,
+                    holder_21c: true,
+                    months: 6,
+                })
+            );
+            waiting(step, 1);
+        });
+        sandbox.update(fetched(Some(&cosigner), None)).await;
+        sandbox.check(|step| {
+            assert!(matches!(step.keys_flow, KeysFlow::Done));
+            assert_eq!(step.paths[1].keys[2].as_ref(), Some(&cosigner));
+            assert!(step.talia_locked());
+            assert!(step.valid());
+        });
+        assert!(run_apply(&sandbox, &mut ctx).await);
+        let policy = ctx.descriptor.as_ref().unwrap().policy();
+        let primary = policy.primary_path().thresh_origins();
+        assert_eq!(primary.0, 2);
+        assert!(!primary.1.contains_key(&cosigner.fingerprint));
+        let backup = policy.recovery_paths()[&26_298].thresh_origins();
+        assert_eq!(backup.0, 2);
+        for key in [&a, &b, &cosigner] {
+            assert!(backup.1.contains_key(&key.fingerprint));
+        }
+
+        // "Change" takes our key out of the backup way in too.
+        sandbox
+            .update(talia_message(TaliaMessage::ChangeShape))
+            .await;
+        sandbox.check(|step| {
+            assert!(step.paths[1].keys[2].is_none());
+            assert!(step.our_keys.is_empty());
+            assert!(!step.talia_locked());
         });
     }
 }

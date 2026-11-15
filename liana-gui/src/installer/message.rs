@@ -212,6 +212,12 @@ pub enum TaliaMessage {
     AddHeir,
     RemoveHeir(usize),
     HeirMonths(usize, u8),
+    /// The 2 of 2's answer to "What happens if you lose one of your two keys?".
+    Backup(bool),
+    BackupKind(crate::installer::step::descriptor::editor::talia::BackupKind),
+    /// Who holds the backup way in's added key: 21st Capital (true) or the client.
+    BackupHolderOurs(bool),
+    BackupMonths(u8),
     GetKeys,
     OpenKeysPage,
     CancelKeys,

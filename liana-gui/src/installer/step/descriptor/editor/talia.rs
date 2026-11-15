@@ -1,6 +1,6 @@
 //! The three vault shapes of the iPhone app, built on Liana's own paths: a
-//! primary path, one recovery path per heir and one for the 21st Capital
-//! Rescue Key. Liana composes the descriptor (Taproot or SegWit) and orders the recovery
+//! primary path, the 2 of 2's backup way in, one recovery path per heir and
+//! one for the 21st Capital Rescue Key. Liana composes the descriptor (Taproot or SegWit) and orders the recovery
 //! paths by their wait.
 //!
 //! Liana refuses two paths opening at the same block, while the iPhone app
@@ -17,7 +17,7 @@ use std::ops::RangeInclusive;
 use crate::installer::{
     context::DescriptorTemplate,
     descriptor::{Path, PathSequence},
-    talia_keys::{VaultConfig, VaultShape},
+    talia_keys::{self, VaultConfig, VaultShape},
 };
 
 /// Liana's calendar-average month (30.4375 days of blocks), as the iPhone app
@@ -32,6 +32,10 @@ pub const HEIR_MONTHS: RangeInclusive<u8> = 8..=15;
 /// A new heir's wait, else the nearest free one.
 pub const DEFAULT_HEIR_MONTHS: u8 = 12;
 pub const MAX_HEIRS: usize = 5;
+/// The 2 of 2's backup way in opens after 3 to 10 months, always before the
+/// heirs, as on the website's configurator (decided 2026-11-15).
+pub const BACKUP_MONTHS: RangeInclusive<u8> = 3..=10;
+pub const DEFAULT_BACKUP_MONTHS: u8 = 6;
 
 /// Months to blocks on Liana's calendar-average scale, capped at the BIP-68
 /// maximum (15 months is the cap itself).
@@ -86,9 +90,41 @@ impl TaliaTemplate {
     }
 }
 
+/// What the 2 of 2's backup way in is once its wait has passed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BackupKind {
+    /// Expanding multisig: the same two keys and one added key, any two of
+    /// the three. No key ever spends alone.
+    TwoOfThree,
+    /// One key of the client's own, spending alone.
+    OneKey,
+}
+
+/// The client's choices for the 2 of 2's backup way in. Exactly one key is
+/// added, never more, as on the website.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Backup {
+    pub kind: Option<BackupKind>,
+    /// Who holds the added key where the client may choose: 21st Capital
+    /// (true) or the client.
+    pub holder_21c: Option<bool>,
+    pub months: u8,
+}
+
+impl Default for Backup {
+    fn default() -> Self {
+        Self {
+            kind: None,
+            holder_21c: None,
+            months: DEFAULT_BACKUP_MONTHS,
+        }
+    }
+}
+
 /// The client's choices for a vault of a [`TaliaTemplate`]. The paths are the
-/// rest of the truth: the heirs are `paths[1..]` before the Rescue Key's
-/// path, which comes last when the vault has it.
+/// rest of the truth: the primary path, then the 2 of 2's backup way in when
+/// it has one, then the heirs, then the Rescue Key's path when the vault has
+/// it.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TaliaShape {
     pub template: TaliaTemplate,
@@ -98,6 +134,12 @@ pub struct TaliaShape {
     pub rescue_answer: Option<bool>,
     /// Whether the last path is the Rescue Key's.
     pub rescue_path: bool,
+    /// The 2 of 2's answer to "What happens if you lose one of your two keys?".
+    pub backup_answer: Option<bool>,
+    /// The backup way in's choices, kept while the answer is No.
+    pub backup: Backup,
+    /// Whether `paths[1]` is the backup way in.
+    pub backup_path: bool,
     /// Each heir's wait in months, in the order of their paths.
     heir_months: Vec<u8>,
 }
@@ -109,6 +151,9 @@ impl TaliaShape {
             cosigner_21c: true,
             rescue_answer: None,
             rescue_path: true,
+            backup_answer: None,
+            backup: Backup::default(),
+            backup_path: false,
             heir_months: Vec::new(),
         }
     }
@@ -130,13 +175,14 @@ impl TaliaShape {
     pub fn heirs(&self, paths: &[Path]) -> usize {
         paths
             .len()
-            .saturating_sub(1 + usize::from(self.rescue_path))
+            .saturating_sub(1 + usize::from(self.backup_path) + usize::from(self.rescue_path))
     }
 
-    /// A vault always keeps a way back: with no heir holding a key, the
-    /// Rescue Key is it. A single-key vault always has the Rescue Key.
+    /// A vault always keeps a way back: with no heir holding a key and no
+    /// backup way in, the Rescue Key is it. A single-key vault always has
+    /// the Rescue Key.
     pub fn rescue_required(&self, heirs: usize) -> bool {
-        self.template == TaliaTemplate::SingleWithRescue || heirs == 0
+        self.template == TaliaTemplate::SingleWithRescue || (heirs == 0 && !self.backup_path)
     }
 
     pub fn rescue(&self, heirs: usize) -> bool {
@@ -145,7 +191,109 @@ impl TaliaShape {
 
     /// Whether every question of the shape has its answer.
     pub fn complete(&self, heirs: usize) -> bool {
-        self.rescue_required(heirs) || self.rescue_answer.is_some()
+        (self.rescue_required(heirs) || self.rescue_answer.is_some()) && self.backup_complete()
+    }
+
+    /// Whether the backup question, where it is asked, has all its answers.
+    pub fn backup_complete(&self) -> bool {
+        if !self.asks_backup() {
+            return true;
+        }
+        match self.backup_answer {
+            None => false,
+            Some(false) => true,
+            Some(true) => self.backup.kind.is_some() && self.backup_holder_21c().is_some(),
+        }
+    }
+
+    /// Only the 2 of 2 asks "What happens if you lose one of your two keys?".
+    pub fn asks_backup(&self) -> bool {
+        self.template == TaliaTemplate::TwoOfTwo
+    }
+
+    /// Whether the client cannot choose who holds the added key: a key that
+    /// spends alone is always the client's (ours that does is the Rescue
+    /// Key, at the very end), and with our co-signer already in the vault the
+    /// third key is a device of the client's.
+    pub fn backup_holder_forced(&self) -> bool {
+        self.backup.kind == Some(BackupKind::OneKey) || self.cosigner_21c
+    }
+
+    /// Who holds the added key: 21st Capital (true), the client (false), or
+    /// not answered yet.
+    pub fn backup_holder_21c(&self) -> Option<bool> {
+        if self.backup_holder_forced() {
+            Some(false)
+        } else {
+            self.backup.holder_21c
+        }
+    }
+
+    /// Adds, reshapes or drops the backup path so the paths match the
+    /// answers, then the Rescue Key's path and every lock.
+    pub fn sync_backup_path(&mut self, paths: &mut Vec<Path>) {
+        let want = if self.asks_backup() && self.backup_answer == Some(true) {
+            self.backup.kind
+        } else {
+            None
+        };
+        let slots = want.map(|kind| match kind {
+            BackupKind::TwoOfThree => 3,
+            BackupKind::OneKey => 1,
+        });
+        // A path of the right size keeps its keys.
+        if self.backup_path && Some(paths[1].keys.len()) != slots {
+            paths.remove(1);
+            self.backup_path = false;
+        }
+        if let Some(slots) = slots {
+            if !self.backup_path {
+                let path = Path::new_recovery_path()
+                    .with_n_keys(slots)
+                    .with_threshold(if slots > 1 { 2 } else { 1 });
+                paths.insert(1, path);
+                self.backup_path = true;
+            }
+        }
+        self.sync_backup_keys(paths);
+        self.sync_rescue_path(paths);
+    }
+
+    /// Where the added key sits: (path, slot).
+    pub fn backup_added_slot(&self) -> Option<(usize, usize)> {
+        if !self.backup_path {
+            return None;
+        }
+        match self.backup.kind {
+            Some(BackupKind::TwoOfThree) => Some((1, 2)),
+            Some(BackupKind::OneKey) => Some((1, 0)),
+            None => None,
+        }
+    }
+
+    /// The added key's slot when 21st Capital holds it.
+    pub fn backup_21c_slot(&self) -> Option<(usize, usize)> {
+        self.backup_added_slot()
+            .filter(|_| self.backup_holder_21c() == Some(true))
+    }
+
+    /// The expanding 2 of 3 holds the primary path's two keys as they are:
+    /// they follow the primary slots. Whether anything changed.
+    pub fn sync_backup_keys(&self, paths: &mut [Path]) -> bool {
+        if !self.backup_path || self.backup.kind != Some(BackupKind::TwoOfThree) {
+            return false;
+        }
+        let mut changed = false;
+        for j in 0..2 {
+            let key = paths[0].keys.get(j).cloned().flatten();
+            if let Some(slot) = paths[1].keys.get_mut(j) {
+                if *slot != key {
+                    *slot = key;
+                    changed = true;
+                }
+            }
+        }
+        changed
     }
 
     /// Adds or drops the Rescue Key's path so the paths match the answers,
@@ -162,14 +310,19 @@ impl TaliaShape {
         self.sync_heir_locks(paths);
     }
 
-    /// Each heir's months as blocks, every path at a block of its own: the
-    /// Rescue Key keeps exactly 65535, and an heir whose wait is already
-    /// taken by the Rescue Key or an heir listed before opens one block earlier
-    /// per collision.
+    /// Each path's months as blocks, every path at a block of its own: the
+    /// Rescue Key keeps exactly 65535, the backup way in comes first, and an
+    /// heir whose wait is already taken by the Rescue Key or an heir listed
+    /// before opens one block earlier per collision.
     fn sync_heir_locks(&self, paths: &mut [Path]) {
         let mut taken = HashSet::new();
         if self.rescue_path {
             taken.insert(months_to_blocks(RESCUE_MONTHS));
+        }
+        if self.backup_path {
+            let blocks = months_to_blocks(self.backup.months);
+            taken.insert(blocks);
+            paths[1].sequence = PathSequence::Recovery(blocks);
         }
         for (i, months) in self.heir_months.iter().enumerate() {
             let mut blocks = months_to_blocks(*months);
@@ -185,7 +338,7 @@ impl TaliaShape {
 
     /// Index of the `i`th heir's path.
     pub fn heir_path(&self, i: usize) -> usize {
-        1 + i
+        1 + usize::from(self.backup_path) + i
     }
 
     /// Index of the Rescue Key's path, if the vault has it.
@@ -203,16 +356,27 @@ impl TaliaShape {
         &self.heir_months
     }
 
+    /// The waits an heir may have: heirs always open after the backup way in.
+    pub fn heir_months_range(&self) -> RangeInclusive<u8> {
+        let floor = if self.backup_path {
+            (*HEIR_MONTHS.start()).max(self.backup.months + 1)
+        } else {
+            *HEIR_MONTHS.start()
+        };
+        floor..=*HEIR_MONTHS.end()
+    }
+
     /// A new heir's path, at the first wait no heir has yet nearest the default.
     pub fn add_heir(&mut self, paths: &mut Vec<Path>) {
         let heirs = self.heirs(paths);
         if heirs >= MAX_HEIRS {
             return;
         }
+        let range = self.heir_months_range();
         let months = [12, 11, 13, 10, 14, 9, 8]
             .iter()
             .copied()
-            .find(|m| !self.heir_months.contains(m))
+            .find(|m| range.contains(m) && !self.heir_months.contains(m))
             .unwrap_or(DEFAULT_HEIR_MONTHS);
         paths.insert(self.heir_path(heirs), Path::new_recovery_path());
         self.heir_months.push(months);
@@ -225,7 +389,7 @@ impl TaliaShape {
         }
         paths.remove(self.heir_path(i));
         self.heir_months.remove(i);
-        if self.heirs(paths) == 0 {
+        if self.heirs(paths) == 0 && !self.backup_path {
             // The Rescue Key is required again: the next heir asks afresh.
             self.rescue_answer = None;
         }
@@ -233,7 +397,7 @@ impl TaliaShape {
     }
 
     pub fn set_heir_months(&mut self, paths: &mut [Path], i: usize, months: u8) {
-        if i < self.heir_months.len() && HEIR_MONTHS.contains(&months) {
+        if i < self.heir_months.len() && self.heir_months_range().contains(&months) {
             self.heir_months[i] = months;
             self.sync_heir_locks(paths);
         }
@@ -246,19 +410,81 @@ impl TaliaShape {
         }
     }
 
+    /// The answer to "What happens if you lose one of your two keys?".
+    pub fn set_backup(&mut self, paths: &mut Vec<Path>, include: bool) {
+        if !self.asks_backup() {
+            return;
+        }
+        self.backup_answer = Some(include);
+        if !include && self.heirs(paths) == 0 {
+            // The Rescue Key is the way back again: required, not asked.
+            self.rescue_answer = None;
+        }
+        self.sync_backup_path(paths);
+        self.raise_heirs(paths);
+    }
+
+    pub fn set_backup_kind(&mut self, paths: &mut Vec<Path>, kind: BackupKind) {
+        if self.backup.kind != Some(kind) {
+            self.backup.kind = Some(kind);
+            self.sync_backup_path(paths);
+        }
+    }
+
+    /// Who holds the added key; the slot changes hands, so whatever key it
+    /// held goes.
+    pub fn set_backup_holder(&mut self, paths: &mut [Path], ours: bool) {
+        if self.backup_holder_forced() || self.backup.holder_21c == Some(ours) {
+            return;
+        }
+        self.backup.holder_21c = Some(ours);
+        if let Some((i, j)) = self.backup_added_slot() {
+            paths[i].keys[j] = None;
+        }
+    }
+
+    pub fn set_backup_months(&mut self, paths: &mut [Path], months: u8) {
+        if BACKUP_MONTHS.contains(&months) {
+            self.backup.months = months;
+            self.raise_heirs(paths);
+        }
+    }
+
+    /// Heirs below the floor move up to it: they always open after the
+    /// backup way in.
+    fn raise_heirs(&mut self, paths: &mut [Path]) {
+        let floor = *self.heir_months_range().start();
+        for months in &mut self.heir_months {
+            if *months < floor {
+                *months = floor;
+            }
+        }
+        self.sync_heir_locks(paths);
+    }
+
     /// What the website is asked for.
     pub fn vault_shape(&self) -> VaultShape {
+        let backup = self.backup_path.then(|| talia_keys::Backup {
+            kind: match self.backup.kind {
+                Some(BackupKind::OneKey) => talia_keys::BackupKind::SingleSig,
+                _ => talia_keys::BackupKind::ExpandMultisig,
+            },
+            holder_21c: self.backup_holder_21c() == Some(true),
+            months: self.backup.months,
+        });
         VaultShape {
             config: self.template.config(),
             cosigner: self.template.has_cosigner_slot() && self.cosigner_21c,
             rescue: self.rescue_path,
             heirs: self.heir_months.clone(),
+            backup,
+            layout: None,
         }
     }
 
     /// Whether the vault holds any 21st Capital key at all.
     pub fn uses_21c(&self, paths: &[Path]) -> bool {
-        self.cosigner_slot(paths).is_some() || self.rescue_path
+        self.cosigner_slot(paths).is_some() || self.rescue_path || self.backup_21c_slot().is_some()
     }
 }
 
@@ -326,6 +552,8 @@ mod tests {
                 cosigner: true,
                 rescue: true,
                 heirs: vec![],
+                backup: None,
+                layout: None,
             }
         );
     }
@@ -335,6 +563,10 @@ mod tests {
         let mut shape = TaliaShape::new(TaliaTemplate::TwoOfTwo);
         let mut paths = shape.initial_paths();
         assert_eq!(paths[0].keys.len(), 2);
+        // The 2 of 2 asks for its backup way in first.
+        assert!(!shape.complete(0));
+        shape.set_backup(&mut paths, false);
+        assert!(shape.complete(0));
         shape.add_heir(&mut paths);
         // Not required any more, not answered yet: no Rescue Key path.
         assert_eq!(shape.heirs(&paths), 1);
@@ -434,5 +666,91 @@ mod tests {
         assert_eq!(shape.heir_months(), &[12, 12]);
         shape.set_heir_months(&mut paths, 1, 9);
         assert_eq!(sequences(&paths), vec![0, 52_596, 39_447]);
+    }
+
+    #[test]
+    fn the_two_of_two_backup_way_in_follows_the_website() {
+        let mut shape = TaliaShape::new(TaliaTemplate::TwoOfTwo);
+        let mut paths = shape.initial_paths();
+        shape.set_backup(&mut paths, true);
+        // Yes is not the whole answer: which kind.
+        assert!(!shape.complete(0));
+        assert!(!shape.backup_path);
+        shape.set_backup_kind(&mut paths, BackupKind::TwoOfThree);
+        assert_eq!(paths[1].keys.len(), 3);
+        assert_eq!(paths[1].threshold, 2);
+        // Our co-signer already in the vault: the third key is the client's.
+        assert!(shape.backup_holder_forced());
+        assert_eq!(shape.backup_holder_21c(), Some(false));
+        // A way back exists: the Rescue Key becomes a question.
+        assert!(!shape.rescue_required(0));
+        assert!(!shape.complete(0));
+        assert_eq!(sequences(&paths), vec![0, 26_298]);
+        shape.set_rescue(&mut paths, true);
+        assert!(shape.complete(0));
+        assert_eq!(sequences(&paths), vec![0, 26_298, 65_535]);
+        assert_eq!(
+            shape.vault_shape().backup,
+            Some(talia_keys::Backup {
+                kind: talia_keys::BackupKind::ExpandMultisig,
+                holder_21c: false,
+                months: 6,
+            })
+        );
+
+        // The client holds both primary keys: the added key may be ours.
+        shape.cosigner_21c = false;
+        assert!(!shape.backup_holder_forced());
+        assert!(!shape.complete(0));
+        shape.set_backup_holder(&mut paths, true);
+        assert!(shape.complete(0));
+        assert_eq!(shape.backup_21c_slot(), Some((1, 2)));
+        assert!(shape.uses_21c(&paths));
+        let asked = shape.vault_shape();
+        assert!(!asked.cosigner);
+        assert!(asked.needs_cosigner());
+
+        // Heirs always open after it.
+        shape.set_backup_months(&mut paths, 3);
+        shape.add_heir(&mut paths);
+        shape.set_heir_months(&mut paths, 0, 8);
+        assert_eq!(shape.heir_months(), &[8]);
+        shape.set_backup_months(&mut paths, 9);
+        assert_eq!(shape.heir_months_range(), 10..=15);
+        assert_eq!(shape.heir_months(), &[10]);
+        shape.set_heir_months(&mut paths, 0, 9);
+        assert_eq!(shape.heir_months(), &[10]);
+        assert_eq!(sequences(&paths), vec![0, 39_447, 43_830, 65_535]);
+
+        // One key alone: always the client's, one slot.
+        shape.set_backup_kind(&mut paths, BackupKind::OneKey);
+        assert_eq!(paths[1].keys.len(), 1);
+        assert_eq!(paths[1].threshold, 1);
+        assert_eq!(shape.backup_holder_21c(), Some(false));
+        assert_eq!(shape.backup_21c_slot(), None);
+
+        // No backup way in: its path goes, the heir keeps its place.
+        shape.set_backup(&mut paths, false);
+        assert!(!shape.backup_path);
+        assert_eq!(shape.heirs(&paths), 1);
+        assert_eq!(sequences(&paths), vec![0, 43_830, 65_535]);
+    }
+
+    #[test]
+    fn a_kept_backup_path_keeps_its_added_key() {
+        use crate::installer::descriptor::PathWarning;
+        let mut shape = TaliaShape::new(TaliaTemplate::TwoOfTwo);
+        let mut paths = shape.initial_paths();
+        shape.set_backup(&mut paths, true);
+        shape.set_backup_kind(&mut paths, BackupKind::OneKey);
+        // A mark on the path: it survives only if the path is the same one.
+        paths[1].warning = Some(PathWarning::DuplicateSequence);
+        shape.set_backup(&mut paths, true);
+        shape.set_backup_kind(&mut paths, BackupKind::OneKey);
+        shape.set_backup_months(&mut paths, 8);
+        assert_eq!(paths[1].warning, Some(PathWarning::DuplicateSequence));
+        // Another kind is another path.
+        shape.set_backup_kind(&mut paths, BackupKind::TwoOfThree);
+        assert_eq!(paths[1].warning, None);
     }
 }
