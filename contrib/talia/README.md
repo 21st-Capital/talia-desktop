@@ -57,7 +57,8 @@ macOS itself make it (`background_bookmark.py`).
 
 ## Releasing
 
-1. Mac: build (`build-macos-app.sh`), then `release-macos.sh "<app>" talia-desktop-mac.dmg`
+1. Mac: build for Apple and Intel Macs (`UNIVERSAL=1 build-macos-app.sh <dir>`), then
+   `release-macos.sh "<app>" talia-desktop-mac.dmg`
    on the Mac that holds the team's "Developer ID Application" certificate and the
    `talia-notary` notarytool profile (both backed up in the company password manager).
    It signs, notarises and staples the app and the .dmg. Keep the Mac unlocked while it
