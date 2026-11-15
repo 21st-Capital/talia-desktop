@@ -270,6 +270,8 @@ pub enum PathWarning {
     DuplicateSequence,
     OnlyCosignerKeys,
     KeySourceKindDisallowed,
+    /// Talia Desktop: the 21st Capital co-signer could sign this path alone.
+    OurCosignerAlone,
 }
 
 impl PathWarning {
@@ -278,6 +280,7 @@ impl PathWarning {
             Self::DuplicateSequence => t!("installer-path-duplicate-sequence"),
             Self::OnlyCosignerKeys => t!("installer-path-only-cosigner-keys"),
             Self::KeySourceKindDisallowed => t!("installer-path-key-source-disallowed"),
+            Self::OurCosignerAlone => t!("installer-talia-cosigner-alone"),
         }
         .to_string()
     }

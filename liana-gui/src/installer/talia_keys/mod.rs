@@ -76,7 +76,8 @@ impl VaultConfig {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VaultShape {
     pub config: VaultConfig,
-    /// A 21st Capital co-signer on the everyday path.
+    /// A 21st Capital co-signer: on the everyday path (the templates), or on
+    /// any layers but the Rescue Key's (Build your own), one key for all.
     pub cosigner: bool,
     /// The 21st Capital Rescue Key (15 months).
     pub rescue: bool,

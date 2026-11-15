@@ -96,7 +96,7 @@ pub fn custom_template<'a>(
             .iter()
             .enumerate()
             .map(|(i, primary_key)| {
-                if ours.cosigner_slot == Some(i) {
+                if ours.cosigner_slot(0) == Some(i) {
                     our_key(
                         primary_key.as_ref().map(|key| key.name.as_str()),
                         t!("installer-talia-cosigner"),
@@ -144,7 +144,13 @@ pub fn custom_template<'a>(
                             // i.e. if there is only 1 recovery path and it contains only 1 key,
                             // and there is no safety net path.
                             let fixed = num_non_primary_paths < 2 && p.keys.len() < 2;
-                            if let Some(key) = recovery_key {
+                            if ours.cosigner_slot(p_idx + 1) == Some(j) {
+                                our_key(
+                                    recovery_key.as_ref().map(|key| key.name.as_str()),
+                                    t!("installer-talia-cosigner"),
+                                    !fixed,
+                                )
+                            } else if let Some(key) = recovery_key {
                                 defined_key(
                                     &key.name,
                                     color::ORANGE,
@@ -247,7 +253,7 @@ pub fn custom_template<'a>(
         recovery_paths,
         btn_row,
         safety_net,
-        our_keys(&ours, primary_path, safety_net_path.map(|(_, p)| p)),
+        our_keys(&ours),
         Space::with_height(FOOTER_SPACING),
         last_btn_row,
         Space::with_height(BOTTOM_PADDING),
@@ -268,31 +274,34 @@ pub fn custom_template<'a>(
 /// Build your own: the slots reserved for 21st Capital's keys and where
 /// "Get my 21st Capital keys" stands.
 pub struct Ours<'a> {
-    /// The co-signer's slot on the primary path, when reserved.
-    pub cosigner_slot: Option<usize>,
+    /// Each (path, slot) reserved for our co-signer, one key for all of them.
+    pub cosigner: Vec<(usize, usize)>,
     /// The Rescue Key path's slot is reserved for ours.
     pub rescue: bool,
+    /// Every reserved slot holds its key.
+    pub filled: bool,
     pub flow: &'a KeysFlow,
     /// 21st Capital issues keys on the wallet's network.
     pub keys_available: bool,
 }
 
+impl Ours<'_> {
+    /// Our co-signer's slot on the path at `index`, when reserved.
+    fn cosigner_slot(&self, index: usize) -> Option<usize> {
+        self.cosigner
+            .iter()
+            .find(|(path, _)| *path == index)
+            .map(|(_, slot)| *slot)
+    }
+}
+
 /// "21st Capital keys": shown once a slot is reserved for one of ours, with
 /// the one button that fetches them all.
-fn our_keys<'a>(
-    ours: &Ours<'a>,
-    primary: &'a Path,
-    rescue_path: Option<&'a Path>,
-) -> Option<Element<'a, Message>> {
-    if ours.cosigner_slot.is_none() && !ours.rescue {
+fn our_keys<'a>(ours: &Ours<'a>) -> Option<Element<'a, Message>> {
+    if ours.cosigner.is_empty() && !ours.rescue {
         return None;
     }
     let talia = |msg| Message::DefineDescriptor(message::DefineDescriptor::Talia(msg));
-    let filled = ours
-        .cosigner_slot
-        .is_none_or(|j| primary.keys.get(j).is_some_and(|k| k.is_some()))
-        && (!ours.rescue
-            || rescue_path.is_some_and(|p| p.keys.first().is_some_and(|k| k.is_some())));
 
     let mut col = column![row![
         p1_bold(t!("installer-talia-keys-title")),
@@ -322,7 +331,7 @@ fn our_keys<'a>(
                         .spacing(HSpacing::M),
                     );
             }
-            KeysFlow::Done if filled => {
+            KeysFlow::Done if ours.filled => {
                 col = col.push(
                     new::caption(t!("installer-talia-keys-done")).style(theme::text::success),
                 );

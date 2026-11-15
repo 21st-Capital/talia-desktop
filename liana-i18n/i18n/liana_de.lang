@@ -1635,6 +1635,10 @@ installer-talia-browser-wrong-request
 
 installer-talia-cosigner => "21st Capital co-signer" => "21st Capital Co-Signer"
 
+installer-talia-cosigner-alone
+=> "21st Capital's co-signer never signs alone. Require at least 2 signatures here."
+=> "Der 21st Capital Co-Signer signiert nie allein. Verlangen Sie hier mindestens 2 Signaturen.";;
+
 installer-talia-event-heir => "After 8 to 15 months*" => "Nach 8 bis 15 Monaten*"
 
 installer-talia-event-rescue => "After 15 months*" => "Nach 15 Monaten*"

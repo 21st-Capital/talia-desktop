@@ -80,8 +80,11 @@ pub struct DefineDescriptor {
     keys_attempt: u64,
     /// The 21st Capital keys placed in their slots.
     our_keys: Vec<Fingerprint>,
-    /// Build your own: the last primary slot is reserved for our co-signer.
-    custom_cosigner: bool,
+    /// Build your own: the layers whose last slot is reserved for our
+    /// co-signer, any layer but the Rescue Key's (decided 2026-11-15).
+    custom_cosigner: Vec<usize>,
+    /// Build your own: the co-signer key fetched, the same on every layer.
+    custom_cosigner_key: Option<Fingerprint>,
     /// Build your own: the Rescue Key path's slot is reserved for ours.
     custom_rescue: bool,
     /// Build your own: what the website was asked for, while it is open.
@@ -110,7 +113,8 @@ impl DefineDescriptor {
             keys_flow: KeysFlow::Idle,
             keys_attempt: 0,
             our_keys: Vec::new(),
-            custom_cosigner: false,
+            custom_cosigner: Vec::new(),
+            custom_cosigner_key: None,
             custom_rescue: false,
             custom_asked: None,
             custom_fetched: None,
@@ -147,6 +151,17 @@ impl DefineDescriptor {
                 path.warning = None;
             }
         }
+        // Build your own: 21st Capital's co-signer never signs alone, so a
+        // layer holding it needs at least 2 signatures (decided 2026-11-15).
+        if self.talia.is_none() {
+            for &i in &self.custom_cosigner {
+                if let Some(path) = self.paths.get_mut(i) {
+                    if path.warning.is_none() && path.threshold < 2 {
+                        path.warning = Some(PathWarning::OurCosignerAlone);
+                    }
+                }
+            }
+        }
     }
 
     fn valid(&self) -> bool {
@@ -177,6 +192,12 @@ impl DefineDescriptor {
             for fingerprint in self.our_keys.drain(..) {
                 self.keys.remove(&fingerprint);
             }
+            // Build your own: new paths, nothing reserved for ours yet.
+            self.custom_cosigner.clear();
+            self.custom_cosigner_key = None;
+            self.custom_rescue = false;
+            self.custom_asked = None;
+            self.custom_fetched = None;
             match TaliaTemplate::from_template(template) {
                 Some(talia) => {
                     let shape = TaliaShape::new(talia);
@@ -404,12 +425,21 @@ impl DefineDescriptor {
             .position(|path| path.kind() == PathKind::SafetyNet)
     }
 
-    /// Build your own: the co-signer's slot, last on the primary path.
-    fn custom_cosigner_slot(&self) -> Option<usize> {
-        if self.talia.is_some() || !self.custom_cosigner {
+    /// Build your own: the layers holding our co-signer, each in its last
+    /// slot. One key for all of them.
+    fn custom_cosigner_paths(&self) -> &[usize] {
+        if self.talia.is_some() {
+            return &[];
+        }
+        &self.custom_cosigner
+    }
+
+    /// Build your own: our co-signer's slot on layer `i`, when reserved.
+    fn custom_cosigner_slot(&self, i: usize) -> Option<usize> {
+        if !self.custom_cosigner_paths().contains(&i) {
             return None;
         }
-        self.paths.first()?.keys.len().checked_sub(1)
+        self.paths.get(i)?.keys.len().checked_sub(1)
     }
 
     /// Build your own: the Rescue Key path, when its slot is reserved for ours.
@@ -420,9 +450,25 @@ impl DefineDescriptor {
         self.rescue_path_index()
     }
 
-    /// Build your own: what to ask the website for, every key reserved.
+    /// Build your own: whether every slot reserved for ours holds its key.
+    fn custom_ours_filled(&self) -> bool {
+        let cosigner = self.custom_cosigner_paths().iter().all(|&i| {
+            self.paths
+                .get(i)
+                .and_then(|path| path.keys.last())
+                .is_some_and(|key| key.is_some())
+        });
+        let rescue = self
+            .custom_rescue_path()
+            .is_none_or(|i| self.paths[i].keys.first().is_some_and(|key| key.is_some()));
+        cosigner && rescue
+    }
+
+    /// Build your own: what to ask the website for, every key reserved. The
+    /// vault type follows the primary path, as on the website's configurator
+    /// (a 2 of 2 that expands to a 2 of 3 with our co-signer is a 2 of 2).
     fn custom_shape(&self) -> Option<talia_keys::VaultShape> {
-        let cosigner = self.custom_cosigner_slot().is_some();
+        let cosigner = !self.custom_cosigner_paths().is_empty();
         let rescue = self.custom_rescue_path().is_some();
         if !cosigner && !rescue {
             return None;
@@ -446,23 +492,26 @@ impl DefineDescriptor {
 
     /// Build your own: reserves the slot (i, j) for one of our keys.
     fn reserve_custom_slot(&mut self, i: usize, j: usize) {
-        if i == 0 {
-            let Some(last) = self.paths[0].keys.len().checked_sub(1) else {
+        if Some(i) == self.rescue_path_index() {
+            if !self.custom_rescue {
+                if let Some(slot) = self.paths[i].keys.first_mut() {
+                    *slot = None;
+                }
+                self.custom_rescue = true;
+            }
+        } else if let Some(path) = self.paths.get_mut(i) {
+            let Some(last) = path.keys.len().checked_sub(1) else {
                 return;
             };
-            // One co-signer, next to at least one of the client's keys.
-            if j > last || last == 0 || self.custom_cosigner {
+            // Once per layer, next to at least one of the client's keys.
+            if j > last || last == 0 || self.custom_cosigner.contains(&i) {
                 return;
             }
             // Ours sits last: the client's keys come first.
-            self.paths[0].keys.swap(j, last);
-            self.paths[0].keys[last] = None;
-            self.custom_cosigner = true;
-        } else if Some(i) == self.rescue_path_index() && !self.custom_rescue {
-            if let Some(slot) = self.paths[i].keys.first_mut() {
-                *slot = None;
-            }
-            self.custom_rescue = true;
+            path.keys.swap(j, last);
+            path.keys[last] = None;
+            self.custom_cosigner.push(i);
+            self.custom_cosigner.sort_unstable();
         }
         self.check_setup();
     }
@@ -470,19 +519,61 @@ impl DefineDescriptor {
     /// Build your own: keeps our keys true to what is reserved. A key fetched
     /// for another shape (another vault type, a co-signer or Rescue Key added
     /// or given back) leaves its slot, so one press of "Get my 21st Capital
-    /// keys" fetches one vault's pair again.
+    /// keys" fetches one vault's pair again. A layer given our co-signer after
+    /// the keys came takes the same co-signer key (decided 2026-11-15).
     fn sync_custom_ours(&mut self, hws: &mut HardwareWallets) {
         if self.talia.is_some() {
             return;
         }
+        let mut changed = false;
         if self.custom_rescue && self.rescue_path_index().is_none() {
             self.custom_rescue = false;
         }
-        if self.custom_cosigner && self.paths.first().is_none_or(|p| p.keys.len() < 2) {
-            self.custom_cosigner = false;
+        // Our co-signer only on layers with room for the client's keys too.
+        let paths = &self.paths;
+        self.custom_cosigner.retain(|&i| {
+            paths
+                .get(i)
+                .is_some_and(|p| p.kind() != PathKind::SafetyNet && p.keys.len() >= 2)
+        });
+        // Our keys sit in the slots reserved for them and nowhere else.
+        let rescue_path = self.custom_rescue_path();
+        let (our_keys, cosigner_paths) = (&self.our_keys, &self.custom_cosigner);
+        for (i, path) in self.paths.iter_mut().enumerate() {
+            let cosigner_slot = cosigner_paths.contains(&i).then(|| path.keys.len() - 1);
+            for (j, key) in path.keys.iter_mut().enumerate() {
+                let ours = key
+                    .as_ref()
+                    .is_some_and(|k| our_keys.contains(&k.fingerprint));
+                let reserved = Some(j) == cosigner_slot || (Some(i) == rescue_path && j == 0);
+                if ours && !reserved {
+                    *key = None;
+                    changed = true;
+                }
+            }
         }
         if self.custom_fetched.is_some() && self.custom_fetched != self.custom_shape() {
             self.remove_custom_keys(hws);
+        }
+        if let Some(key) = self
+            .custom_cosigner_key
+            .and_then(|fingerprint| self.keys.get(&fingerprint))
+            .cloned()
+        {
+            for &i in &self.custom_cosigner {
+                if let Some(slot) = self.paths[i].keys.last_mut() {
+                    if slot.is_none() {
+                        *slot = Some(key.clone());
+                        changed = true;
+                    }
+                }
+            }
+        }
+        if changed {
+            self.check_setup();
+        } else {
+            // A threshold edit changes no key: the warnings still follow it.
+            self.check_for_warning();
         }
     }
 
@@ -500,13 +591,15 @@ impl DefineDescriptor {
             }
         }
         self.custom_fetched = None;
+        self.custom_cosigner_key = None;
         if matches!(self.keys_flow, KeysFlow::Done) {
             self.keys_flow = KeysFlow::Idle;
         }
         self.check_setup();
     }
 
-    /// Build your own: puts the fetched keys in the reserved slots.
+    /// Build your own: puts the fetched keys in the reserved slots, the one
+    /// co-signer key on every layer reserved for it.
     fn place_custom_keys(
         &mut self,
         hws: &mut HardwareWallets,
@@ -521,11 +614,20 @@ impl DefineDescriptor {
             return Err(t!("installer-talia-keys-vault-changed"));
         }
         let mut placements = Vec::new();
-        if let Some(j) = self.custom_cosigner_slot() {
+        let cosigner_slots: Vec<(usize, usize)> = self
+            .custom_cosigner_paths()
+            .iter()
+            .filter_map(|&i| Some((i, self.custom_cosigner_slot(i)?)))
+            .collect();
+        let mut cosigner_key = None;
+        if !cosigner_slots.is_empty() {
             let Some(key) = fetched.cosigner else {
                 return Err(t!("installer-talia-keys-missing"));
             };
-            placements.push(((0, j), key));
+            cosigner_key = Some(key.fingerprint);
+            for slot in cosigner_slots {
+                placements.push((slot, key.clone()));
+            }
         }
         if let Some(i) = self.custom_rescue_path() {
             let Some(key) = fetched.rescue else {
@@ -550,10 +652,13 @@ impl DefineDescriptor {
         for ((i, j), key) in placements {
             self.keys.insert(key.fingerprint, key.clone());
             hws.aliases.insert(key.fingerprint, key.name.clone());
-            self.our_keys.push(key.fingerprint);
+            if !self.our_keys.contains(&key.fingerprint) {
+                self.our_keys.push(key.fingerprint);
+            }
             self.paths[i].keys[j] = Some(key);
         }
         self.custom_fetched = Some(asked);
+        self.custom_cosigner_key = cosigner_key;
         self.check_setup();
         Ok(())
     }
@@ -658,8 +763,9 @@ impl DefineDescriptor {
     fn path_data(&self, path_kind: PathKind, coordinates: Vec<(usize, usize)>) -> PathData {
         // Talia Desktop takes 21st Capital's keys, never a key provider's
         // token: no "Enter a Cosigner token" / "Safety Net token" (decided
-        // 2026-11-15). Build your own offers our co-signer on the primary path
-        // and our Rescue Key on its own path instead, fetched from our website.
+        // 2026-11-15). Build your own offers our co-signer on any layer but the
+        // Rescue Key's, and our Rescue Key on its own path instead, fetched
+        // from our website.
         let token_kind = vec![];
         let ours = if self.talia.is_some()
             || talia_keys::contract_network(self.network).is_none()
@@ -667,13 +773,14 @@ impl DefineDescriptor {
         {
             None
         } else {
+            let i = coordinates[0].0;
             match path_kind {
-                // One co-signer, next to at least one key of the client's.
-                PathKind::Primary if self.paths[0].keys.len() >= 2 && !self.custom_cosigner => {
-                    Some(key::OurKeyOffer::Cosigner)
-                }
                 PathKind::SafetyNet if !self.custom_rescue => Some(key::OurKeyOffer::Rescue),
-                _ => None,
+                PathKind::SafetyNet => None,
+                // Once per layer, next to at least one key of the client's.
+                _ => (self.paths.get(i).is_some_and(|p| p.keys.len() >= 2)
+                    && !self.custom_cosigner.contains(&i))
+                .then_some(key::OurKeyOffer::Cosigner),
             }
         };
         let manual_only = path_kind == PathKind::SafetyNet;
@@ -734,8 +841,8 @@ impl DefineDescriptor {
                 // reservation.
                 if !matches!(key, key::SelectedKey::None) {
                     for (i, j) in &coordinates {
-                        if *i == 0 && Some(*j) == self.custom_cosigner_slot() {
-                            self.custom_cosigner = false;
+                        if Some(*j) == self.custom_cosigner_slot(*i) {
+                            self.custom_cosigner.retain(|p| p != i);
                         }
                         if Some(*i) == self.custom_rescue_path() {
                             self.custom_rescue = false;
@@ -868,7 +975,7 @@ impl DefineDescriptor {
 
                     message::DefinePath::AddKey => {
                         // Build your own: our co-signer stays last.
-                        let ours_last = i == 0 && self.custom_cosigner_slot().is_some();
+                        let ours_last = self.custom_cosigner_slot(i).is_some();
                         if let Some(path) = self.paths.get_mut(i) {
                             if ours_last {
                                 path.keys.insert(path.keys.len() - 1, None);
@@ -918,8 +1025,8 @@ impl DefineDescriptor {
                             message::DefineKey::Delete => {
                                 // Build your own: the cross on a reserved slot
                                 // gives it back.
-                                if i == 0 && Some(j) == self.custom_cosigner_slot() {
-                                    self.custom_cosigner = false;
+                                if Some(j) == self.custom_cosigner_slot(i) {
+                                    self.custom_cosigner.retain(|&p| p != i);
                                 }
                                 if Some(i) == self.custom_rescue_path() {
                                     self.custom_rescue = false;
@@ -939,6 +1046,14 @@ impl DefineDescriptor {
                                     .unwrap_or(false)
                                 {
                                     self.paths.remove(i);
+                                    // Build your own: our co-signer stays on
+                                    // the layers it was given.
+                                    self.custom_cosigner.retain(|&p| p != i);
+                                    for p in &mut self.custom_cosigner {
+                                        if *p > i {
+                                            *p -= 1;
+                                        }
+                                    }
                                 }
                                 self.check_setup();
                             }
@@ -1165,8 +1280,13 @@ impl Step for DefineDescriptor {
                 self.valid(),
                 self.processing,
                 view::editor::template::custom::Ours {
-                    cosigner_slot: self.custom_cosigner_slot(),
+                    cosigner: self
+                        .custom_cosigner_paths()
+                        .iter()
+                        .filter_map(|&i| Some((i, self.custom_cosigner_slot(i)?)))
+                        .collect(),
                     rescue: self.custom_rescue_path().is_some(),
+                    filled: self.custom_ours_filled(),
                     flow: &self.keys_flow,
                     keys_available: talia_keys::contract_network(self.network).is_some(),
                 },
@@ -2066,7 +2186,7 @@ mod tests {
         sandbox.update(our_key(0, 0)).await;
         sandbox.check(|step| {
             assert!(!step.keys_flow.is_waiting());
-            assert_eq!(step.custom_cosigner_slot(), Some(1));
+            assert_eq!(step.custom_cosigner_slot(0), Some(1));
             // Ours sits last: the client's key moved first.
             assert_eq!(step.paths[0].keys[0].as_ref(), Some(&mine));
             assert!(step.paths[0].keys[1].is_none());
@@ -2181,12 +2301,12 @@ mod tests {
         sandbox.update(add_key(0)).await;
         sandbox.check(|step| {
             assert_eq!(step.paths[0].keys.len(), 3);
-            assert_eq!(step.custom_cosigner_slot(), Some(2));
+            assert_eq!(step.custom_cosigner_slot(0), Some(2));
         });
         sandbox.update(delete_key(0, 2)).await;
         sandbox.check(|step| {
             assert_eq!(step.paths[0].keys.len(), 2);
-            assert_eq!(step.custom_cosigner_slot(), None);
+            assert_eq!(step.custom_cosigner_slot(0), None);
             assert_eq!(step.custom_shape(), None);
         });
     }
@@ -2231,7 +2351,186 @@ mod tests {
             assert!(step.paths[0].keys[2].is_none());
             assert!(step.our_keys.is_empty());
             assert!(matches!(step.keys_flow, KeysFlow::Idle));
-            assert_eq!(step.custom_cosigner_slot(), Some(2));
+            assert_eq!(step.custom_cosigner_slot(0), Some(2));
+        });
+    }
+
+    fn sequence(path: usize, blocks: u16) -> Message {
+        Message::DefineDescriptor(message::DefineDescriptor::Path(
+            path,
+            message::DefinePath::SequenceEdited(blocks),
+        ))
+    }
+
+    fn add_recovery_path() -> Message {
+        Message::DefineDescriptor(message::DefineDescriptor::AddRecoveryPath)
+    }
+
+    #[tokio::test]
+    async fn our_cosigner_on_a_later_layer_makes_an_expanding_multisig() {
+        // The client's own 2 of 2, which after a year becomes a 2 of 3 with
+        // our co-signer.
+        let (mut ctx, sandbox) = build_your_own(Network::Testnet4).await;
+        let (a, b) = (test_key(1, "Mine A"), test_key(2, "Mine B"));
+        let cosigner = test_key(4, "21st Capital co-signer");
+        sandbox.update(add_key(0)).await;
+        sandbox.update(set_key(0, 0, &a)).await;
+        sandbox.update(set_key(0, 1, &b)).await;
+        sandbox.update(add_key(1)).await;
+        sandbox.update(add_key(1)).await;
+        sandbox.update(threshold(1, 2)).await;
+        sandbox.update(set_key(1, 0, &a)).await;
+        sandbox.update(set_key(1, 1, &b)).await;
+        sandbox.check(|step| {
+            let data = step.path_data(PathKind::Recovery, vec![(1, 2)]);
+            assert_eq!(data.ours, Some(key::OurKeyOffer::Cosigner));
+        });
+        sandbox.update(our_key(1, 2)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.custom_cosigner_slot(1), Some(2));
+            assert_eq!(step.custom_cosigner_slot(0), None);
+            assert!(step.paths[1].keys[2].is_none());
+            // Once per layer.
+            assert_eq!(step.path_data(PathKind::Recovery, vec![(1, 0)]).ours, None);
+            // As on the website, a 2 of 2 that expands is a 2 of 2.
+            let shape = ask_website(step);
+            assert_eq!(
+                shape,
+                talia_keys::VaultShape {
+                    config: talia_keys::VaultConfig::Multi2of2,
+                    cosigner: true,
+                    rescue: false,
+                    heirs: vec![],
+                }
+            );
+        });
+        sandbox.update(fetched(Some(&cosigner), None)).await;
+        sandbox.check(|step| {
+            assert!(matches!(step.keys_flow, KeysFlow::Done));
+            assert_eq!(step.paths[1].keys[2].as_ref(), Some(&cosigner));
+            assert!(step.valid());
+        });
+        assert!(run_apply(&sandbox, &mut ctx).await);
+        let policy = ctx.descriptor.as_ref().unwrap().policy();
+        let primary = policy.primary_path().thresh_origins();
+        assert_eq!(primary.0, 2);
+        assert!(!primary.1.contains_key(&cosigner.fingerprint));
+        let later = policy.recovery_paths()[&52_596].thresh_origins();
+        assert_eq!(later.0, 2);
+        assert!(later.1.contains_key(&cosigner.fingerprint));
+        assert!(later.1.contains_key(&a.fingerprint));
+    }
+
+    #[tokio::test]
+    async fn one_cosigner_key_on_every_layer_it_is_given() {
+        let (mut ctx, sandbox) = build_your_own(Network::Testnet4).await;
+        let (mine, own_recovery) = (test_key(1, "Mine"), test_key(2, "My recovery"));
+        let (cosigner, rescue) = (
+            test_key(4, "21st Capital co-signer"),
+            test_key(5, "21st Capital Rescue Key"),
+        );
+        sandbox.update(add_key(0)).await;
+        sandbox.update(set_key(0, 0, &mine)).await;
+        sandbox.update(add_key(1)).await;
+        sandbox.update(set_key(1, 0, &own_recovery)).await;
+        sandbox.update(add_rescue_path()).await;
+        sandbox.update(our_key(0, 1)).await;
+        sandbox.update(our_key(1, 1)).await;
+        sandbox.check(|step| {
+            // Never on the Rescue Key's path.
+            let data = step.path_data(PathKind::SafetyNet, vec![(2, 0)]);
+            assert_ne!(data.ours, Some(key::OurKeyOffer::Cosigner));
+            let shape = ask_website(step);
+            assert!(shape.cosigner && shape.rescue);
+        });
+        // One answer, one co-signer key, on both layers.
+        sandbox
+            .update(fetched(Some(&cosigner), Some(&rescue)))
+            .await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths[0].keys[1].as_ref(), Some(&cosigner));
+            assert_eq!(step.paths[1].keys[1].as_ref(), Some(&cosigner));
+            assert_eq!(step.paths[2].keys[0].as_ref(), Some(&rescue));
+            assert_eq!(
+                step.our_keys,
+                vec![cosigner.fingerprint, rescue.fingerprint]
+            );
+        });
+        // A layer given our co-signer later takes the same key, no new fetch.
+        sandbox.update(add_recovery_path()).await;
+        sandbox.update(sequence(3, 30_000)).await;
+        sandbox.update(add_key(3)).await;
+        sandbox.update(set_key(3, 0, &mine)).await;
+        sandbox.update(our_key(3, 1)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths[3].keys[1].as_ref(), Some(&cosigner));
+            assert!(matches!(step.keys_flow, KeysFlow::Done));
+            assert!(step.custom_ours_filled());
+            assert!(step.valid());
+        });
+        // Liana gives each use of the key its own derivation step.
+        assert!(run_apply(&sandbox, &mut ctx).await);
+        let policy = ctx.descriptor.as_ref().unwrap().policy();
+        assert!(policy
+            .primary_path()
+            .thresh_origins()
+            .1
+            .contains_key(&cosigner.fingerprint));
+        for wait in [30_000, 52_596] {
+            assert!(policy.recovery_paths()[&wait]
+                .thresh_origins()
+                .1
+                .contains_key(&cosigner.fingerprint));
+        }
+
+        // Our co-signer never signs alone.
+        sandbox.update(threshold(1, 1)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths[1].warning, Some(PathWarning::OurCosignerAlone));
+            assert!(!step.valid());
+        });
+        sandbox.update(threshold(1, 2)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths[1].warning, None);
+            assert!(step.valid());
+        });
+
+        // The cross on one layer's co-signer leaves the others as they are.
+        sandbox.update(delete_key(3, 1)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths[3].keys, vec![Some(mine.clone())]);
+            assert_eq!(step.custom_cosigner_slot(3), None);
+            assert_eq!(step.paths[0].keys[1].as_ref(), Some(&cosigner));
+            assert_eq!(step.paths[1].keys[1].as_ref(), Some(&cosigner));
+            assert!(matches!(step.keys_flow, KeysFlow::Done));
+        });
+        // A layer left with our co-signer only gives it up.
+        sandbox.update(delete_key(1, 0)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths[1].keys, vec![None]);
+            assert_eq!(step.custom_cosigner_slot(1), None);
+            assert_eq!(step.paths[0].keys[1].as_ref(), Some(&cosigner));
+        });
+    }
+
+    #[tokio::test]
+    async fn our_cosigner_follows_its_layer_when_an_earlier_one_goes() {
+        let (_ctx, sandbox) = build_your_own(Network::Testnet4).await;
+        let (mine, own_recovery) = (test_key(1, "Mine"), test_key(2, "My recovery"));
+        sandbox.update(set_key(1, 0, &own_recovery)).await;
+        sandbox.update(add_recovery_path()).await;
+        sandbox.update(sequence(2, 30_000)).await;
+        sandbox.update(add_key(2)).await;
+        sandbox.update(set_key(2, 0, &mine)).await;
+        sandbox.update(our_key(2, 1)).await;
+        sandbox.check(|step| assert_eq!(step.custom_cosigner_slot(2), Some(1)));
+        // The first recovery layer goes with its only key.
+        sandbox.update(delete_key(1, 0)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths.len(), 2);
+            assert_eq!(step.paths[1].sequence.as_u16(), 30_000);
+            assert_eq!(step.custom_cosigner_slot(1), Some(1));
+            assert_eq!(step.custom_cosigner_slot(2), None);
         });
     }
 }
