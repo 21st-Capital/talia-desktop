@@ -141,6 +141,21 @@ pub struct PathData {
     pub keys: Vec<Fingerprint>,
     /// Whether safety-net or cosigner features are enabled for this path
     pub token_kind: Vec<KeyKind>,
+    /// Build your own: the 21st Capital key this slot may take from our
+    /// website, if any.
+    pub ours: Option<OurKeyOffer>,
+    /// Only a pasted or imported extended public key fits this slot (the
+    /// Rescue Key's): no signing device, hot key or key used elsewhere.
+    pub manual_only: bool,
+}
+
+/// One of 21st Capital's keys a Build your own slot can take from our website.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum OurKeyOffer {
+    /// The co-signer, on the primary path.
+    Cosigner,
+    /// The Rescue Key, alone on Liana's Safety Net path (65535 blocks).
+    Rescue,
 }
 
 pub enum HwState {
@@ -882,8 +897,9 @@ impl SelectKeySource {
         &self,
         hws: Vec<(String /* alias */, Option<Fingerprint>, HwState)>,
     ) -> Element<'_, Message> {
-        let only_safety_net = self.actual_path.token_kind.contains(&KeyKind::SafetyNet)
-            && self.actual_path.token_kind.len() == 1;
+        let only_safety_net = self.actual_path.manual_only
+            || (self.actual_path.token_kind.contains(&KeyKind::SafetyNet)
+                && self.actual_path.token_kind.len() == 1);
 
         let no_devices = (hws.is_empty() && self.keys.is_empty() && !only_safety_net)
             .then_some(self.view_no_devices());
@@ -893,10 +909,16 @@ impl SelectKeySource {
 
         let keys = (!self.keys.is_empty() && !only_safety_net).then_some(self.view_keys());
 
-        let scrollable_content = column![no_devices, devices, keys, self.view_other_options()]
-            .spacing(10)
-            .align_x(Horizontal::Center)
-            .width(modal::BTN_W);
+        let scrollable_content = column![
+            no_devices,
+            devices,
+            keys,
+            self.view_our_key(),
+            self.view_other_options()
+        ]
+        .spacing(10)
+        .align_x(Horizontal::Center)
+        .width(modal::BTN_W);
         let scrollable = liana_ui::component::scrollable::vertical_thin(scrollable_content);
 
         liana_ui::component::modal::modal_view(
@@ -1003,6 +1025,24 @@ impl SelectKeySource {
     fn cosigner_enabled(&self) -> bool {
         self.actual_path.token_kind.contains(&KeyKind::Cosigner)
     }
+    /// "21st Capital co-signer" / "21st Capital Rescue Key": closes this window
+    /// and opens our website, which sends the key back.
+    fn view_our_key(&self) -> Option<Element<'_, Message>> {
+        let offer = self.actual_path.ours?;
+        let (path, index) = *self.actual_path.coordinates.first()?;
+        let label = match offer {
+            OurKeyOffer::Cosigner => crate::t!("installer-talia-cosigner"),
+            OurKeyOffer::Rescue => crate::t!("installer-talia-rescue-key"),
+        };
+        let msg = Message::DefineDescriptor(message::DefineDescriptor::Talia(
+            message::TaliaMessage::OurKey(path, index),
+        ));
+        Some(modal::our_key_entry(
+            label,
+            crate::t!("installer-talia-our-key-help"),
+            Some(move || msg.clone()),
+        ))
+    }
     fn view_other_options(&self) -> Element<'_, Message> {
         let import_xpub_error = self.import_xpub_error.clone();
         let taproot_note = self
@@ -1040,7 +1080,8 @@ impl SelectKeySource {
             )
         });
 
-        let collapsed = self.options_collapsed || safety_net_token.is_some();
+        let collapsed =
+            self.options_collapsed || safety_net_token.is_some() || self.actual_path.manual_only;
 
         let option_section = modal::optional_section(
             collapsed,
@@ -1050,7 +1091,9 @@ impl SelectKeySource {
         );
 
         let hot_signer_fg = self.hot_signer.lock().expect("poisoned").fingerprint();
-        let hot_signer = (!self.keys.contains_key(&hot_signer_fg) && safety_net_token.is_none())
+        let hot_signer = (!self.keys.contains_key(&hot_signer_fg)
+            && safety_net_token.is_none()
+            && !self.actual_path.manual_only)
             .then(|| {
                 modal::generate_hot_key_entry(Some(|| {
                     Self::route(SelectKeySourceMessage::SelectGenerateHotKey)

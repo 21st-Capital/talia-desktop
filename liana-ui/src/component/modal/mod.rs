@@ -594,6 +594,20 @@ where
     )
 }
 
+/// Entry taking one of 21st Capital's keys from our website: `label` names the
+/// key, `help` sits behind the info dot.
+pub fn our_key_entry<'a, Message, M>(
+    label: String,
+    help: String,
+    on_press: Option<M>,
+) -> Element<'a, Message>
+where
+    M: 'static + Fn() -> Message,
+    Message: Clone + 'static,
+{
+    button_entry(Tile::KeyInternal, label, Some(help), None, None, on_press)
+}
+
 /// Collapsible entry pasting an extended public key. `taproot_note` carries the
 /// message opening the list of taproot-compatible devices, and is set only when
 /// the descriptor being built is a taproot one.

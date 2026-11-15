@@ -23,7 +23,7 @@ btn-add-recovery-option => "Add recovery path"
 
 btn-add-recovery-path => "Add recovery path"
 
-btn-add-safety-net => "Add Safety Net"
+btn-add-safety-net => "Add Rescue Key"
 
 btn-add-wallet => "Add wallet"
 
@@ -1192,12 +1192,12 @@ installer-rpc-auth => "RPC authentication:"
 
 installer-rpc-user-password => "User and password"
 
-installer-safety-net => "Safety Net:"
+installer-safety-net => "Rescue:"
 
 installer-safety-net-description
-=> "This adds a final recovery path containing keys from professional key agents.\n\nUse this option if you have been provided one or more Safety Net tokens.";;
+=> "Adds the 21st Capital Rescue Key. It can recover coins that have not moved for 15 months.";;
 
-installer-safety-net-key => "Safety Net key"
+installer-safety-net-key => "21st Capital Rescue Key"
 
 installer-safety-net-token-disallowed
 => "Safety Net tokens are not allowed for this path";;
@@ -1337,6 +1337,9 @@ installer-talia-keys-too-many-tries
 installer-talia-keys-unreachable
 => "Could not reach 21st Capital. Check your connection and try again.";;
 
+installer-talia-keys-vault-changed
+=> "The vault changed while our website was open. Pick the key again.";;
+
 installer-talia-keys-waiting
 => "Finish on the 21st Capital website. Talia Desktop is waiting for your keys.";;
 
@@ -1366,6 +1369,9 @@ installer-talia-multi-2-3 => "Multi-Signature, 2 of 3"
 
 installer-talia-multi-2-3-description
 => "Three keys: you hold two, and the third is held by 21st Capital or by you. Any two signatures spend.";;
+
+installer-talia-our-key-help
+=> "Sign in on our website and the key comes back to Talia Desktop.";;
 
 installer-talia-primary-keys => "Primary keys"
 
@@ -1691,7 +1697,7 @@ policy-primary-path => "can always spend this wallet's funds (primary path)"
 
 policy-recovery-path => "(recovery path #{$number})"
 
-policy-safety-net-path => "(Safety Net path)"
+policy-safety-net-path => "(Rescue Key path)"
 
 policy-signatures
 => "{ $count ->\n    [one] 1 signature\n   *[other] {$count} signatures\n}";;

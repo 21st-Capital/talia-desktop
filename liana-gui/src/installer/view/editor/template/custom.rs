@@ -7,17 +7,19 @@ use liana::miniscript::bitcoin::Network;
 use liana_ui::{
     color,
     component::{
-        button::{btn_add_recovery_option, btn_add_safety_net},
+        button::{self, btn_add_recovery_option, btn_add_safety_net},
         text::new,
         timeline::{spending_timeline, Template},
     },
     spacing::{HSpacing, VSpacing},
+    theme,
     widget::*,
 };
 
 use crate::installer::{
     descriptor::Path,
-    message::{self, Message},
+    message::{self, Message, TaliaMessage},
+    step::descriptor::editor::talia::KeysFlow,
     view::{
         editor::{
             defined_key, descriptor_type, path,
@@ -76,6 +78,7 @@ pub fn custom_template<'a>(
     num_non_primary_paths: usize,
     valid: bool,
     processing: bool,
+    flow: &'a KeysFlow,
 ) -> Element<'a, Message> {
     let prim_keys_fixed = primary_path.keys.len() < 2; // can only delete a primary key if there are 2 or more
 
@@ -214,7 +217,8 @@ pub fn custom_template<'a>(
                     .map(move |msg| message::DefinePath::Key(i, msg))
                 })
                 .collect(),
-            false,
+            // The Rescue Key is one key: nothing to add next to it.
+            true,
         )
         .map(move |msg| {
             // Add 1 to index to account for primary path.
@@ -230,6 +234,7 @@ pub fn custom_template<'a>(
         recovery_paths,
         btn_row,
         safety_net,
+        our_keys_status(flow),
         Space::with_height(FOOTER_SPACING),
         last_btn_row,
         Space::with_height(BOTTOM_PADDING),
@@ -244,5 +249,33 @@ pub fn custom_template<'a>(
         t!("btn-set-keys"),
         content,
         Some(Message::Previous),
+    )
+}
+
+/// While our website is open for the 21st Capital keys, or when it answered
+/// with an error. Nothing once the keys sit in their slots.
+fn our_keys_status(flow: &KeysFlow) -> Option<Element<'_, Message>> {
+    let talia = |msg| Message::DefineDescriptor(message::DefineDescriptor::Talia(msg));
+    let content: Element<'_, Message> = match flow {
+        KeysFlow::Waiting { .. } => column![
+            new::caption(t!("installer-talia-keys-waiting")),
+            row![
+                button::secondary(None, t!("installer-talia-keys-open-again"))
+                    .on_press(talia(TaliaMessage::OpenKeysPage)),
+                button::tertiary(None, t!("btn-cancel")).on_press(talia(TaliaMessage::CancelKeys)),
+            ]
+            .spacing(HSpacing::M),
+        ]
+        .spacing(10)
+        .into(),
+        KeysFlow::Failed(error) => new::caption(error.clone()).style(theme::text::error).into(),
+        _ => return None,
+    };
+    Some(
+        Container::new(content)
+            .padding(10)
+            .width(iced::Length::Fill)
+            .style(theme::card::border)
+            .into(),
     )
 }

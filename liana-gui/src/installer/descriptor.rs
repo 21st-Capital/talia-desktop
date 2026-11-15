@@ -217,8 +217,11 @@ impl PathKind {
     /// Whether a key with the given `KeySourceKind` can be chosen for this `PathKind`.
     pub fn can_choose_key_source_kind(&self, source_kind: &KeySourceKind) -> bool {
         match (self, source_kind) {
-            // Safety net path only allows safety net keys.
-            (Self::SafetyNet, KeySourceKind::Token(KeyKind::SafetyNet)) => true,
+            // Talia Desktop: Liana's Safety Net path (65535 blocks) holds the
+            // 21st Capital Rescue Key, an extended public key fetched from our
+            // website or pasted from it (decided 2026-11-15). Never a signing
+            // device, hot key or provider token.
+            (Self::SafetyNet, KeySourceKind::Manual) => true,
             (Self::SafetyNet, _) => false,
             // Safety net keys cannot be used in any other path kind.
             (_, KeySourceKind::Token(KeyKind::SafetyNet)) => false,

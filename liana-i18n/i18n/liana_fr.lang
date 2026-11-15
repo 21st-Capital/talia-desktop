@@ -29,7 +29,7 @@ btn-add-recovery-option => "Add recovery path" => "Ajouter un chemin de récupé
 
 btn-add-recovery-path => "Add recovery path" => "Ajouter un chemin de récupération"
 
-btn-add-safety-net => "Add Safety Net" => "Ajouter Safety Net"
+btn-add-safety-net => "Add Rescue Key" => NONE # "Ajouter Safety Net"
 
 btn-add-wallet => "Add wallet" => "Ajouter un portefeuille"
 
@@ -1619,13 +1619,13 @@ installer-rpc-auth => "RPC authentication:" => "Authentification RPC :"
 
 installer-rpc-user-password => "User and password" => "Utilisateur et mot de passe"
 
-installer-safety-net => "Safety Net:" => "Safety Net :"
+installer-safety-net => "Rescue:" => NONE # "Safety Net :"
 
 installer-safety-net-description
-=> "This adds a final recovery path containing keys from professional key agents.\n\nUse this option if you have been provided one or more Safety Net tokens."
-=> "Cela ajoute un dernier chemin de récupération contenant des clés d'agents professionnels.\n\nUtilisez cette option si un ou plusieurs tokens Safety Net vous ont été fournis.";;
+=> "Adds the 21st Capital Rescue Key. It can recover coins that have not moved for 15 months."
+=> NONE;; # "Cela ajoute un dernier chemin de récupération contenant des clés d'agents professionnels.\n\nUtilisez cette option si un ou plusieurs tokens Safety Net vous ont été fournis."
 
-installer-safety-net-key => "Safety Net key" => "Clé Safety Net"
+installer-safety-net-key => "21st Capital Rescue Key" => NONE # "Clé Safety Net"
 
 installer-safety-net-token-disallowed
 => "Safety Net tokens are not allowed for this path"
@@ -1807,6 +1807,10 @@ installer-talia-keys-unreachable
 => "Could not reach 21st Capital. Check your connection and try again."
 => NONE;;
 
+installer-talia-keys-vault-changed
+=> "The vault changed while our website was open. Pick the key again."
+=> NONE;;
+
 installer-talia-keys-waiting
 => "Finish on the 21st Capital website. Talia Desktop is waiting for your keys."
 => NONE;;
@@ -1839,6 +1843,10 @@ installer-talia-multi-2-3 => "Multi-Signature, 2 of 3" => NONE
 
 installer-talia-multi-2-3-description
 => "Three keys: you hold two, and the third is held by 21st Capital or by you. Any two signatures spend."
+=> NONE;;
+
+installer-talia-our-key-help
+=> "Sign in on our website and the key comes back to Talia Desktop."
 => NONE;;
 
 installer-talia-primary-keys => "Primary keys" => NONE
@@ -2277,7 +2285,7 @@ policy-recovery-path
 => "(recovery path #{$number})"
 => "(chemin de récupération n° {$number})";;
 
-policy-safety-net-path => "(Safety Net path)" => "(chemin Safety Net)"
+policy-safety-net-path => "(Rescue Key path)" => NONE # "(chemin Safety Net)"
 
 policy-signatures
 => "{ $count ->\n    [one] 1 signature\n   *[other] {$count} signatures\n}"

@@ -218,6 +218,9 @@ pub enum TaliaMessage {
     KeysFetched(u64, Result<Box<FetchedKeys>, HandoffError>),
     /// Takes the 21st Capital keys out, so the shape can change again.
     ChangeShape,
+    /// Build your own: the client picked one of our keys for the slot at
+    /// (path, key), the co-signer on the primary path or the Rescue Key.
+    OurKey(usize, usize),
 }
 
 #[allow(clippy::large_enum_variant)]
