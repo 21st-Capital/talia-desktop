@@ -1,10 +1,12 @@
 //! Talia Desktop: adding an existing vault by holding its QR code up to the
 //! camera, such as the code Talia on the iPhone shows (decided 2026-11-15).
 //!
-//! What the code holds is handed to Liana's own backup import, exactly as if
-//! the client had opened it as a file: a wallet backup with its names and
-//! labels, a descriptor, or an encrypted backup that a signing device then
-//! opens. Nothing is parsed here but the QR frames themselves.
+//! What the code holds is handed to the Liana import of the screen it is read
+//! on, exactly as if the client had opened it as a file there: on the own
+//! node path a wallet backup with its names and labels, a descriptor, or an
+//! encrypted backup that a signing device then opens; on the Liana Connect
+//! path the descriptor of any of those. Nothing is parsed here but the QR
+//! frames themselves.
 
 use std::{io::Write, path::PathBuf};
 
@@ -21,7 +23,7 @@ use liana_ui::{
 
 use crate::{
     bbqr,
-    export::{from_backup, ImportExportMessage, Progress},
+    export::{from_backup, import_descriptor, ImportExportMessage, Progress},
     installer::message::Message,
     t,
     talia_camera::{self, Access, Event},
@@ -29,6 +31,16 @@ use crate::{
 
 /// The preview's size in the window.
 const PREVIEW: (f32, f32) = (480.0, 270.0);
+
+/// The Liana import the code's content goes to: that of the screen's own
+/// "Import" entry.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Importer {
+    /// "Import a backup", on the own node path.
+    Backup,
+    /// "Import a descriptor", on the Liana Connect path.
+    Descriptor,
+}
 
 #[derive(Debug, Clone)]
 pub enum ScanMessage {
@@ -64,14 +76,16 @@ enum Phase {
 pub struct ScanWindow {
     phase: Phase,
     joiner: bbqr::Joiner,
+    importer: Importer,
 }
 
 impl ScanWindow {
-    pub fn open() -> (Self, Task<Message>) {
+    pub fn open(importer: Importer) -> (Self, Task<Message>) {
         (
             Self {
                 phase: Phase::Asking,
                 joiner: bbqr::Joiner::default(),
+                importer,
             },
             ask(),
         )
@@ -106,7 +120,7 @@ impl ScanWindow {
                         if let Some(content) = self.take(code) {
                             self.phase = Phase::Reading;
                             return (
-                                Task::perform(read(content, network), |result| {
+                                Task::perform(read(content, network, self.importer), |result| {
                                     ScanMessage::Read(result).into()
                                 }),
                                 true,
@@ -243,18 +257,28 @@ fn caption<'a>(text: String) -> Element<'a, Message> {
     new::caption(text).style(theme::text::secondary).into()
 }
 
-/// Hands the code's content to Liana's backup import through a file only
-/// this user may read, removed as soon as it is read.
-async fn read(content: Vec<u8>, network: Network) -> Result<Vec<Progress>, String> {
+/// Hands the code's content to the Liana import through a file only this
+/// user may read, removed as soon as it is read.
+async fn read(
+    content: Vec<u8>,
+    network: Network,
+    importer: Importer,
+) -> Result<Vec<Progress>, String> {
     let path = scratch_file(&content).map_err(|e| e.to_string())?;
     let (sender, mut receiver) = tokio::sync::mpsc::unbounded_channel();
-    let result = from_backup(&sender, path.clone(), network).await;
+    let result = match importer {
+        Importer::Backup => from_backup(&sender, path.clone(), network).await,
+        Importer::Descriptor => import_descriptor(&sender, path.clone(), network).await,
+    };
     let _ = std::fs::remove_file(&path);
     result.map_err(|e| e.to_string())?;
     drop(sender);
     let mut progress = Vec::new();
     while let Ok(p) = receiver.try_recv() {
-        if matches!(p, Progress::WalletFromBackup(_) | Progress::EncryptedFile(_)) {
+        if matches!(
+            p,
+            Progress::WalletFromBackup(_) | Progress::Descriptor(_) | Progress::EncryptedFile(_)
+        ) {
             progress.push(p);
         }
     }
@@ -302,6 +326,7 @@ mod tests {
                 parts: None,
             },
             joiner: bbqr::Joiner::default(),
+            importer: Importer::Backup,
         };
         let mut content = None;
         for frame in frames.iter().rev() {
@@ -310,7 +335,7 @@ mod tests {
         }
         let content = content.expect("every frame read");
         assert_eq!(content, BACKUP.as_bytes());
-        let progress = read(content, Network::Signet).await.unwrap();
+        let progress = read(content, Network::Signet, Importer::Backup).await.unwrap();
         assert!(matches!(
             progress.as_slice(),
             [Progress::WalletFromBackup(_)]
@@ -343,13 +368,14 @@ mod tests {
                 parts: None,
             },
             joiner: bbqr::Joiner::default(),
+            importer: Importer::Backup,
         };
         let content = frames
             .iter()
             .filter_map(|f| window.take(f.clone()))
             .next()
             .expect("every frame read");
-        let progress = read(content, Network::Signet).await.unwrap();
+        let progress = read(content, Network::Signet, Importer::Backup).await.unwrap();
         let [Progress::WalletFromBackup((_, _, aliases, backup))] = progress.as_slice() else {
             panic!("not imported as a backup");
         };
@@ -358,7 +384,32 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn on_the_liana_connect_path_the_descriptor_is_taken() {
+        // The same backup code, read where Liana's "Import a descriptor" is.
+        let progress = read(BACKUP.as_bytes().to_vec(), Network::Signet, Importer::Descriptor)
+            .await
+            .unwrap();
+        assert!(matches!(progress.as_slice(), [Progress::Descriptor(_)]));
+        // A bare descriptor too.
+        let Progress::Descriptor(descriptor) = &progress[0] else {
+            unreachable!()
+        };
+        let bare = read(
+            descriptor.to_string().into_bytes(),
+            Network::Signet,
+            Importer::Descriptor,
+        )
+        .await
+        .unwrap();
+        assert!(matches!(bare.as_slice(), [Progress::Descriptor(_)]));
+        // And never a wallet of the wrong network.
+        assert!(read(BACKUP.as_bytes().to_vec(), Network::Bitcoin, Importer::Descriptor)
+            .await
+            .is_err());
+    }
+
+    #[tokio::test]
     async fn a_plain_code_that_is_no_vault_is_refused() {
-        assert!(read(b"hello".to_vec(), Network::Signet).await.is_err());
+        assert!(read(b"hello".to_vec(), Network::Signet, Importer::Backup).await.is_err());
     }
 }

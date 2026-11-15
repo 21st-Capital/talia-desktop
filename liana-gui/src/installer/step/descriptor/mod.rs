@@ -24,7 +24,7 @@ use crate::{
         decrypt::{Decrypt, DecryptModal},
         message::{self, Message},
         step::import_descriptor::ImportDescriptorModal,
-        step::talia_scan::{ScanMessage, ScanWindow},
+        step::talia_scan::{Importer, ScanMessage, ScanWindow},
         step::{Context, Step},
         view, Error,
     },
@@ -104,7 +104,7 @@ impl Step for ImportDescriptor {
             Message::TaliaScan(ScanMessage::Open) => {
                 if self.scan.is_none() {
                     self.error = None;
-                    let (scan, task) = ScanWindow::open();
+                    let (scan, task) = ScanWindow::open(Importer::Backup);
                     self.scan = Some(scan);
                     Some(task)
                 } else {

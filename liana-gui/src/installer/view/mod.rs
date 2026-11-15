@@ -228,8 +228,24 @@ pub fn import_wallet_or_descriptor<'a>(
         ),
         Space::fill_width(),
     ];
+    // Talia Desktop: a vault's QR code, read with the Mac's camera.
+    let scan_qr = cfg!(target_os = "macos").then(|| {
+        list::entry_action_accent(
+            wallet_accent,
+            Tile::ScanQr,
+            t!("talia-scan-qr"),
+            None::<String>,
+            None,
+            button::EntryWidth::Standard,
+            Some(Message::TaliaScan(
+                crate::installer::step::talia_scan::ScanMessage::Open,
+            )),
+        )
+    });
     let other_options_content: Option<Element<'a, Message>> = options_expanded.then_some(
-        column![invitation, import_descriptor, paste_descriptor,]
+        column![invitation, import_descriptor]
+            .push_maybe(scan_qr)
+            .push(paste_descriptor)
             .spacing(20)
             .into(),
     );

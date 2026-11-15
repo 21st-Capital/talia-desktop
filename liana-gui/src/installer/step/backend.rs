@@ -1,6 +1,7 @@
 use crate::installer::{
     decrypt::{Decrypt, DecryptModal},
     step::import_descriptor::ImportDescriptorModal,
+    step::talia_scan::{Importer, ScanMessage, ScanWindow},
 };
 use std::str::FromStr;
 
@@ -581,6 +582,8 @@ pub struct ImportRemoteWallet {
     // wallet alias is stored here to be applied to context
     // and be modified in a following step
     wallet_alias: Option<String>,
+    /// Talia Desktop: the camera window reading a vault's QR code.
+    scan: Option<ScanWindow>,
 }
 
 impl ImportRemoteWallet {
@@ -598,6 +601,7 @@ impl ImportRemoteWallet {
             wallets: Vec::new(),
             modal: ImportDescriptorModal::None,
             wallet_alias: None,
+            scan: None,
         }
     }
 }
@@ -640,6 +644,23 @@ impl Step for ImportRemoteWallet {
     // Verification of the values is happening when the user click on Next button.
     fn update(&mut self, hws: &mut HardwareWallets, message: Message) -> Task<Message> {
         match message {
+            Message::TaliaScan(ScanMessage::Open) => {
+                if self.scan.is_none() {
+                    self.error = None;
+                    let (scan, task) = ScanWindow::open(Importer::Descriptor);
+                    self.scan = Some(scan);
+                    return task;
+                }
+            }
+            Message::TaliaScan(msg) => {
+                if let Some(scan) = self.scan.as_mut() {
+                    let (task, open) = scan.update(msg, self.network);
+                    if !open {
+                        self.scan = None;
+                    }
+                    return task;
+                }
+            }
             Message::ImportRemoteWallet(message::ImportRemoteWallet::ToggleOptions(expanded)) => {
                 self.options_expanded = expanded;
             }
@@ -863,7 +884,12 @@ impl Step for ImportRemoteWallet {
     }
 
     fn subscription(&self, hws: &HardwareWallets) -> iced::Subscription<Message> {
-        self.modal.subscriptions(hws)
+        match &self.scan {
+            Some(scan) => {
+                iced::Subscription::batch([self.modal.subscriptions(hws), scan.subscription()])
+            }
+            None => self.modal.subscriptions(hws),
+        }
     }
 
     fn apply(&mut self, ctx: &mut Context) -> bool {
@@ -903,7 +929,11 @@ impl Step for ImportRemoteWallet {
                 .map(|w| (&w.name, w.metadata.wallet_alias.as_ref()))
                 .collect(),
         );
-        self.modal.view(content)
+        let content = self.modal.view(content);
+        match &self.scan {
+            Some(scan) => scan.view(content),
+            None => content,
+        }
     }
 }
 
