@@ -67,15 +67,24 @@ impl fmt::Display for Error {
 
 /// The frames of `data`, in order.
 pub fn encode(data: &[u8], file_type: FileType) -> Result<Vec<String>, Error> {
+    encode_in(data, file_type, FRAME_BYTES)
+}
+
+/// The frames of `data` in parts of `frame_bytes`, a multiple of 5.
+pub(crate) fn encode_in(
+    data: &[u8],
+    file_type: FileType,
+    frame_bytes: usize,
+) -> Result<Vec<String>, Error> {
     if data.is_empty() {
         return Err(Error::Empty);
     }
-    let total = data.len().div_ceil(FRAME_BYTES);
+    let total = data.len().div_ceil(frame_bytes);
     if total > MAX_FRAMES {
         return Err(Error::TooLarge);
     }
     Ok(data
-        .chunks(FRAME_BYTES)
+        .chunks(frame_bytes)
         .enumerate()
         .map(|(index, part)| {
             format!(

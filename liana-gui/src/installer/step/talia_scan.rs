@@ -329,6 +329,35 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn the_iphone_apps_export_to_talia_code_is_read() {
+        // As the iPhone app's "Export to Talia" page shows it: 300-byte
+        // frames, and a mark of its own among the backup's extras.
+        let mut backup: serde_json::Value = serde_json::from_str(BACKUP).unwrap();
+        backup["proprietary"]["talia"] = serde_json::json!({"registered": true});
+        let json = serde_json::to_vec(&backup).unwrap();
+        let frames = bbqr::encode_in(&json, bbqr::FileType::Json, 300).unwrap();
+        assert!(frames.len() > 1);
+        let mut window = ScanWindow {
+            phase: Phase::Scanning {
+                preview: None,
+                parts: None,
+            },
+            joiner: bbqr::Joiner::default(),
+        };
+        let content = frames
+            .iter()
+            .filter_map(|f| window.take(f.clone()))
+            .next()
+            .expect("every frame read");
+        let progress = read(content, Network::Signet).await.unwrap();
+        let [Progress::WalletFromBackup((_, _, aliases, backup))] = progress.as_slice() else {
+            panic!("not imported as a backup");
+        };
+        assert!(!aliases.is_empty());
+        assert_eq!(backup.proprietary["talia"]["registered"], true);
+    }
+
+    #[tokio::test]
     async fn a_plain_code_that_is_no_vault_is_refused() {
         assert!(read(b"hello".to_vec(), Network::Signet).await.is_err());
     }
