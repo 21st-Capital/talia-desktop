@@ -1,8 +1,10 @@
 //! Talia Desktop: reading QR codes with the computer's camera, for a vault
 //! that comes from Talia on the iPhone (decided 2026-11-15).
 //!
-//! On the Mac, Apple's AVFoundation films at 1280x720 and hands each picture
-//! to a pure-Rust QR reader (`rqrr`). Only text read from codes and a small
+//! On the Mac, Apple's AVFoundation films and Apple's Vision reads the codes
+//! in each picture, the reader the iPhone's camera uses: it copes with the
+//! blur, glare and tilt of a phone held up to a webcam, where a plain reader
+//! did not (decided 2026-11-15). Only text read from codes and a small
 //! mirrored preview leave this module; no picture is ever stored. Elsewhere
 //! there is no camera yet, and the app keeps its file import.
 
@@ -22,21 +24,6 @@ pub enum Event {
     /// What the camera sees, for aiming, and the codes it read in it.
     Frame { preview: Handle, codes: Vec<String> },
     Failed(String),
-}
-
-/// The QR codes in a greyscale picture.
-#[cfg(target_os = "macos")]
-pub fn read_codes(width: usize, height: usize, luma: &[u8]) -> Vec<String> {
-    if luma.len() < width * height {
-        return Vec::new();
-    }
-    let mut prepared =
-        rqrr::PreparedImage::prepare_from_greyscale(width, height, |x, y| luma[y * width + x]);
-    prepared
-        .detect_grids()
-        .iter()
-        .filter_map(|grid| grid.decode().ok().map(|(_, text)| text))
-        .collect()
 }
 
 #[cfg(target_os = "macos")]
@@ -67,26 +54,31 @@ mod mac {
     use iced::{futures::SinkExt, widget::image::Handle};
     use objc2::{
         define_class, msg_send,
-        rc::Retained,
+        rc::{autoreleasepool, Retained},
         runtime::{AnyObject, Bool, ProtocolObject},
         AllocAnyThread, DefinedClass,
     };
     use objc2_av_foundation::{
         AVAuthorizationStatus, AVCaptureConnection, AVCaptureDevice, AVCaptureDeviceInput,
         AVCaptureOutput, AVCaptureSession, AVCaptureSessionPreset1280x720,
-        AVCaptureVideoDataOutput, AVCaptureVideoDataOutputSampleBufferDelegate, AVMediaTypeVideo,
+        AVCaptureSessionPreset1920x1080, AVCaptureVideoDataOutput,
+        AVCaptureVideoDataOutputSampleBufferDelegate, AVMediaTypeVideo,
     };
     use objc2_core_media::CMSampleBuffer;
     use objc2_core_video::{
         kCVPixelBufferPixelFormatTypeKey, kCVPixelFormatType_32BGRA, kCVReturnSuccess,
-        CVPixelBufferGetBaseAddress, CVPixelBufferGetBytesPerRow, CVPixelBufferGetHeight,
-        CVPixelBufferGetPixelFormatType, CVPixelBufferGetWidth, CVPixelBufferLockBaseAddress,
-        CVPixelBufferLockFlags, CVPixelBufferUnlockBaseAddress,
+        CVPixelBuffer, CVPixelBufferGetBaseAddress, CVPixelBufferGetBytesPerRow,
+        CVPixelBufferGetHeight, CVPixelBufferGetPixelFormatType, CVPixelBufferGetWidth,
+        CVPixelBufferLockBaseAddress, CVPixelBufferLockFlags, CVPixelBufferUnlockBaseAddress,
     };
-    use objc2_foundation::{NSDictionary, NSNumber, NSObject, NSObjectProtocol, NSString};
+    use objc2_foundation::{NSArray, NSDictionary, NSNumber, NSObject, NSObjectProtocol, NSString};
+    use objc2_vision::{
+        VNBarcodeSymbologyQR, VNDetectBarcodesRequest, VNImageOption, VNImageRequestHandler,
+        VNRequest,
+    };
     use tokio::sync::{mpsc, oneshot};
 
-    use super::{read_codes, Access, Event};
+    use super::{Access, Event};
 
     /// A picture every this often is plenty to read a code changing every
     /// 300 ms, and keeps the computer cool.
@@ -164,8 +156,12 @@ mod mac {
             let input = AVCaptureDeviceInput::deviceInputWithDevice_error(&device)
                 .map_err(|e| e.localizedDescription().to_string())?;
             let session = AVCaptureSession::new();
-            if session.canSetSessionPreset(AVCaptureSessionPreset1280x720) {
-                session.setSessionPreset(AVCaptureSessionPreset1280x720);
+            // The most pixels a module, for a code held at arm's length.
+            for preset in [AVCaptureSessionPreset1920x1080, AVCaptureSessionPreset1280x720] {
+                if session.canSetSessionPreset(preset) {
+                    session.setSessionPreset(preset);
+                    break;
+                }
             }
             if !session.canAddInput(&input) {
                 return Err("The camera is busy".into());
@@ -251,46 +247,73 @@ mod mac {
             if ivars.sender.capacity() == 0 {
                 return;
             }
-            // SAFETY: the buffer is locked while it is read and never kept.
-            let Some((luma, width, height, preview)) = (unsafe { read_picture(sample_buffer) })
-            else {
-                return;
-            };
-            let codes = read_codes(width, height, &luma);
-            let _ = ivars.sender.try_send(Event::Frame { preview, codes });
+            // Vision leaves its work to the pool: emptied after each picture.
+            autoreleasepool(|_| {
+                // SAFETY: the picture is only read, while AVFoundation holds it.
+                let Some(pixels) = (unsafe { sample_buffer.image_buffer() }) else {
+                    return;
+                };
+                let codes = read_codes(&pixels);
+                let Some(preview) = (unsafe { preview(&pixels) }) else {
+                    return;
+                };
+                let _ = ivars.sender.try_send(Event::Frame { preview, codes });
+            });
         }
     }
 
-    /// The picture in greyscale at full size, and a mirrored preview.
-    unsafe fn read_picture(sample_buffer: &CMSampleBuffer) -> Option<(Vec<u8>, usize, usize, Handle)> {
-        let pixels = sample_buffer.image_buffer()?;
-        if CVPixelBufferGetPixelFormatType(&pixels) != kCVPixelFormatType_32BGRA {
+    /// The QR codes Apple's Vision reads in a picture.
+    pub(super) fn read_codes(pixels: &CVPixelBuffer) -> Vec<String> {
+        // SAFETY: Vision reads the picture it is handed and keeps nothing.
+        unsafe {
+            let Some(qr) = VNBarcodeSymbologyQR else {
+                return Vec::new();
+            };
+            let request = VNDetectBarcodesRequest::new();
+            request.setSymbologies(&NSArray::from_slice(&[qr]));
+            let handler = VNImageRequestHandler::initWithCVPixelBuffer_options(
+                VNImageRequestHandler::alloc(),
+                pixels,
+                &NSDictionary::<VNImageOption, AnyObject>::new(),
+            );
+            let requests = NSArray::<VNRequest>::from_slice(&[&request]);
+            if handler.performRequests_error(&requests).is_err() {
+                return Vec::new();
+            }
+            request
+                .results()
+                .map(|found| {
+                    found
+                        .iter()
+                        .filter_map(|code| code.payloadStringValue().map(|s| s.to_string()))
+                        .collect()
+                })
+                .unwrap_or_default()
+        }
+    }
+
+    /// A small mirrored copy of the picture, for aiming.
+    unsafe fn preview(pixels: &CVPixelBuffer) -> Option<Handle> {
+        if CVPixelBufferGetPixelFormatType(pixels) != kCVPixelFormatType_32BGRA {
             return None;
         }
-        if CVPixelBufferLockBaseAddress(&pixels, CVPixelBufferLockFlags::ReadOnly) != kCVReturnSuccess
+        if CVPixelBufferLockBaseAddress(pixels, CVPixelBufferLockFlags::ReadOnly) != kCVReturnSuccess
         {
             return None;
         }
-        let width = CVPixelBufferGetWidth(&pixels);
-        let height = CVPixelBufferGetHeight(&pixels);
-        let stride = CVPixelBufferGetBytesPerRow(&pixels);
-        let base = CVPixelBufferGetBaseAddress(&pixels) as *const u8;
+        let width = CVPixelBufferGetWidth(pixels);
+        let height = CVPixelBufferGetHeight(pixels);
+        let stride = CVPixelBufferGetBytesPerRow(pixels);
+        let base = CVPixelBufferGetBaseAddress(pixels) as *const u8;
         let result = (!base.is_null() && width > 0 && height > 0 && stride >= width * 4).then(|| {
             let bgra = std::slice::from_raw_parts(base, stride * height);
             convert(bgra, width, height, stride)
         });
-        CVPixelBufferUnlockBaseAddress(&pixels, CVPixelBufferLockFlags::ReadOnly);
-        result.map(|(luma, preview)| (luma, width, height, preview))
+        CVPixelBufferUnlockBaseAddress(pixels, CVPixelBufferLockFlags::ReadOnly);
+        result
     }
 
-    fn convert(bgra: &[u8], width: usize, height: usize, stride: usize) -> (Vec<u8>, Handle) {
-        let mut luma = Vec::with_capacity(width * height);
-        for y in 0..height {
-            let row = &bgra[y * stride..y * stride + width * 4];
-            luma.extend(row.chunks_exact(4).map(|p| {
-                ((u32::from(p[2]) * 77 + u32::from(p[1]) * 150 + u32::from(p[0]) * 29) >> 8) as u8
-            }));
-        }
+    fn convert(bgra: &[u8], width: usize, height: usize, stride: usize) -> Handle {
         let step = width.div_ceil(PREVIEW_WIDTH).max(1);
         let (pw, ph) = (width / step, height / step);
         let mut rgba = Vec::with_capacity(pw * ph * 4);
@@ -302,11 +325,11 @@ mod mac {
                 rgba.extend_from_slice(&[p[2], p[1], p[0], 255]);
             }
         }
-        (luma, Handle::from_rgba(pw as u32, ph as u32, rgba))
+        Handle::from_rgba(pw as u32, ph as u32, rgba)
     }
 
     #[cfg(test)]
-    mod tests {
+    pub(crate) mod tests {
         use super::*;
 
         /// The capture pieces fit together at run time: the delegate class,
@@ -339,34 +362,99 @@ mod mac {
         fn the_preview_is_small_and_mirrored() {
             // 4x1 picture: red, green, blue, white (BGRA).
             let bgra = [0, 0, 255, 255, 0, 255, 0, 255, 255, 0, 0, 255, 255, 255, 255, 255];
-            let (luma, _) = convert(&bgra, 4, 1, 16);
-            assert_eq!(luma.len(), 4);
-            assert!(luma[3] > 250 && luma[0] < 90);
+            let Handle::Rgba { width, height, pixels, .. } = convert(&bgra, 4, 1, 16) else {
+                panic!("an RGBA preview");
+            };
+            assert_eq!((width, height), (4, 1));
+            // Mirrored: white first, red last.
+            assert_eq!(&pixels[..4], &[255, 255, 255, 255]);
+            assert_eq!(&pixels[12..], &[255, 0, 0, 255]);
+        }
+
+        /// A picture in a pixel buffer, as the camera hands it over.
+        pub(crate) fn pixel_buffer(
+            width: usize,
+            height: usize,
+            luma: &[u8],
+        ) -> objc2_core_foundation::CFRetained<CVPixelBuffer> {
+            unsafe {
+                let mut out: *mut CVPixelBuffer = std::ptr::null_mut();
+                assert_eq!(
+                    objc2_core_video::CVPixelBufferCreate(
+                        None,
+                        width,
+                        height,
+                        kCVPixelFormatType_32BGRA,
+                        None,
+                        std::ptr::NonNull::from(&mut out),
+                    ),
+                    kCVReturnSuccess
+                );
+                let pixels = objc2_core_foundation::CFRetained::from_raw(
+                    std::ptr::NonNull::new(out).unwrap(),
+                );
+                CVPixelBufferLockBaseAddress(&pixels, CVPixelBufferLockFlags(0));
+                let stride = CVPixelBufferGetBytesPerRow(&pixels);
+                let base = CVPixelBufferGetBaseAddress(&pixels) as *mut u8;
+                for y in 0..height {
+                    for x in 0..width {
+                        let v = luma[y * width + x];
+                        let p = base.add(y * stride + x * 4);
+                        *p = v;
+                        *p.add(1) = v;
+                        *p.add(2) = v;
+                        *p.add(3) = 255;
+                    }
+                }
+                CVPixelBufferUnlockBaseAddress(&pixels, CVPixelBufferLockFlags(0));
+                pixels
+            }
         }
     }
 }
 
 #[cfg(all(test, target_os = "macos"))]
 mod tests {
-    use super::*;
+    use super::mac::{read_codes, tests::pixel_buffer};
 
-    /// A frame of the backup code as it looks on a screen, read at the
-    /// camera's size.
+    /// A frame of the backup code on a 1920x1080 picture, as a phone held up
+    /// to the camera shows it: sharp, then blurred as a webcam blurs a
+    /// screen too close to it.
     #[test]
-    fn a_dense_frame_is_read_at_camera_size() {
+    fn a_dense_frame_is_read_sharp_and_blurred() {
         let frames = crate::bbqr::encode(&[b'x'; 500], crate::bbqr::FileType::Text).unwrap();
-        let code = qrcode_luma(&frames[0], 6);
-        let (side, luma) = code;
-        // On a 1280x720 picture, as a phone held up to the camera shows it.
-        let (width, height) = (1280usize, 720usize);
-        let mut picture = vec![200u8; width * height];
+        let (width, height) = (1920usize, 1080usize);
+        let (side, code) = qrcode_luma(&frames[0], 5);
+        let mut picture = vec![170u8; width * height];
         let (ox, oy) = ((width - side) / 2, (height - side) / 2);
         for y in 0..side {
             picture[(oy + y) * width + ox..(oy + y) * width + ox + side]
-                .copy_from_slice(&luma[y * side..(y + 1) * side]);
+                .copy_from_slice(&code[y * side..(y + 1) * side]);
         }
-        assert_eq!(read_codes(width, height, &picture), vec![frames[0].clone()]);
-        assert!(read_codes(width, height, &vec![200u8; width * height]).is_empty());
+        let sharp = pixel_buffer(width, height, &picture);
+        assert_eq!(read_codes(&sharp), vec![frames[0].clone()]);
+
+        let blurred = pixel_buffer(width, height, &box_blur(&picture, width, height, 2));
+        assert_eq!(read_codes(&blurred), vec![frames[0].clone()]);
+
+        let empty = pixel_buffer(width, height, &vec![170u8; width * height]);
+        assert!(read_codes(&empty).is_empty());
+    }
+
+    fn box_blur(luma: &[u8], width: usize, height: usize, r: usize) -> Vec<u8> {
+        let mut out = luma.to_vec();
+        for y in r..height - r {
+            for x in r..width - r {
+                let mut sum = 0u32;
+                for dy in 0..=2 * r {
+                    for dx in 0..=2 * r {
+                        sum += u32::from(luma[(y + dy - r) * width + x + dx - r]);
+                    }
+                }
+                out[y * width + x] = (sum / ((2 * r + 1) * (2 * r + 1)) as u32) as u8;
+            }
+        }
+        out
     }
 
     /// A QR code drawn as greyscale pixels, `scale` pixels a module, with
