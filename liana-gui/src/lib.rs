@@ -1,6 +1,7 @@
 pub mod app;
 pub mod args;
 pub mod backup;
+pub mod bbqr;
 pub mod daemon;
 #[cfg(feature = "debugger")]
 pub mod debug;

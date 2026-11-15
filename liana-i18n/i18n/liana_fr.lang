@@ -2745,6 +2745,16 @@ tab-launcher => "Launcher" => "Lanceur"
 
 tab-pending => "Pending" => "En attente"
 
+talia-backup-qr => "Show backup as QR code" => NONE
+
+talia-backup-qr-description
+=> "Scan it with Talia on your iPhone to add this vault there. It cannot move coins."
+=> NONE;;
+
+talia-backup-qr-preparing => "Preparing the code..." => NONE
+
+talia-backup-qr-title => "Scan with Talia on your iPhone" => NONE
+
 time-days-ago
 => "{ $count ->\n    [one] 1 day ago\n   *[other] {$count} days ago\n}"
 => "{ $count ->\n    [one] il y a 1 jour\n   *[other] il y a {$count} jours\n}";;

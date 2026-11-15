@@ -25,7 +25,7 @@ use crate::{
         view::{
             dashboard,
             message::{Message, SettingsMessage},
-            settings::SETTING_MSG,
+            settings::{talia_backup_qr, SETTING_MSG},
         },
     },
     t,
@@ -91,6 +91,7 @@ pub fn import_export<'a>(
         description,
         export_encrypted_descriptor,
         export_wallet,
+        talia_backup_qr::entry(),
         import_wallet,
         separator,
         export_labels,

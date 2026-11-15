@@ -1,5 +1,6 @@
 mod bitcoind;
 mod general;
+mod talia_backup_qr;
 pub mod wallet;
 
 use std::convert::From;
@@ -10,6 +11,7 @@ use iced::{Subscription, Task};
 use liana_ui::{component::form, widget::Element};
 
 use bitcoind::BitcoindSettingsState;
+use talia_backup_qr::BackupQr;
 use wallet::{save_privacy_mode, update_aliases, WalletSettingsState};
 
 use crate::{
@@ -246,6 +248,8 @@ impl From<LianaSettingsUI> for Box<dyn State> {
 pub struct ImportExportSettingsState {
     warning: Option<Error>,
     modal: Option<ExportModal>,
+    /// Talia Desktop: the wallet backup's QR code window.
+    backup_qr: Option<BackupQr>,
     wallet: Arc<Wallet>,
     config: Arc<Config>,
 }
@@ -255,6 +259,7 @@ impl ImportExportSettingsState {
         Self {
             warning: None,
             modal: None,
+            backup_qr: None,
             wallet,
             config,
         }
@@ -292,12 +297,17 @@ impl State for ImportExportSettingsState {
         );
         if let Some(modal) = &self.modal {
             modal.view(content)
+        } else if let Some(qr) = &self.backup_qr {
+            qr.view(content)
         } else {
             content
         }
     }
 
     fn subscription(&self) -> iced::Subscription<Message> {
+        if let Some(qr) = &self.backup_qr {
+            return qr.subscription();
+        }
         self.modal
             .as_ref()
             .map(export_progress)
@@ -404,6 +414,25 @@ impl State for ImportExportSettingsState {
                         ImportExportType::ExportProcessBackup(datadir, network, config, wallet),
                     );
                     launch!(self, modal, true);
+                }
+            }
+            Message::View(view::Message::Settings(view::SettingsMessage::TaliaBackupQr(m))) => {
+                if let view::settings::talia_backup_qr::TaliaBackupQrMessage::Open = m {
+                    if self.modal.is_none() && self.backup_qr.is_none() {
+                        let (qr, task) = BackupQr::open(
+                            cache.datadir_path.clone(),
+                            cache.network,
+                            self.config.clone(),
+                            self.wallet.clone(),
+                            daemon,
+                        );
+                        self.backup_qr = Some(qr);
+                        return task;
+                    }
+                } else if let Some(qr) = self.backup_qr.as_mut() {
+                    if !qr.update(m) {
+                        self.backup_qr = None;
+                    }
                 }
             }
             Message::View(view::Message::Settings(view::SettingsMessage::ImportWallet)) => {

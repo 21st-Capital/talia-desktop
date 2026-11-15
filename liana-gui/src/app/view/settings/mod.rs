@@ -3,6 +3,7 @@ pub mod backend;
 pub mod general;
 pub mod import_export;
 pub mod node;
+pub mod talia_backup_qr;
 pub mod wallet;
 
 use iced::widget::tooltip::Position;

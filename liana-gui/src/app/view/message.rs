@@ -133,6 +133,8 @@ pub enum SettingsMessage {
     GeneralSection,
     Fiat(FiatMessage),
     LanguageEdited(SupportedLocale),
+    /// Talia Desktop: the wallet backup as a QR code for Talia on the iPhone.
+    TaliaBackupQr(crate::app::view::settings::talia_backup_qr::TaliaBackupQrMessage),
 }
 
 impl From<SettingsMessage> for Message {
