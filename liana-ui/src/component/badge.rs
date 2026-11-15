@@ -31,6 +31,8 @@ pub enum Tile {
     Restricted,
     Import,
     Paste,
+    /// Talia Desktop: reading a QR code with the camera.
+    ScanQr,
     EnterToken,
     Mnemonic,
     Bitcoin,
@@ -186,6 +188,7 @@ tile_specs! {
     (Restricted, lock_icon, Muted, XL),
     (Import, import_icon, Neutral, DEFAULT),
     (Paste, paste_icon, Neutral, DEFAULT),
+    (ScanQr, scan_icon, Neutral, DEFAULT),
     (EnterToken, enter_box_icon, Neutral, DEFAULT),
     (Mnemonic, edit_icon, Neutral, DEFAULT),
     (Bitcoin, bitcoin_icon, Accent, DEFAULT),

@@ -233,6 +233,11 @@ pub fn paste_icon<'a>() -> Text<'a> {
     talia_icon('\u{EA6F}')
 }
 
+/// Tabler: scan, the iPhone app's QR scan icon (ScanIcon).
+pub fn scan_icon<'a>() -> Text<'a> {
+    talia_icon('\u{EBC8}')
+}
+
 /// Tabler: usb.
 pub fn usb_icon<'a>() -> Text<'a> {
     talia_icon('\u{F00C}')

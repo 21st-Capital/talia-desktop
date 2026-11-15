@@ -36,7 +36,7 @@ chevron-down chevron-up plug download wallet currency-bitcoin box user
 info-circle plus minus alert-triangle shield lock cpu trash network check
 file-export file-import tool link clipboard usb device-usb server login-2
 list-details building coins settings clock pencil qrcode copy repeat history
-circle-check circle-x scale
+circle-check circle-x scale scan
 """.split()
 
 # Solid Tabler glyphs, moved to codepoints of our own.

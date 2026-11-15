@@ -313,7 +313,7 @@ pub fn import_descriptor<'a>(
     let scan_qr = cfg!(target_os = "macos").then(|| {
         list::entry_action_accent(
             accent,
-            Tile::Import,
+            Tile::ScanQr,
             t!("talia-scan-qr"),
             None::<String>,
             None,
