@@ -309,7 +309,24 @@ pub fn import_descriptor<'a>(
             !paste_descriptor_expanded,
         )),
     });
-    let import = column![import_backup, paste_descriptor].spacing(20);
+    // Talia Desktop: a vault's QR code, read with the Mac's camera.
+    let scan_qr = cfg!(target_os = "macos").then(|| {
+        list::entry_action_accent(
+            accent,
+            Tile::Import,
+            t!("talia-scan-qr"),
+            None::<String>,
+            None,
+            button::EntryWidth::Standard,
+            Some(Message::TaliaScan(
+                crate::installer::step::talia_scan::ScanMessage::Open,
+            )),
+        )
+    });
+    let import = column![import_backup]
+        .push_maybe(scan_qr)
+        .push(paste_descriptor)
+        .spacing(20);
     let backup_imported: Option<Element<'_, Message>> = imported_backup.then_some(
         row![
             new::b5_bold(t!("installer-backup-imported")),

@@ -75,6 +75,19 @@ zip = { workspace = true, default-features = false, features = ["bzip2", "deflat
 tar = { workspace = true, default-features = false }
 flate2 = { workspace = true, default-features = false }
 
+# Talia Desktop: reading a vault's QR code with the Mac's camera (decided
+# 2026-11-15). Apple's AVFoundation through the objc2 bindings the window
+# system already uses, and a pure-Rust QR reader.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", default-features = false, features = ["std", "NSString", "NSDictionary", "NSValue", "NSError", "NSObject"] }
+objc2-av-foundation = { version = "=0.3.2", default-features = false, features = ["std", "block2", "dispatch2", "objc2-core-media", "objc2-core-video", "AVCaptureDevice", "AVCaptureInput", "AVCaptureOutputBase", "AVCaptureSession", "AVCaptureSessionPreset", "AVCaptureVideoDataOutput", "AVMediaFormat"] }
+objc2-core-media = { version = "0.3", default-features = false, features = ["std", "CMSampleBuffer", "objc2-core-video"] }
+objc2-core-video = { version = "0.3", default-features = false, features = ["std", "CVBuffer", "CVImageBuffer", "CVPixelBuffer", "CVReturn"] }
+block2 = "0.6"
+dispatch2 = { version = "0.3", default-features = false, features = ["std", "alloc", "objc2"] }
+rqrr = { version = "=0.11.0", default-features = false }
+
 [features]
 default = ["debugger"]
 debugger = []
@@ -85,4 +98,6 @@ winresource = { workspace = true }
 
 [dev-dependencies]
 liana = { path = "../liana", features = ["test-utils"] }
+# Draws QR codes for the camera reader's tests (already in the build through iced).
+qrcode = { version = "=0.13.0", default-features = false }
 tokio = {workspace = true, features = ["rt", "macros"]}

@@ -2044,6 +2044,26 @@ talia-backup-qr-preparing => "Preparing the code..."
 
 talia-backup-qr-title => "Scan with Talia on your iPhone"
 
+talia-scan-again => "Scan again"
+
+talia-scan-asking => "Allow the camera when your Mac asks."
+
+talia-scan-denied => "Talia Desktop may not use the camera."
+
+talia-scan-no-camera => "No camera found."
+
+talia-scan-not-a-vault => "This QR code holds no vault."
+
+talia-scan-open-settings => "Open Settings"
+
+talia-scan-parts => "{$have} of {$total}"
+
+talia-scan-qr => "Scan a QR code"
+
+talia-scan-reading => "Reading the vault..."
+
+talia-scan-title => "Hold the QR code up to the camera"
+
 time-days-ago => "{ $count ->\n    [one] 1 day ago\n   *[other] {$count} days ago\n}"
 
 time-hours-ago

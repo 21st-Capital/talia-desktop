@@ -2721,6 +2721,34 @@ talia-backup-qr-title
 => "Scan with Talia on your iPhone"
 => "Mit Talia auf Ihrem iPhone scannen";;
 
+talia-scan-again => "Scan again" => "Erneut scannen"
+
+talia-scan-asking
+=> "Allow the camera when your Mac asks."
+=> "Erlauben Sie die Kamera, wenn Ihr Mac fragt.";;
+
+talia-scan-denied
+=> "Talia Desktop may not use the camera."
+=> "Talia Desktop darf die Kamera nicht verwenden.";;
+
+talia-scan-no-camera => "No camera found." => "Keine Kamera gefunden."
+
+talia-scan-not-a-vault
+=> "This QR code holds no vault."
+=> "Dieser QR-Code enthält keinen Vault.";;
+
+talia-scan-open-settings => "Open Settings" => "Einstellungen öffnen"
+
+talia-scan-parts => "{$have} of {$total}" => "{$have} von {$total}"
+
+talia-scan-qr => "Scan a QR code" => "QR-Code scannen"
+
+talia-scan-reading => "Reading the vault..." => "Vault wird gelesen..."
+
+talia-scan-title
+=> "Hold the QR code up to the camera"
+=> "Halten Sie den QR-Code vor die Kamera";;
+
 time-days-ago
 => "{ $count ->\n    [one] 1 day ago\n   *[other] {$count} days ago\n}"
 => "{ $count ->\n    [one] vor 1 Tag\n   *[other] vor {$count} Tagen\n}";;

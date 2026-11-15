@@ -24,6 +24,8 @@
         <string>TaliaDesktop.icns</string>
         <key>NSPrincipalClass</key>
         <string>NSApplication</string>
+        <key>NSCameraUsageDescription</key>
+        <string>Talia Desktop uses the camera to read a vault's QR code, such as the one Talia on your iPhone shows.</string>
         <key>LSApplicationCategoryType</key>
         <string>public.app-category.finance</string>
         <key>NSHumanReadableCopyright</key>

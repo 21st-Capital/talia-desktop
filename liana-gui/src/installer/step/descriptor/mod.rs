@@ -24,6 +24,7 @@ use crate::{
         decrypt::{Decrypt, DecryptModal},
         message::{self, Message},
         step::import_descriptor::ImportDescriptorModal,
+        step::talia_scan::{ScanMessage, ScanWindow},
         step::{Context, Step},
         view, Error,
     },
@@ -38,6 +39,8 @@ pub struct ImportDescriptor {
     imported_backup: Option<Backup>,
     imported_aliases: Option<HashMap<Fingerprint, KeySetting>>,
     paste_descriptor_expanded: bool,
+    /// Talia Desktop: the camera window reading a vault's QR code.
+    scan: Option<ScanWindow>,
 }
 
 impl ImportDescriptor {
@@ -51,6 +54,7 @@ impl ImportDescriptor {
             imported_backup: None,
             imported_aliases: None,
             paste_descriptor_expanded: false,
+            scan: None,
         }
     }
 
@@ -89,11 +93,34 @@ impl Step for ImportDescriptor {
     }
 
     fn subscription(&self, hws: &HardwareWallets) -> Subscription<Message> {
-        self.modal.subscriptions(hws)
+        match &self.scan {
+            Some(scan) => Subscription::batch([self.modal.subscriptions(hws), scan.subscription()]),
+            None => self.modal.subscriptions(hws),
+        }
     }
 
     fn update(&mut self, hws: &mut HardwareWallets, message: Message) -> Task<Message> {
         let task = match message {
+            Message::TaliaScan(ScanMessage::Open) => {
+                if self.scan.is_none() {
+                    self.error = None;
+                    let (scan, task) = ScanWindow::open();
+                    self.scan = Some(scan);
+                    Some(task)
+                } else {
+                    None
+                }
+            }
+            Message::TaliaScan(msg) => match self.scan.as_mut() {
+                Some(scan) => {
+                    let (task, open) = scan.update(msg, self.network);
+                    if !open {
+                        self.scan = None;
+                    }
+                    Some(task)
+                }
+                None => None,
+            },
             Message::DefineDescriptor(message::DefineDescriptor::ImportDescriptor(desc)) => {
                 // If user manually change the descriptor, then the imported backup
                 // becomes invalid;
@@ -249,7 +276,11 @@ impl Step for ImportDescriptor {
             self.error.as_ref(),
             self.paste_descriptor_expanded,
         );
-        self.modal.view(content)
+        let content = self.modal.view(content);
+        match &self.scan {
+            Some(scan) => scan.view(content),
+            None => content,
+        }
     }
 }
 

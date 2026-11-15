@@ -1,5 +1,6 @@
 pub mod descriptor;
 pub mod import_descriptor;
+pub mod talia_scan;
 
 mod backend;
 mod mnemonic;

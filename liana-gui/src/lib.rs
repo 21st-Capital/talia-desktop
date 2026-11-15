@@ -20,6 +20,7 @@ pub mod logger;
 pub mod node;
 pub mod services;
 pub mod signer;
+pub mod talia_camera;
 pub mod utils;
 pub mod view;
 pub mod window;

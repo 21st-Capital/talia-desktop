@@ -74,6 +74,8 @@ pub enum Message {
     ExportXpub(String),
     ImportExport(ImportExportMessage),
     ImportBackup,
+    /// Talia Desktop: a vault read from a QR code with the camera.
+    TaliaScan(crate::installer::step::talia_scan::ScanMessage),
     WalletFromBackup((HashMap<Fingerprint, settings::KeySetting>, Backup)),
     WalletAliasEdited(String),
     LanguageEdited(SupportedLocale),

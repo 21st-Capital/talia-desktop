@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Sign, notarise and pack Talia Desktop for Mac in one go:
-#   1. sign "Talia Desktop.app" (hardened runtime, secure timestamp)
+#   1. sign "Talia Desktop.app" (hardened runtime, secure timestamp, and the
+#      camera entitlement for reading QR codes: macos/entitlements.plist)
 #   2. have Apple notarise it and staple the ticket to the app
 #   3. pack the install .dmg (make-dmg.sh: drag-across window)
 #   4. sign the .dmg, notarise it and staple the ticket to it
@@ -63,7 +64,8 @@ if xcrun stapler validate "$APP" >/dev/null 2>&1; then
     codesign --verify --deep --strict "$APP"
 else
     echo "== 1. sign the app"
-    codesign --force --options runtime --timestamp --sign "$SIGN_ID" "$APP"
+    codesign --force --options runtime --timestamp \
+        --entitlements "$ROOT/contrib/talia/macos/entitlements.plist" --sign "$SIGN_ID" "$APP"
     codesign --verify --deep --strict "$APP"
 
     echo "== 2. notarise the app"
