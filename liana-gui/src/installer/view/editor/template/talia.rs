@@ -379,8 +379,7 @@ fn heirs<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
 fn rescue<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
     let template = e.shape.template;
     let heirs = e.shape.heirs(e.paths);
-    let required =
-        template != TaliaTemplate::SingleWithRescue && e.shape.rescue_required(heirs);
+    let required = template != TaliaTemplate::SingleWithRescue && e.shape.rescue_required(heirs);
 
     // Everything there is to say about the Rescue Key, behind the info dot.
     let mut help = Vec::new();
@@ -509,14 +508,14 @@ pub fn talia_template<'a>(
         descriptor_type(e.use_taproot, e.editing_descriptor_type),
         primary_path(&e)
     ]
-        .push_maybe(heirs(&e))
-        .push(rescue(&e))
-        .push_maybe(ours)
-        .push(Space::with_height(FOOTER_SPACING))
-        .push(footer)
-        .push(Space::with_height(BOTTOM_PADDING))
-        .align_x(Alignment::Start)
-        .spacing(VSpacing::L);
+    .push_maybe(heirs(&e))
+    .push(rescue(&e))
+    .push_maybe(ours)
+    .push(Space::with_height(FOOTER_SPACING))
+    .push(footer)
+    .push(Space::with_height(BOTTOM_PADDING))
+    .align_x(Alignment::Start)
+    .spacing(VSpacing::L);
 
     layout(
         progress,

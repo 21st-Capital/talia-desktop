@@ -127,7 +127,11 @@ fn german_dates() -> bool {
 
 /// Format a date in local time as "Mar 12, 2026" (German: "12.03.2026").
 pub fn format_date(time: DateTime<Utc>) -> String {
-    let format = if german_dates() { "%d.%m.%Y" } else { "%b %-d, %Y" };
+    let format = if german_dates() {
+        "%d.%m.%Y"
+    } else {
+        "%b %-d, %Y"
+    };
     time.with_timezone(&Local).format(format).to_string()
 }
 

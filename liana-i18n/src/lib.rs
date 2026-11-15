@@ -195,7 +195,10 @@ mod tests {
         assert_eq!(SupportedLocale::from_str("en--US"), Err(()));
         assert_eq!(SupportedLocale::from_str("english"), Err(()));
         assert_eq!(SupportedLocale::from_str("de-DE"), Ok(SupportedLocale::De));
-        assert_eq!(SupportedLocale::from_str("de_CH.UTF-8"), Ok(SupportedLocale::De));
+        assert_eq!(
+            SupportedLocale::from_str("de_CH.UTF-8"),
+            Ok(SupportedLocale::De)
+        );
         assert_eq!(SupportedLocale::from_str("ja-JP"), Err(()));
     }
 

@@ -52,9 +52,12 @@ pub const IBM_BOLD_BYTES: &[u8] = include_bytes!("../static/fonts/BricolageGrote
 pub const IBM_MEDIUM_BYTES: &[u8] = include_bytes!("../static/fonts/Figtree-Medium.ttf");
 pub const IBM_REGULAR_BYTES: &[u8] = include_bytes!("../static/fonts/Figtree-Regular.ttf");
 
-pub const MANROPE_REGULAR_BYTES: &[u8] = include_bytes!("../static/fonts/BricolageGrotesque-Regular.ttf");
-pub const MANROPE_MEDIUM_BYTES: &[u8] = include_bytes!("../static/fonts/BricolageGrotesque-Medium.ttf");
-pub const MANROPE_SEMIBOLD_BYTES: &[u8] = include_bytes!("../static/fonts/BricolageGrotesque-SemiBold.ttf");
+pub const MANROPE_REGULAR_BYTES: &[u8] =
+    include_bytes!("../static/fonts/BricolageGrotesque-Regular.ttf");
+pub const MANROPE_MEDIUM_BYTES: &[u8] =
+    include_bytes!("../static/fonts/BricolageGrotesque-Medium.ttf");
+pub const MANROPE_SEMIBOLD_BYTES: &[u8] =
+    include_bytes!("../static/fonts/BricolageGrotesque-SemiBold.ttf");
 pub const MANROPE_BOLD_BYTES: &[u8] = include_bytes!("../static/fonts/BricolageGrotesque-Bold.ttf");
 
 pub const ICONEX_ICONS_BYTES: &[u8] = include_bytes!("../static/icons/iconex/iconex-icons.ttf");

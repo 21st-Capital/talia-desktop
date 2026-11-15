@@ -6,8 +6,8 @@ use liana_ui::{component::notification, widget::*};
 
 use crate::{
     app::error::Error,
-    t,
     daemon::{client::error::RpcErrorCode, DaemonError},
+    t,
 };
 
 /// Simple warning message displayed to non technical user.
@@ -26,32 +26,34 @@ impl From<&Error> for WarningMessage {
                         WarningMessage(t!("warning-internal-error"))
                     }
                 }
-                DaemonError::Http(Some(code), error) => {
-                    WarningMessage(t!("warning-http-error-code", code = code.to_string(), error = error.to_string()))
+                DaemonError::Http(Some(code), error) => WarningMessage(t!(
+                    "warning-http-error-code",
+                    code = code.to_string(),
+                    error = error.to_string()
+                )),
+                DaemonError::Http(None, error) => {
+                    WarningMessage(t!("warning-http-error", error = error.to_string()))
                 }
-                DaemonError::Http(None, error) => WarningMessage(t!("warning-http-error", error = error.to_string())),
                 DaemonError::Unexpected(_) => WarningMessage(t!("warning-unknown-error")),
                 DaemonError::Start(_) => WarningMessage(t!("warning-daemon-start")),
-                DaemonError::ClientNotSupported => {
-                    WarningMessage(t!("warning-daemon-unsupported"))
-                }
+                DaemonError::ClientNotSupported => WarningMessage(t!("warning-daemon-unsupported")),
                 DaemonError::NoAnswer | DaemonError::RpcSocket(..) => {
                     WarningMessage(t!("warning-daemon-communication"))
                 }
                 DaemonError::DaemonStopped => WarningMessage(t!("warning-daemon-stopped")),
-                DaemonError::CoinSelectionError => {
-                    WarningMessage(t!("warning-coin-selection"))
-                }
-                DaemonError::NotImplemented => {
-                    WarningMessage(t!("warning-not-implemented"))
-                }
+                DaemonError::CoinSelectionError => WarningMessage(t!("warning-coin-selection")),
+                DaemonError::NotImplemented => WarningMessage(t!("warning-not-implemented")),
             },
             Error::Unexpected(_) => WarningMessage(t!("warning-unknown-error")),
             Error::HardwareWallet(_) => WarningMessage(t!("warning-hardware-wallet-error")),
-            Error::Desc(e) => WarningMessage(t!("warning-descriptor-analysis", error = e.to_string())),
+            Error::Desc(e) => {
+                WarningMessage(t!("warning-descriptor-analysis", error = e.to_string()))
+            }
             Error::Spend(e) => WarningMessage(t!("warning-spend-creation", error = e.to_string())),
             Error::ImportExport(e) => WarningMessage(format!("{e}")),
-            Error::RestoreBackup(e) => WarningMessage(t!("warning-restore-backup", error = e.to_string())),
+            Error::RestoreBackup(e) => {
+                WarningMessage(t!("warning-restore-backup", error = e.to_string()))
+            }
             Error::FiatPrice(e) => WarningMessage(t!("warning-fiat-price", error = e.to_string())),
             Error::NoAvailableCurrencies | Error::SaveLanguage(_) => {
                 WarningMessage(error.to_string())
