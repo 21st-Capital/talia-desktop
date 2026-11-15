@@ -14,7 +14,8 @@ filesystem = "HFS+"
 files = [app]
 symlinks = {"Applications": "/Applications"}
 icon = os.path.join(HERE, "..", "TaliaDesktop.icns")
-hide_extensions = [app_name]
+# No hide_extensions: Finder hides ".app" anyway, and the flag it sets on the
+# app (com.apple.FinderInfo) fails `codesign --verify --strict`.
 
 # The background is 660 x 400 points (background.png, and background@2x.png
 # for Retina screens). Icon centres match the arrow drawn on it.
