@@ -93,20 +93,20 @@ impl TaliaTemplate {
 /// What the 2 of 2's backup way in is once its wait has passed.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BackupKind {
-    /// Expanding multisig: the same two keys and one added key, any two of
-    /// the three. No key ever spends alone.
+    /// Expanding multisig: any two of three keys. The client picks each of
+    /// them, their two everyday keys or others (decided 2026-11-15); the
+    /// third is our co-signer when we hold it. No key ever spends alone.
     TwoOfThree,
     /// One key of the client's own, spending alone.
     OneKey,
 }
 
-/// The client's choices for the 2 of 2's backup way in. Exactly one key is
-/// added, never more, as on the website.
+/// The client's choices for the 2 of 2's backup way in.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Backup {
     pub kind: Option<BackupKind>,
-    /// Who holds the added key where the client may choose: 21st Capital
-    /// (true) or the client.
+    /// Who holds the 2 of 3's third key where the client may choose: 21st
+    /// Capital (true) or the client.
     pub holder_21c: Option<bool>,
     pub months: u8,
 }
@@ -213,14 +213,15 @@ impl TaliaShape {
 
     /// Whether the client cannot choose who holds the added key: a key that
     /// spends alone is always the client's (ours that does is the Rescue
-    /// Key, at the very end), and with our co-signer already in the vault the
-    /// third key is a device of the client's.
+    /// Key, at the very end), and with our co-signer already in the vault it
+    /// is the 2 of 3's third key and the added key is a device of the
+    /// client's, as on the website.
     pub fn backup_holder_forced(&self) -> bool {
         self.backup.kind == Some(BackupKind::OneKey) || self.cosigner_21c
     }
 
-    /// Who holds the added key: 21st Capital (true), the client (false), or
-    /// not answered yet.
+    /// Who holds the added key, as the website records it: 21st Capital
+    /// (true), the client (false), or not answered yet.
     pub fn backup_holder_21c(&self) -> Option<bool> {
         if self.backup_holder_forced() {
             Some(false)
@@ -255,45 +256,20 @@ impl TaliaShape {
                 self.backup_path = true;
             }
         }
-        self.sync_backup_keys(paths);
         self.sync_rescue_path(paths);
     }
 
-    /// Where the added key sits: (path, slot).
-    pub fn backup_added_slot(&self) -> Option<(usize, usize)> {
-        if !self.backup_path {
-            return None;
-        }
-        match self.backup.kind {
-            Some(BackupKind::TwoOfThree) => Some((1, 2)),
-            Some(BackupKind::OneKey) => Some((1, 0)),
-            None => None,
-        }
+    /// The 2 of 3's third slot, the one that may be ours: (path, slot).
+    fn backup_third_slot(&self) -> Option<(usize, usize)> {
+        (self.backup_path && self.backup.kind == Some(BackupKind::TwoOfThree)).then_some((1, 2))
     }
 
-    /// The added key's slot when 21st Capital holds it.
+    /// Our co-signer's slot in the backup way in: the 2 of 3's third key when
+    /// we hold the added key, or when we already co-sign the everyday path
+    /// (the website's 2 of 3 then keeps our co-signer). Our keys come last.
     pub fn backup_21c_slot(&self) -> Option<(usize, usize)> {
-        self.backup_added_slot()
-            .filter(|_| self.backup_holder_21c() == Some(true))
-    }
-
-    /// The expanding 2 of 3 holds the primary path's two keys as they are:
-    /// they follow the primary slots. Whether anything changed.
-    pub fn sync_backup_keys(&self, paths: &mut [Path]) -> bool {
-        if !self.backup_path || self.backup.kind != Some(BackupKind::TwoOfThree) {
-            return false;
-        }
-        let mut changed = false;
-        for j in 0..2 {
-            let key = paths[0].keys.get(j).cloned().flatten();
-            if let Some(slot) = paths[1].keys.get_mut(j) {
-                if *slot != key {
-                    *slot = key;
-                    changed = true;
-                }
-            }
-        }
-        changed
+        self.backup_third_slot()
+            .filter(|_| self.cosigner_21c || self.backup_holder_21c() == Some(true))
     }
 
     /// Adds or drops the Rescue Key's path so the paths match the answers,
@@ -431,15 +407,38 @@ impl TaliaShape {
         }
     }
 
-    /// Who holds the added key; the slot changes hands, so whatever key it
-    /// held goes.
+    /// Who holds the added key.
     pub fn set_backup_holder(&mut self, paths: &mut [Path], ours: bool) {
         if self.backup_holder_forced() || self.backup.holder_21c == Some(ours) {
             return;
         }
+        let before = self.backup_21c_slot();
         self.backup.holder_21c = Some(ours);
-        if let Some((i, j)) = self.backup_added_slot() {
-            paths[i].keys[j] = None;
+        self.clear_changed_hands(paths, before);
+    }
+
+    /// Whether we co-sign the everyday path. The slot changes hands, so
+    /// whatever key it held goes, and so does the 2 of 3's third key when it
+    /// changes hands with it.
+    pub fn set_cosigner_21c(&mut self, paths: &mut [Path], ours: bool) {
+        if self.cosigner_21c == ours {
+            return;
+        }
+        let before = self.backup_21c_slot();
+        self.cosigner_21c = ours;
+        if let Some(slot) = paths[0].keys.last_mut() {
+            *slot = None;
+        }
+        self.clear_changed_hands(paths, before);
+    }
+
+    /// Empties the 2 of 3's third slot when it went from the client to us or
+    /// back.
+    fn clear_changed_hands(&self, paths: &mut [Path], before: Option<(usize, usize)>) {
+        if self.backup_21c_slot() != before {
+            if let Some((i, j)) = self.backup_third_slot() {
+                paths[i].keys[j] = None;
+            }
         }
     }
 
@@ -679,9 +678,11 @@ mod tests {
         shape.set_backup_kind(&mut paths, BackupKind::TwoOfThree);
         assert_eq!(paths[1].keys.len(), 3);
         assert_eq!(paths[1].threshold, 2);
-        // Our co-signer already in the vault: the third key is the client's.
+        // Our co-signer already in the vault: the added key is the client's,
+        // and the 2 of 3 keeps our co-signer as its third key.
         assert!(shape.backup_holder_forced());
         assert_eq!(shape.backup_holder_21c(), Some(false));
+        assert_eq!(shape.backup_21c_slot(), Some((1, 2)));
         // A way back exists: the Rescue Key becomes a question.
         assert!(!shape.rescue_required(0));
         assert!(!shape.complete(0));
@@ -699,8 +700,11 @@ mod tests {
         );
 
         // The client holds both primary keys: the added key may be ours.
-        shape.cosigner_21c = false;
+        // Our co-signer's slot changes hands, so whatever it held goes.
+        paths[1].keys[2] = paths[0].keys[1].clone();
+        shape.set_cosigner_21c(&mut paths, false);
         assert!(!shape.backup_holder_forced());
+        assert_eq!(shape.backup_21c_slot(), None);
         assert!(!shape.complete(0));
         shape.set_backup_holder(&mut paths, true);
         assert!(shape.complete(0));

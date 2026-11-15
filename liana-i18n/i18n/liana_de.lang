@@ -1627,49 +1627,23 @@ installer-talia-backup
 => "What happens if you lose one of your two keys?"
 => "Was passiert, wenn Sie einen Ihrer beiden Schlüssel verlieren?";;
 
-installer-talia-backup-alone
-=> "After the wait, this key spends alone"
-=> "Nach der Wartezeit gibt dieser Schlüssel allein aus";;
-
-installer-talia-backup-any-two
-=> "After the wait, any 2 of your two keys and this key"
-=> "Nach der Wartezeit: 2 beliebige aus Ihren zwei Schlüsseln und diesem";;
-
 installer-talia-backup-expand
-=> "Expanding multisig turns 2 of 2 into 2 of 3"
-=> "Erweiterndes Multisig macht aus 2 von 2 ein 2 von 3";;
+=> "Expanding multisig, 2 of 3"
+=> "Erweiterndes Multisig, 2 von 3";;
 
 installer-talia-backup-expand-help
-=> "After the waiting period a third key joins, and any two of the three can move coins. No single key can ever spend on its own. This is the safer option."
-=> "Nach der Wartezeit kommt ein dritter Schlüssel hinzu, und zwei beliebige der drei können Coins bewegen. Kein einzelner Schlüssel kann jemals allein ausgeben. Das ist die sicherere Option.";;
+=> "After the waiting period, any two of three keys can move coins. You pick each of the three: your two everyday keys and one more, or other keys entirely. No single key can ever spend on its own. This is the safer option."
+=> "Nach der Wartezeit können zwei beliebige von drei Schlüsseln Coins bewegen. Sie wählen jeden der drei selbst: Ihre zwei Alltagsschlüssel und einen weiteren, oder ganz andere Schlüssel. Kein einzelner Schlüssel kann jemals allein ausgeben. Das ist die sicherere Option.";;
 
 installer-talia-backup-help
 => "A 2 of 2 needs both keys for every transaction, so losing either one locks the vault permanently. You can add an optional backup way in that only opens after a waiting period. The waiting period counts from your last transaction, and any spend from your normal path resets it."
 => "Ein 2 von 2 braucht für jede Transaktion beide Schlüssel. Geht einer verloren, ist der Vault dauerhaft gesperrt. Sie können einen optionalen Ersatzzugang hinzufügen, der sich erst nach einer Wartezeit öffnet. Die Wartezeit zählt ab Ihrer letzten Transaktion, und jede Ausgabe über den normalen Pfad setzt sie zurück.";;
 
-installer-talia-backup-holder
-=> "Who holds the added key?"
-=> "Wer hält den hinzugefügten Schlüssel?";;
+installer-talia-backup-key => "Backup key" => "Ersatzschlüssel"
 
-installer-talia-backup-holder-21c
-=> "21st Capital holds it"
-=> "21st Capital hält ihn";;
-
-installer-talia-backup-holder-forced-cosigner
-=> "Because 21st Capital already co-signs your vault, the third key is a device of your own."
-=> "Da 21st Capital Ihren Vault bereits mitunterschreibt, ist der dritte Schlüssel ein eigenes Gerät von Ihnen.";;
-
-installer-talia-backup-holder-forced-single
-=> "A single-signature backup is always a key of your own. A 21st Capital key that can spend alone is our Rescue Key, and that always sits at the very end, after your heirs and never before them."
-=> "Ein Einzelschlüssel-Ersatz ist immer ein eigener Schlüssel von Ihnen. Ein 21st-Capital-Schlüssel, der allein ausgeben kann, ist unser Rescue-Schlüssel, und der steht immer ganz am Ende, nach Ihren Erben und niemals davor.";;
-
-installer-talia-backup-holder-own => "I hold it myself" => "Ich halte ihn selbst"
-
-installer-talia-backup-key => "Your added key" => "Ihr hinzugefügter Schlüssel"
-
-installer-talia-backup-kind
-=> "Which kind of backup?"
-=> "Welche Art von Ersatzzugang?";;
+installer-talia-backup-key-number
+=> "Backup key {$number}"
+=> "Ersatzschlüssel {$number}";;
 
 installer-talia-backup-no => "No, keep it 2 of 2 only" => "Nein, nur 2 von 2"
 
@@ -1677,17 +1651,13 @@ installer-talia-backup-order
 => "This path opens after {$months} months of inactivity. Your heirs' keys always come after it, from {$floor} months at the earliest, and the 21st Capital Rescue Key stays at the very end, at {$rescue} months."
 => "Dieser Pfad öffnet sich nach {$months} Monaten ohne Aktivität. Die Schlüssel Ihrer Erben kommen immer danach, frühestens ab {$floor} Monaten, und der Rescue-Schlüssel von 21st Capital bleibt ganz am Ende, bei {$rescue} Monaten.";;
 
-installer-talia-backup-single
-=> "Single-signature backup key"
-=> "Einzelschlüssel als Ersatz";;
+installer-talia-backup-path => "Backup way in" => "Ersatzzugang"
+
+installer-talia-backup-single => "Single-signature key" => "Einzelschlüssel"
 
 installer-talia-backup-single-help
 => "After the waiting period one key can move coins entirely on its own. Simpler to use, but anyone who gets hold of it can empty the vault once the wait has passed."
 => "Nach der Wartezeit kann ein Schlüssel ganz allein Coins bewegen. Einfacher in der Nutzung, aber wer ihn in die Hände bekommt, kann den Vault nach Ablauf der Wartezeit leeren.";;
-
-installer-talia-backup-wait
-=> "Waiting period before the backup opens"
-=> "Wartezeit, bis sich der Ersatzzugang öffnet";;
 
 installer-talia-backup-yes
 => "Yes, add a backup way in"

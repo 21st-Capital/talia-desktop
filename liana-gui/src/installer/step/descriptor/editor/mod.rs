@@ -272,8 +272,6 @@ impl DefineDescriptor {
                 hws.aliases.remove(&key.fingerprint);
             }
         }
-        // The backup way in's copy of the primary path's keys follows.
-        shape.sync_backup_keys(&mut self.paths);
         self.our_keys.clear();
         self.keys_flow = KeysFlow::Idle;
         self.check_setup();
@@ -289,8 +287,8 @@ impl DefineDescriptor {
             return Err(t!("installer-talia-keys-missing"));
         };
         let mut placements = Vec::new();
-        // Our co-signer on the primary path and as the added key of the
-        // backup way in: one key for both.
+        // Our co-signer on the primary path and in the backup way in's 2 of
+        // 3: one key for both.
         let mut cosigner_slots: Vec<(usize, usize)> = shape
             .cosigner_slot(&self.paths)
             .map(|j| (0, j))
@@ -328,9 +326,6 @@ impl DefineDescriptor {
             }
             self.paths[i].keys[j] = Some(key);
         }
-        if let Some(shape) = &self.talia {
-            shape.sync_backup_keys(&mut self.paths);
-        }
         self.check_setup();
         Ok(())
     }
@@ -345,20 +340,7 @@ impl DefineDescriptor {
         };
         match message {
             TaliaMessage::CosignerOurs(ours) if !locked && shape.cosigner_21c != ours => {
-                let backup_holder = shape.backup_holder_21c();
-                shape.cosigner_21c = ours;
-                // The slot changes hands: whatever key it held goes.
-                if let Some(slot) = self.paths[0].keys.last_mut() {
-                    *slot = None;
-                }
-                // So does the backup way in's added key when its holder changes
-                // with it (our co-signer in the vault makes the third key the
-                // client's).
-                if shape.backup_holder_21c() != backup_holder {
-                    if let Some((i, j)) = shape.backup_added_slot() {
-                        self.paths[i].keys[j] = None;
-                    }
-                }
+                shape.set_cosigner_21c(&mut self.paths, ours);
             }
             TaliaMessage::Backup(include) if !locked => {
                 shape.set_backup(&mut self.paths, include);
@@ -1226,12 +1208,6 @@ impl Step for DefineDescriptor {
         let task = self.update_editor(hws, message);
         // Build your own: our keys follow what is reserved.
         self.sync_custom_ours(hws);
-        // The 2 of 2's expanding backup holds the primary path's keys.
-        if let Some(shape) = &self.talia {
-            if shape.sync_backup_keys(&mut self.paths) {
-                self.check_setup();
-            }
-        }
         task
     }
 
@@ -1859,6 +1835,14 @@ mod tests {
         Message::DefineDescriptor(message::DefineDescriptor::KeysEdited(
             vec![(path, index)],
             SelectedKey::New(Box::new(key.clone())),
+        ))
+    }
+
+    /// The client picks a key already in the vault, as the key list offers.
+    fn reuse_key(path: usize, index: usize, key: &Key) -> Message {
+        Message::DefineDescriptor(message::DefineDescriptor::KeysEdited(
+            vec![(path, index)],
+            SelectedKey::Existing(key.fingerprint),
         ))
     }
 
@@ -2688,6 +2672,61 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn a_two_of_two_backup_may_hold_other_keys_and_keeps_our_cosigner() {
+        // 21st Capital co-signs the everyday 2 of 2; after 6 months a 2 of 3
+        // of two other devices of the client's and the same co-signer key.
+        let (mut ctx, sandbox) = talia_sandbox(DescriptorTemplate::TwoOfTwo);
+        sandbox.load(&ctx).await;
+        let (a, c, d) = (test_key(1, "Mine A"), test_key(2, "Mine C"), test_key(3, "Mine D"));
+        let cosigner = test_key(4, "21st Capital co-signer");
+        for msg in [
+            TaliaMessage::Backup(true),
+            TaliaMessage::BackupKind(talia::BackupKind::TwoOfThree),
+            TaliaMessage::Rescue(false),
+        ] {
+            sandbox.update(talia_message(msg)).await;
+        }
+        sandbox.update(set_key(0, 0, &a)).await;
+        sandbox.update(set_key(1, 0, &c)).await;
+        sandbox.update(set_key(1, 1, &d)).await;
+        sandbox.check(|step| {
+            let shape = step.talia.as_ref().unwrap();
+            assert_eq!(shape.backup_21c_slot(), Some((1, 2)));
+            let asked = shape.vault_shape();
+            assert!(asked.cosigner);
+            assert_eq!(
+                asked.backup,
+                Some(talia_keys::Backup {
+                    kind: talia_keys::BackupKind::ExpandMultisig,
+                    holder_21c: false,
+                    months: 6,
+                })
+            );
+            waiting(step, 1);
+        });
+        sandbox.update(fetched(Some(&cosigner), None)).await;
+        sandbox.check(|step| {
+            assert!(matches!(step.keys_flow, KeysFlow::Done));
+            assert_eq!(step.paths[0].keys[1].as_ref(), Some(&cosigner));
+            assert_eq!(step.paths[1].keys[2].as_ref(), Some(&cosigner));
+            assert!(step.valid());
+        });
+        assert!(run_apply(&sandbox, &mut ctx).await);
+        let policy = ctx.descriptor.as_ref().unwrap().policy();
+        let primary = policy.primary_path().thresh_origins();
+        assert_eq!(primary.0, 2);
+        for key in [&a, &cosigner] {
+            assert!(primary.1.contains_key(&key.fingerprint));
+        }
+        let backup = policy.recovery_paths()[&26_298].thresh_origins();
+        assert_eq!(backup.0, 2);
+        for key in [&c, &d, &cosigner] {
+            assert!(backup.1.contains_key(&key.fingerprint));
+        }
+        assert!(!backup.1.contains_key(&a.fingerprint));
+    }
+
+    #[tokio::test]
     async fn a_two_of_two_that_expands_takes_our_cosigner_as_its_third_key() {
         // The client's own 2 of 2, which after 6 months becomes a 2 of 3
         // with our co-signer: the website configurator's expanding multisig.
@@ -2707,7 +2746,15 @@ mod tests {
         sandbox.update(set_key(0, 0, &a)).await;
         sandbox.update(set_key(0, 1, &b)).await;
         sandbox.check(|step| {
-            // The backup way in holds the primary path's two keys as they are.
+            // The client picks the backup way in's own keys (decided
+            // 2026-11-15): nothing is copied from the everyday path.
+            assert!(step.paths[1].keys.iter().all(Option::is_none));
+            assert!(!step.valid());
+        });
+        // The same two devices again, picked from the keys already in use.
+        sandbox.update(reuse_key(1, 0, &a)).await;
+        sandbox.update(reuse_key(1, 1, &b)).await;
+        sandbox.check(|step| {
             assert_eq!(step.paths[1].keys[0].as_ref(), Some(&a));
             assert_eq!(step.paths[1].keys[1].as_ref(), Some(&b));
             assert!(step.paths[1].keys[2].is_none());

@@ -1245,46 +1245,29 @@ installer-talia-add-heir => "Add an heir"
 
 installer-talia-backup => "What happens if you lose one of your two keys?"
 
-installer-talia-backup-alone => "After the wait, this key spends alone"
-
-installer-talia-backup-any-two
-=> "After the wait, any 2 of your two keys and this key";;
-
-installer-talia-backup-expand => "Expanding multisig turns 2 of 2 into 2 of 3"
+installer-talia-backup-expand => "Expanding multisig, 2 of 3"
 
 installer-talia-backup-expand-help
-=> "After the waiting period a third key joins, and any two of the three can move coins. No single key can ever spend on its own. This is the safer option.";;
+=> "After the waiting period, any two of three keys can move coins. You pick each of the three: your two everyday keys and one more, or other keys entirely. No single key can ever spend on its own. This is the safer option.";;
 
 installer-talia-backup-help
 => "A 2 of 2 needs both keys for every transaction, so losing either one locks the vault permanently. You can add an optional backup way in that only opens after a waiting period. The waiting period counts from your last transaction, and any spend from your normal path resets it.";;
 
-installer-talia-backup-holder => "Who holds the added key?"
+installer-talia-backup-key => "Backup key"
 
-installer-talia-backup-holder-21c => "21st Capital holds it"
-
-installer-talia-backup-holder-forced-cosigner
-=> "Because 21st Capital already co-signs your vault, the third key is a device of your own.";;
-
-installer-talia-backup-holder-forced-single
-=> "A single-signature backup is always a key of your own. A 21st Capital key that can spend alone is our Rescue Key, and that always sits at the very end, after your heirs and never before them.";;
-
-installer-talia-backup-holder-own => "I hold it myself"
-
-installer-talia-backup-key => "Your added key"
-
-installer-talia-backup-kind => "Which kind of backup?"
+installer-talia-backup-key-number => "Backup key {$number}"
 
 installer-talia-backup-no => "No, keep it 2 of 2 only"
 
 installer-talia-backup-order
 => "This path opens after {$months} months of inactivity. Your heirs' keys always come after it, from {$floor} months at the earliest, and the 21st Capital Rescue Key stays at the very end, at {$rescue} months.";;
 
-installer-talia-backup-single => "Single-signature backup key"
+installer-talia-backup-path => "Backup way in"
+
+installer-talia-backup-single => "Single-signature key"
 
 installer-talia-backup-single-help
 => "After the waiting period one key can move coins entirely on its own. Simpler to use, but anyone who gets hold of it can empty the vault once the wait has passed.";;
-
-installer-talia-backup-wait => "Waiting period before the backup opens"
 
 installer-talia-backup-yes => "Yes, add a backup way in"
 

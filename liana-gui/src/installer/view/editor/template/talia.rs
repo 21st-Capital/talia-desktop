@@ -310,8 +310,10 @@ fn primary_path<'a>(e: &TaliaEditor<'a>) -> Element<'a, Message> {
 }
 
 /// The 2 of 2's "What happens if you lose one of your two keys?": the
-/// website configurator's backup way in, its words and its rules (decided
-/// 2026-11-15). Explanations sit behind the info dots.
+/// website configurator's backup way in, its rules, and as few words as
+/// possible: the explanations sit behind the info dots, and the backup's keys
+/// are drawn as a card like an heir's, each key picked by the client
+/// (decided 2026-11-15).
 fn backup<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
     let shape = e.shape;
     if !shape.asks_backup() || (e.locked && !shape.backup_path) {
@@ -343,7 +345,7 @@ fn backup<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
         return Some(section(col));
     }
 
-    // Which kind.
+    // Which kind, on one row.
     let kind = shape.backup.kind;
     let kind_title = |k: BackupKind| match k {
         BackupKind::TwoOfThree => t!("installer-talia-backup-expand"),
@@ -353,23 +355,7 @@ fn backup<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
         BackupKind::TwoOfThree => t!("installer-talia-backup-expand-help"),
         BackupKind::OneKey => t!("installer-talia-backup-single-help"),
     };
-    if e.locked {
-        if let Some(k) = kind {
-            col = col.push(
-                row![
-                    new::caption(format!(
-                        "{} {}",
-                        t!("installer-talia-backup-kind"),
-                        kind_title(k)
-                    ))
-                    .style(theme::text::secondary),
-                    tooltip(kind_help(k)),
-                ]
-                .spacing(6)
-                .align_y(Alignment::Center),
-            );
-        }
-    } else {
+    if !e.locked {
         let choice = |k: BackupKind| -> Element<'a, Message> {
             row![
                 labelled_radio(
@@ -384,57 +370,29 @@ fn backup<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
             .into()
         };
         col = col.push(
-            column![
-                new::caption(t!("installer-talia-backup-kind")).style(theme::text::secondary),
-                choice(BackupKind::TwoOfThree),
-                choice(BackupKind::OneKey),
-            ]
-            .spacing(8),
+            row![choice(BackupKind::TwoOfThree), choice(BackupKind::OneKey)]
+                .spacing(HSpacing::XL)
+                .align_y(Alignment::Center),
         );
     }
     if kind.is_none() {
         return Some(section(col));
     }
 
-    // Who holds the added key.
-    let holder = shape.backup_holder_21c();
-    let holder_words = |ours: bool| {
-        if ours {
-            t!("installer-talia-backup-holder-21c")
-        } else {
-            t!("installer-talia-backup-holder-own")
-        }
-    };
-    if shape.backup_holder_forced() || e.locked {
-        let reason = if kind == Some(BackupKind::OneKey) {
-            Some(t!("installer-talia-backup-holder-forced-single"))
-        } else if shape.cosigner_21c {
-            Some(t!("installer-talia-backup-holder-forced-cosigner"))
-        } else {
-            None
-        };
-        col = col.push(
-            row![new::caption(format!(
-                "{} {}",
-                t!("installer-talia-backup-holder"),
-                holder.map(holder_words).unwrap_or_default()
-            ))
-            .style(theme::text::secondary)]
-            .push_maybe(reason.map(tooltip))
-            .spacing(6)
-            .align_y(Alignment::Center),
-        );
-    } else {
+    // Who holds the 2 of 3's third key, where the client may choose: the
+    // everyday path's own question and answers.
+    if !e.locked && !shape.backup_holder_forced() {
+        let holder = shape.backup_holder_21c();
         col = col.push(
             row![
-                new::caption(t!("installer-talia-backup-holder")).style(theme::text::secondary),
+                new::caption(t!("installer-talia-who-holds-third")).style(theme::text::secondary),
                 labelled_radio(
-                    holder_words(true),
+                    t!("installer-talia-holder-21c"),
                     holder == Some(true),
                     talia(TaliaMessage::BackupHolderOurs(true)),
                 ),
                 labelled_radio(
-                    holder_words(false),
+                    t!("installer-talia-holder-own"),
                     holder == Some(false),
                     talia(TaliaMessage::BackupHolderOurs(false)),
                 ),
@@ -443,8 +401,11 @@ fn backup<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
             .align_y(Alignment::Center),
         );
     }
+    if !shape.backup_path || shape.backup_holder_21c().is_none() {
+        return Some(section(col));
+    }
 
-    // The wait.
+    // The backup way in itself: its wait and its keys, as an heir's card.
     let months = shape.backup.months;
     let floor = *shape.heir_months_range().start();
     let picker: Element<'a, Message> = if e.locked {
@@ -457,47 +418,42 @@ fn backup<'a>(e: &TaliaEditor<'a>) -> Option<Element<'a, Message>> {
         )
         .into()
     };
-    col = col.push(
-        row![
-            new::caption(t!("installer-talia-backup-wait")).style(theme::text::secondary),
-            picker,
-            tooltip(t!(
-                "installer-talia-backup-order",
-                months = months,
-                floor = floor,
-                rescue = RESCUE_MONTHS
-            )),
-        ]
-        .spacing(10)
-        .align_y(Alignment::Center),
-    );
-
-    // The added key, once its holder is known.
-    if let (Some((i, j)), Some(ours)) = (shape.backup_added_slot(), holder) {
-        let key = e.paths[i].keys.get(j).and_then(Option::as_ref);
-        col = col.push(
-            new::caption(match kind {
-                Some(BackupKind::OneKey) => t!("installer-talia-backup-alone"),
-                _ => t!("installer-talia-backup-any-two"),
-            })
-            .style(theme::text::secondary),
-        );
-        col = col.push(if ours {
-            our_slot(key, t!("installer-talia-cosigner"))
+    let head = row![
+        p1_bold(t!("installer-talia-backup-path")),
+        Space::with_width(Length::Fill),
+        new::caption(t!("installer-talia-heir-wait")).style(theme::text::secondary),
+        picker,
+        tooltip(t!(
+            "installer-talia-backup-order",
+            months = months,
+            floor = floor,
+            rescue = RESCUE_MONTHS
+        )),
+    ]
+    .spacing(10)
+    .align_y(Alignment::Center);
+    let path = &e.paths[1];
+    let ours = shape.backup_21c_slot().map(|(_, j)| j);
+    let mut keys = column![].spacing(5);
+    for (j, key) in path.keys.iter().enumerate() {
+        keys = keys.push(if Some(j) == ours {
+            our_slot(key.as_ref(), t!("installer-talia-cosigner"))
         } else {
-            key_slot(
-                key,
-                OWN,
-                t!("installer-talia-backup-key"),
-                i,
-                j,
-                e.use_taproot,
-            )
+            let label = if path.keys.len() > 1 {
+                t!("installer-talia-backup-key-number", number = j + 1)
+            } else {
+                t!("installer-talia-backup-key")
+            };
+            key_slot(key.as_ref(), OWN, label, 1, j, e.use_taproot)
         });
-        if let Some(w) = e.paths[i].warning {
-            col = col.push(new::small_caption(w.message()).style(theme::text::error));
-        }
     }
+    let warning = path
+        .warning
+        .map(|w| new::small_caption(w.message()).style(theme::text::error));
+    col = col.push(
+        card::simple(column![head].push_maybe(warning).push(keys).spacing(10))
+            .width(Length::Fill),
+    );
     Some(section(col))
 }
 
