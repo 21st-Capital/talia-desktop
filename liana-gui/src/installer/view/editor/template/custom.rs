@@ -8,8 +8,9 @@ use liana_ui::{
     color,
     component::{
         button::{self, btn_add_recovery_option, btn_add_safety_net},
-        text::new,
+        text::{new, p1_bold},
         timeline::{spending_timeline, Template},
+        tooltip::tooltip,
     },
     spacing::{HSpacing, VSpacing},
     theme,
@@ -22,7 +23,7 @@ use crate::installer::{
     step::descriptor::editor::talia::KeysFlow,
     view::{
         editor::{
-            defined_key, descriptor_type, path,
+            defined_key, descriptor_type, our_key, path,
             template::{
                 caption_block, row_next, BOTTOM_PADDING, DESCRIPTION_BOTTOM_PADDING, FOOTER_SPACING,
             },
@@ -78,7 +79,7 @@ pub fn custom_template<'a>(
     num_non_primary_paths: usize,
     valid: bool,
     processing: bool,
-    flow: &'a KeysFlow,
+    ours: Ours<'a>,
 ) -> Element<'a, Message> {
     let prim_keys_fixed = primary_path.keys.len() < 2; // can only delete a primary key if there are 2 or more
 
@@ -95,7 +96,13 @@ pub fn custom_template<'a>(
             .iter()
             .enumerate()
             .map(|(i, primary_key)| {
-                if let Some(key) = primary_key {
+                if ours.cosigner_slot == Some(i) {
+                    our_key(
+                        primary_key.as_ref().map(|key| key.name.as_str()),
+                        t!("installer-talia-cosigner"),
+                        !prim_keys_fixed,
+                    )
+                } else if let Some(key) = primary_key {
                     defined_key(
                         &key.name,
                         color::GREEN,
@@ -197,7 +204,13 @@ pub fn custom_template<'a>(
                     // Cannot delete safety net key if doing so would remove the safety net path
                     // and there are no other recovery paths.
                     let fixed = num_non_primary_paths < 2 && sn_path.keys.len() < 2;
-                    if let Some(key) = sn_key {
+                    if ours.rescue {
+                        our_key(
+                            sn_key.as_ref().map(|key| key.name.as_str()),
+                            t!("installer-talia-rescue-key"),
+                            !fixed,
+                        )
+                    } else if let Some(key) = sn_key {
                         defined_key(
                             &key.name,
                             color::WHITE,
@@ -234,7 +247,7 @@ pub fn custom_template<'a>(
         recovery_paths,
         btn_row,
         safety_net,
-        our_keys_status(flow),
+        our_keys(&ours, primary_path, safety_net_path.map(|(_, p)| p)),
         Space::with_height(FOOTER_SPACING),
         last_btn_row,
         Space::with_height(BOTTOM_PADDING),
@@ -252,27 +265,81 @@ pub fn custom_template<'a>(
     )
 }
 
-/// While our website is open for the 21st Capital keys, or when it answered
-/// with an error. Nothing once the keys sit in their slots.
-fn our_keys_status(flow: &KeysFlow) -> Option<Element<'_, Message>> {
+/// Build your own: the slots reserved for 21st Capital's keys and where
+/// "Get my 21st Capital keys" stands.
+pub struct Ours<'a> {
+    /// The co-signer's slot on the primary path, when reserved.
+    pub cosigner_slot: Option<usize>,
+    /// The Rescue Key path's slot is reserved for ours.
+    pub rescue: bool,
+    pub flow: &'a KeysFlow,
+    /// 21st Capital issues keys on the wallet's network.
+    pub keys_available: bool,
+}
+
+/// "21st Capital keys": shown once a slot is reserved for one of ours, with
+/// the one button that fetches them all.
+fn our_keys<'a>(
+    ours: &Ours<'a>,
+    primary: &'a Path,
+    rescue_path: Option<&'a Path>,
+) -> Option<Element<'a, Message>> {
+    if ours.cosigner_slot.is_none() && !ours.rescue {
+        return None;
+    }
     let talia = |msg| Message::DefineDescriptor(message::DefineDescriptor::Talia(msg));
-    let content: Element<'_, Message> = match flow {
-        KeysFlow::Waiting { .. } => column![
-            new::caption(t!("installer-talia-keys-waiting")),
-            row![
-                button::secondary(None, t!("installer-talia-keys-open-again"))
-                    .on_press(talia(TaliaMessage::OpenKeysPage)),
-                button::tertiary(None, t!("btn-cancel")).on_press(talia(TaliaMessage::CancelKeys)),
-            ]
-            .spacing(HSpacing::M),
-        ]
-        .spacing(10)
-        .into(),
-        KeysFlow::Failed(error) => new::caption(error.clone()).style(theme::text::error).into(),
-        _ => return None,
-    };
+    let filled = ours
+        .cosigner_slot
+        .is_none_or(|j| primary.keys.get(j).is_some_and(|k| k.is_some()))
+        && (!ours.rescue
+            || rescue_path.is_some_and(|p| p.keys.first().is_some_and(|k| k.is_some())));
+
+    let mut col = column![row![
+        p1_bold(t!("installer-talia-keys-title")),
+        tooltip(t!("installer-talia-keys-caption"))
+    ]
+    .spacing(6)
+    .align_y(Alignment::Center)]
+    .spacing(10);
+
+    if !ours.keys_available {
+        col = col.push(
+            new::caption(t!("installer-talia-keys-network-unsupported"))
+                .style(theme::text::warning),
+        );
+    } else {
+        match ours.flow {
+            KeysFlow::Waiting { .. } => {
+                col = col
+                    .push(new::caption(t!("installer-talia-keys-waiting")))
+                    .push(
+                        row![
+                            button::secondary(None, t!("installer-talia-keys-open-again"))
+                                .on_press(talia(TaliaMessage::OpenKeysPage)),
+                            button::tertiary(None, t!("btn-cancel"))
+                                .on_press(talia(TaliaMessage::CancelKeys)),
+                        ]
+                        .spacing(HSpacing::M),
+                    );
+            }
+            KeysFlow::Done if filled => {
+                col = col.push(
+                    new::caption(t!("installer-talia-keys-done")).style(theme::text::success),
+                );
+            }
+            flow => {
+                if let KeysFlow::Failed(error) = flow {
+                    col = col.push(new::caption(error.clone()).style(theme::text::error));
+                }
+                col = col.push(
+                    button::primary(None, t!("installer-talia-get-keys"))
+                        .on_press(talia(TaliaMessage::GetKeys)),
+                );
+            }
+        }
+    }
     Some(
-        Container::new(content)
+        Container::new(col)
             .padding(10)
             .width(iced::Length::Fill)
             .style(theme::card::border)

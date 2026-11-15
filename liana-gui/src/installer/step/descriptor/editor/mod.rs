@@ -80,17 +80,14 @@ pub struct DefineDescriptor {
     keys_attempt: u64,
     /// The 21st Capital keys placed in their slots.
     our_keys: Vec<Fingerprint>,
-    /// Build your own: the slots waiting for the keys our website sends.
-    custom_request: Option<CustomRequest>,
-}
-
-/// Build your own: where the keys asked from our website go.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct CustomRequest {
-    /// The co-signer's slot on the primary path.
-    cosigner: Option<usize>,
-    /// The index of the Rescue Key's path (Liana's Safety Net path).
-    rescue: Option<usize>,
+    /// Build your own: the last primary slot is reserved for our co-signer.
+    custom_cosigner: bool,
+    /// Build your own: the Rescue Key path's slot is reserved for ours.
+    custom_rescue: bool,
+    /// Build your own: what the website was asked for, while it is open.
+    custom_asked: Option<talia_keys::VaultShape>,
+    /// Build your own: what the keys in the reserved slots were fetched for.
+    custom_fetched: Option<talia_keys::VaultShape>,
 }
 
 impl DefineDescriptor {
@@ -113,7 +110,10 @@ impl DefineDescriptor {
             keys_flow: KeysFlow::Idle,
             keys_attempt: 0,
             our_keys: Vec::new(),
-            custom_request: None,
+            custom_cosigner: false,
+            custom_rescue: false,
+            custom_asked: None,
+            custom_fetched: None,
         }
     }
 
@@ -343,8 +343,9 @@ impl DefineDescriptor {
         Task::none()
     }
 
-    /// Build your own: our co-signer and Rescue Key, fetched from our
-    /// website as the templates fetch them.
+    /// Build your own: our co-signer and Rescue Key. Picking one only
+    /// reserves its slot; "Get my 21st Capital keys" then fetches every
+    /// reserved one from our website at once, as the templates do.
     fn update_custom_ours(
         &mut self,
         hws: &mut HardwareWallets,
@@ -353,7 +354,16 @@ impl DefineDescriptor {
         match message {
             TaliaMessage::OurKey(i, j) if !self.keys_flow.is_waiting() => {
                 self.modal = None;
-                return self.get_custom_keys(i, j);
+                self.reserve_custom_slot(i, j);
+            }
+            TaliaMessage::GetKeys if !self.keys_flow.is_waiting() => {
+                if let Some(shape) = self.custom_shape() {
+                    let task = self.start_keys_fetch(shape.clone());
+                    if self.keys_flow.is_waiting() {
+                        self.custom_asked = Some(shape);
+                    }
+                    return task;
+                }
             }
             TaliaMessage::OpenKeysPage => {
                 if let KeysFlow::Waiting { url, .. } = &self.keys_flow {
@@ -363,7 +373,7 @@ impl DefineDescriptor {
             TaliaMessage::CancelKeys => {
                 if self.keys_flow.is_waiting() {
                     self.keys_flow = KeysFlow::Idle;
-                    self.custom_request = None;
+                    self.custom_asked = None;
                 }
             }
             TaliaMessage::KeysFetched(attempt, res) => {
@@ -372,14 +382,14 @@ impl DefineDescriptor {
                     KeysFlow::Waiting { attempt: a, .. } if *a == attempt
                 );
                 if current {
+                    let asked = self.custom_asked.take();
                     self.keys_flow = match res {
-                        Ok(fetched) => match self.place_custom_keys(hws, *fetched) {
+                        Ok(fetched) => match self.place_custom_keys(hws, asked, *fetched) {
                             Ok(()) => KeysFlow::Done,
                             Err(e) => KeysFlow::Failed(e),
                         },
                         Err(e) => KeysFlow::Failed(e.message()),
                     };
-                    self.custom_request = None;
                 }
             }
             _ => {}
@@ -387,72 +397,37 @@ impl DefineDescriptor {
         Task::none()
     }
 
-    /// Where one of our keys sits on `path`, if one does.
-    fn our_slot_in(&self, path: usize) -> Option<usize> {
-        self.paths.get(path)?.keys.iter().position(|key| {
-            key.as_ref()
-                .is_some_and(|key| self.our_keys.contains(&key.fingerprint))
-        })
-    }
-
-    /// Build your own: the client picked our key for the slot (i, j). Asks
-    /// the website for every one of our keys the vault holds, so the
-    /// co-signer and the Rescue Key always come as one vault's pair.
-    fn get_custom_keys(&mut self, i: usize, j: usize) -> Task<Message> {
-        let Some((shape, request)) = self.prepare_custom_request(i, j) else {
-            return Task::none();
-        };
-        let task = self.start_keys_fetch(shape);
-        if self.keys_flow.is_waiting() {
-            self.custom_request = Some(request);
-        }
-        task
-    }
-
-    /// Readies the slots for our keys and says what to ask the website for.
-    fn prepare_custom_request(
-        &mut self,
-        i: usize,
-        j: usize,
-    ) -> Option<(talia_keys::VaultShape, CustomRequest)> {
-        let rescue_path = self
-            .paths
+    /// The Rescue Key's path (Liana's Safety Net path), if the vault has one.
+    fn rescue_path_index(&self) -> Option<usize> {
+        self.paths
             .iter()
-            .position(|path| path.kind() == PathKind::SafetyNet);
-        let mut cosigner = None;
-        if i == 0 {
-            let last = self.paths[0].keys.len().checked_sub(1)?;
-            if j > last {
-                return None;
-            }
-            // One co-signer: one placed in another slot gives way.
-            if let Some(k) = self.our_slot_in(0).filter(|k| *k != j) {
-                self.paths[0].keys[k] = None;
-            }
-            // Ours sits last: the client's keys come first.
-            self.paths[0].keys.swap(j, last);
-            self.paths[0].keys[last] = None;
-            cosigner = Some(last);
-        } else if let Some(k) = self.our_slot_in(0) {
-            // A new Rescue Key comes with a new co-signer of the same vault.
-            cosigner = Some(k);
-        }
-        let rescue = rescue_path.filter(|r| {
-            *r == i
-                || self.paths[*r].keys.first().is_some_and(|key| {
-                    key.as_ref()
-                        .is_none_or(|key| self.our_keys.contains(&key.fingerprint))
-                })
-        });
-        if let Some(r) = rescue.filter(|r| *r == i) {
-            if let Some(slot) = self.paths[r].keys.first_mut() {
-                *slot = None;
-            }
-        }
-        if cosigner.is_none() && rescue.is_none() {
+            .position(|path| path.kind() == PathKind::SafetyNet)
+    }
+
+    /// Build your own: the co-signer's slot, last on the primary path.
+    fn custom_cosigner_slot(&self) -> Option<usize> {
+        if self.talia.is_some() || !self.custom_cosigner {
             return None;
         }
-        let primary = &self.paths[0];
+        self.paths.first()?.keys.len().checked_sub(1)
+    }
+
+    /// Build your own: the Rescue Key path, when its slot is reserved for ours.
+    fn custom_rescue_path(&self) -> Option<usize> {
+        if self.talia.is_some() || !self.custom_rescue {
+            return None;
+        }
+        self.rescue_path_index()
+    }
+
+    /// Build your own: what to ask the website for, every key reserved.
+    fn custom_shape(&self) -> Option<talia_keys::VaultShape> {
+        let cosigner = self.custom_cosigner_slot().is_some();
+        let rescue = self.custom_rescue_path().is_some();
+        if !cosigner && !rescue {
+            return None;
+        }
+        let primary = self.paths.first()?;
         let config = if primary.keys.len() < 2 {
             talia_keys::VaultConfig::Single
         } else if primary.threshold >= primary.keys.len() {
@@ -460,76 +435,125 @@ impl DefineDescriptor {
         } else {
             talia_keys::VaultConfig::Multi2of3
         };
-        let shape = talia_keys::VaultShape {
+        Some(talia_keys::VaultShape {
             config,
-            cosigner: cosigner.is_some(),
-            rescue: rescue.is_some(),
+            cosigner,
+            rescue,
             // The client's own recovery paths are not heirs to us.
             heirs: Vec::new(),
-        };
-        self.check_setup();
-        Some((shape, CustomRequest { cosigner, rescue }))
+        })
     }
 
-    /// Build your own: puts the fetched keys in the slots they were asked for.
+    /// Build your own: reserves the slot (i, j) for one of our keys.
+    fn reserve_custom_slot(&mut self, i: usize, j: usize) {
+        if i == 0 {
+            let Some(last) = self.paths[0].keys.len().checked_sub(1) else {
+                return;
+            };
+            // One co-signer, next to at least one of the client's keys.
+            if j > last || last == 0 || self.custom_cosigner {
+                return;
+            }
+            // Ours sits last: the client's keys come first.
+            self.paths[0].keys.swap(j, last);
+            self.paths[0].keys[last] = None;
+            self.custom_cosigner = true;
+        } else if Some(i) == self.rescue_path_index() && !self.custom_rescue {
+            if let Some(slot) = self.paths[i].keys.first_mut() {
+                *slot = None;
+            }
+            self.custom_rescue = true;
+        }
+        self.check_setup();
+    }
+
+    /// Build your own: keeps our keys true to what is reserved. A key fetched
+    /// for another shape (another vault type, a co-signer or Rescue Key added
+    /// or given back) leaves its slot, so one press of "Get my 21st Capital
+    /// keys" fetches one vault's pair again.
+    fn sync_custom_ours(&mut self, hws: &mut HardwareWallets) {
+        if self.talia.is_some() {
+            return;
+        }
+        if self.custom_rescue && self.rescue_path_index().is_none() {
+            self.custom_rescue = false;
+        }
+        if self.custom_cosigner && self.paths.first().is_none_or(|p| p.keys.len() < 2) {
+            self.custom_cosigner = false;
+        }
+        if self.custom_fetched.is_some() && self.custom_fetched != self.custom_shape() {
+            self.remove_custom_keys(hws);
+        }
+    }
+
+    /// Build your own: takes our keys out of their slots.
+    fn remove_custom_keys(&mut self, hws: &mut HardwareWallets) {
+        for fingerprint in self.our_keys.drain(..) {
+            self.keys.remove(&fingerprint);
+            hws.aliases.remove(&fingerprint);
+            for path in &mut self.paths {
+                for key in &mut path.keys {
+                    if key.as_ref().is_some_and(|k| k.fingerprint == fingerprint) {
+                        *key = None;
+                    }
+                }
+            }
+        }
+        self.custom_fetched = None;
+        if matches!(self.keys_flow, KeysFlow::Done) {
+            self.keys_flow = KeysFlow::Idle;
+        }
+        self.check_setup();
+    }
+
+    /// Build your own: puts the fetched keys in the reserved slots.
     fn place_custom_keys(
         &mut self,
         hws: &mut HardwareWallets,
+        asked: Option<talia_keys::VaultShape>,
         fetched: FetchedKeys,
     ) -> Result<(), String> {
-        let Some(request) = self.custom_request else {
+        let Some(asked) = asked else {
             return Err(t!("installer-talia-keys-missing"));
         };
+        // The vault must still be the one the keys were asked for.
+        if self.custom_shape().as_ref() != Some(&asked) {
+            return Err(t!("installer-talia-keys-vault-changed"));
+        }
         let mut placements = Vec::new();
-        match (request.cosigner, fetched.cosigner) {
-            (Some(j), Some(key)) => placements.push(((0, j), key)),
-            (Some(_), None) => return Err(t!("installer-talia-keys-missing")),
-            _ => {}
+        if let Some(j) = self.custom_cosigner_slot() {
+            let Some(key) = fetched.cosigner else {
+                return Err(t!("installer-talia-keys-missing"));
+            };
+            placements.push(((0, j), key));
         }
-        match (request.rescue, fetched.rescue) {
-            (Some(i), Some(key)) => placements.push(((i, 0), key)),
-            (Some(_), None) => return Err(t!("installer-talia-keys-missing")),
-            _ => {}
-        }
-        // Each slot must still be there, of its kind, and free or ours.
-        for ((i, j), _) in &placements {
-            let kind_holds =
-                *i == 0 || self.paths.get(*i).map(|p| p.kind()) == Some(PathKind::SafetyNet);
-            let free = self
-                .paths
-                .get(*i)
-                .and_then(|path| path.keys.get(*j))
-                .is_some_and(|key| {
-                    key.as_ref()
-                        .is_none_or(|key| self.our_keys.contains(&key.fingerprint))
-                });
-            if !kind_holds || !free {
-                return Err(t!("installer-talia-keys-vault-changed"));
-            }
+        if let Some(i) = self.custom_rescue_path() {
+            let Some(key) = fetched.rescue else {
+                return Err(t!("installer-talia-keys-missing"));
+            };
+            placements.push(((i, 0), key));
         }
         // One of ours must never be one of the client's keys too.
-        let in_vault = |fingerprint: &Fingerprint| {
-            self.paths
-                .iter()
-                .flat_map(|path| path.keys.iter().flatten())
-                .any(|key| key.fingerprint == *fingerprint)
+        let clients = |fingerprint: &Fingerprint| {
+            !self.our_keys.contains(fingerprint)
+                && self
+                    .paths
+                    .iter()
+                    .flat_map(|path| path.keys.iter().flatten())
+                    .any(|key| key.fingerprint == *fingerprint)
         };
-        if placements.iter().any(|(_, key)| in_vault(&key.fingerprint)) {
+        if placements.iter().any(|(_, key)| clients(&key.fingerprint)) {
             return Err(t!("installer-talia-keys-already-used"));
         }
+        // The new pair replaces any earlier one of ours.
+        self.remove_custom_keys(hws);
         for ((i, j), key) in placements {
-            // The new pair replaces the previous one of ours in that slot.
-            if let Some(old) = self.paths[i].keys[j].take() {
-                self.keys.remove(&old.fingerprint);
-                hws.aliases.remove(&old.fingerprint);
-                self.our_keys
-                    .retain(|fingerprint| *fingerprint != old.fingerprint);
-            }
             self.keys.insert(key.fingerprint, key.clone());
             hws.aliases.insert(key.fingerprint, key.name.clone());
             self.our_keys.push(key.fingerprint);
             self.paths[i].keys[j] = Some(key);
         }
+        self.custom_fetched = Some(asked);
         self.check_setup();
         Ok(())
     }
@@ -644,11 +668,11 @@ impl DefineDescriptor {
             None
         } else {
             match path_kind {
-                // A co-signer next to at least one key of the client's.
-                PathKind::Primary if self.paths[0].keys.len() >= 2 => {
+                // One co-signer, next to at least one key of the client's.
+                PathKind::Primary if self.paths[0].keys.len() >= 2 && !self.custom_cosigner => {
                     Some(key::OurKeyOffer::Cosigner)
                 }
-                PathKind::SafetyNet => Some(key::OurKeyOffer::Rescue),
+                PathKind::SafetyNet if !self.custom_rescue => Some(key::OurKeyOffer::Rescue),
                 _ => None,
             }
         };
@@ -666,18 +690,9 @@ impl DefineDescriptor {
     }
 }
 
-impl Step for DefineDescriptor {
-    fn load_context(&mut self, ctx: &Context) {
-        self.load_template(ctx.descriptor_template);
-        // Drop any transient state from a previous visit (failed compile,
-        // in-flight task we navigated away from, stale mailbox).
-        self.error = None;
-        self.processing = false;
-        self.compiled = None;
-    }
-    // form value is set as valid each time it is edited.
-    // Verification of the values is happening when the user click on Next button.
-    fn update(&mut self, hws: &mut HardwareWallets, message: Message) -> Task<Message> {
+impl DefineDescriptor {
+    /// Liana's editor update; `update` adds the Build your own sync.
+    fn update_editor(&mut self, hws: &mut HardwareWallets, message: Message) -> Task<Message> {
         self.error = None;
         match message {
             Message::Close => {
@@ -696,7 +711,7 @@ impl Step for DefineDescriptor {
                     // Customized: the paths stay, as Liana's own editor has them.
                     self.talia = None;
                     self.keys_flow = KeysFlow::Idle;
-                    self.custom_request = None;
+                    self.custom_asked = None;
                 }
             }
             Message::DefineDescriptor(message::DefineDescriptor::AddRecoveryPath) => {
@@ -833,8 +848,14 @@ impl Step for DefineDescriptor {
                     }
 
                     message::DefinePath::AddKey => {
+                        // Build your own: our co-signer stays last.
+                        let ours_last = i == 0 && self.custom_cosigner_slot().is_some();
                         if let Some(path) = self.paths.get_mut(i) {
-                            path.keys.push(None);
+                            if ours_last {
+                                path.keys.insert(path.keys.len() - 1, None);
+                            } else {
+                                path.keys.push(None);
+                            }
                             path.threshold += 1;
                             self.check_for_warning();
                         }
@@ -876,6 +897,14 @@ impl Step for DefineDescriptor {
                                 self.modal = Some(Box::new(modal));
                             }
                             message::DefineKey::Delete => {
+                                // Build your own: the cross on a reserved slot
+                                // gives it back.
+                                if i == 0 && Some(j) == self.custom_cosigner_slot() {
+                                    self.custom_cosigner = false;
+                                }
+                                if Some(i) == self.custom_rescue_path() {
+                                    self.custom_rescue = false;
+                                }
                                 if let Some(path) = self.paths.get_mut(i) {
                                     path.keys.remove(j);
                                     if path.threshold > path.keys.len() {
@@ -934,6 +963,25 @@ impl Step for DefineDescriptor {
             }
         };
         Task::none()
+    }
+}
+
+impl Step for DefineDescriptor {
+    fn load_context(&mut self, ctx: &Context) {
+        self.load_template(ctx.descriptor_template);
+        // Drop any transient state from a previous visit (failed compile,
+        // in-flight task we navigated away from, stale mailbox).
+        self.error = None;
+        self.processing = false;
+        self.compiled = None;
+    }
+    // form value is set as valid each time it is edited.
+    // Verification of the values is happening when the user click on Next button.
+    fn update(&mut self, hws: &mut HardwareWallets, message: Message) -> Task<Message> {
+        let task = self.update_editor(hws, message);
+        // Build your own: our keys follow what is reserved.
+        self.sync_custom_ours(hws);
+        task
     }
 
     fn subscription(&self, hws: &HardwareWallets) -> Subscription<Message> {
@@ -1097,7 +1145,12 @@ impl Step for DefineDescriptor {
                 self.paths[1..].len(),
                 self.valid(),
                 self.processing,
-                &self.keys_flow,
+                view::editor::template::custom::Ours {
+                    cosigner_slot: self.custom_cosigner_slot(),
+                    rescue: self.custom_rescue_path().is_some(),
+                    flow: &self.keys_flow,
+                    keys_available: talia_keys::contract_network(self.network).is_some(),
+                },
             ),
         };
         let modal: Option<Element<'a, Message>> = if self.processing {
@@ -1835,14 +1888,30 @@ mod tests {
         Message::DefineDescriptor(message::DefineDescriptor::AddSafetyNetPath)
     }
 
-    /// Readies the slot (i, j) for our key as "21st Capital co-signer" /
-    /// "21st Capital Rescue Key" does, without opening the website.
-    fn pick_ours(step: &mut DefineDescriptor, i: usize, j: usize) -> talia_keys::VaultShape {
-        let (shape, request) = step
-            .prepare_custom_request(i, j)
-            .expect("something to fetch");
+    fn our_key(path: usize, index: usize) -> Message {
+        talia_message(TaliaMessage::OurKey(path, index))
+    }
+
+    fn delete_key(path: usize, index: usize) -> Message {
+        Message::DefineDescriptor(message::DefineDescriptor::Path(
+            path,
+            message::DefinePath::Key(index, message::DefineKey::Delete),
+        ))
+    }
+
+    fn threshold(path: usize, t: usize) -> Message {
+        Message::DefineDescriptor(message::DefineDescriptor::Path(
+            path,
+            message::DefinePath::ThresholdEdited(t),
+        ))
+    }
+
+    /// What "Get my 21st Capital keys" leaves behind while the website is
+    /// open, without opening it.
+    fn ask_website(step: &mut DefineDescriptor) -> talia_keys::VaultShape {
+        let shape = step.custom_shape().expect("a slot is reserved");
         waiting(step, 1);
-        step.custom_request = Some(request);
+        step.custom_asked = Some(shape.clone());
         shape
     }
 
@@ -1888,6 +1957,13 @@ mod tests {
             assert!(data.token_kind.is_empty());
             assert!(data.manual_only);
         });
+        // Once reserved, neither is offered a second time.
+        sandbox.update(our_key(0, 0)).await;
+        sandbox.update(our_key(2, 0)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.path_data(PathKind::Primary, vec![(0, 0)]).ours, None);
+            assert_eq!(step.path_data(PathKind::SafetyNet, vec![(2, 0)]).ours, None);
+        });
 
         // We issue no keys on networks the website does not serve.
         let (_ctx, sandbox) = build_your_own(Network::Regtest).await;
@@ -1915,7 +1991,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn build_your_own_gets_our_cosigner_and_rescue_key_as_one_pair() {
+    async fn picking_our_keys_reserves_their_slots_and_one_press_fetches_both() {
         let (mut ctx, sandbox) = build_your_own(Network::Testnet4).await;
         let (mine, own_recovery) = (test_key(1, "Mine"), test_key(2, "My recovery"));
         let (cosigner, rescue) = (
@@ -1924,11 +2000,22 @@ mod tests {
         );
         sandbox.update(add_key(0)).await;
         sandbox.update(add_rescue_path()).await;
-        // The client's key goes in the second slot; ours is picked for the first.
         sandbox.update(set_key(0, 1, &mine)).await;
         sandbox.update(set_key(1, 0, &own_recovery)).await;
+        // Ours is picked for the first slot: it is reserved, nothing fetched.
+        sandbox.update(our_key(0, 0)).await;
         sandbox.check(|step| {
-            let shape = pick_ours(step, 0, 0);
+            assert!(!step.keys_flow.is_waiting());
+            assert_eq!(step.custom_cosigner_slot(), Some(1));
+            // Ours sits last: the client's key moved first.
+            assert_eq!(step.paths[0].keys[0].as_ref(), Some(&mine));
+            assert!(step.paths[0].keys[1].is_none());
+            assert!(!step.valid());
+        });
+        sandbox.update(our_key(2, 0)).await;
+        sandbox.check(|step| {
+            assert!(!step.keys_flow.is_waiting());
+            let shape = ask_website(step);
             assert_eq!(
                 shape,
                 talia_keys::VaultShape {
@@ -1938,9 +2025,6 @@ mod tests {
                     heirs: vec![],
                 }
             );
-            // Ours sits last: the client's key moved first.
-            assert_eq!(step.paths[0].keys[0].as_ref(), Some(&mine));
-            assert!(step.paths[0].keys[1].is_none());
         });
         sandbox
             .update(fetched(Some(&cosigner), Some(&rescue)))
@@ -1953,7 +2037,6 @@ mod tests {
                 step.our_keys,
                 vec![cosigner.fingerprint, rescue.fingerprint]
             );
-            assert!(step.custom_request.is_none());
             assert!(step.valid());
         });
         // Liana composes the vault from these keys as from any others.
@@ -1961,7 +2044,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn a_new_rescue_key_comes_with_a_new_cosigner() {
+    async fn adding_the_rescue_key_later_asks_for_a_new_pair() {
         let (_ctx, sandbox) = build_your_own(Network::Testnet4).await;
         let (mine, own_recovery) = (test_key(1, "Mine"), test_key(2, "My recovery"));
         let (cosigner, cosigner2, rescue2) = (
@@ -1972,15 +2055,21 @@ mod tests {
         sandbox.update(add_key(0)).await;
         sandbox.update(set_key(0, 0, &mine)).await;
         sandbox.update(set_key(1, 0, &own_recovery)).await;
+        sandbox.update(our_key(0, 1)).await;
         sandbox.check(|step| {
-            let shape = pick_ours(step, 0, 1);
+            let shape = ask_website(step);
             assert!(shape.cosigner && !shape.rescue);
         });
         sandbox.update(fetched(Some(&cosigner), None)).await;
         sandbox.update(add_rescue_path()).await;
+        sandbox.update(our_key(2, 0)).await;
         sandbox.check(|step| {
-            assert_eq!(step.paths[0].keys[1].as_ref(), Some(&cosigner));
-            let shape = pick_ours(step, 2, 0);
+            // The co-signer belongs to a vault without our Rescue Key: it goes.
+            assert!(step.paths[0].keys[1].is_none());
+            assert!(step.our_keys.is_empty());
+            assert!(!step.keys.contains_key(&cosigner.fingerprint));
+            assert!(matches!(step.keys_flow, KeysFlow::Idle));
+            let shape = ask_website(step);
             assert!(shape.cosigner && shape.rescue);
         });
         sandbox
@@ -1990,8 +2079,6 @@ mod tests {
             assert!(matches!(step.keys_flow, KeysFlow::Done));
             assert_eq!(step.paths[0].keys[1].as_ref(), Some(&cosigner2));
             assert_eq!(step.paths[2].keys[0].as_ref(), Some(&rescue2));
-            assert!(!step.keys.contains_key(&cosigner.fingerprint));
-            assert!(!step.our_keys.contains(&cosigner.fingerprint));
         });
     }
 
@@ -2003,44 +2090,88 @@ mod tests {
         sandbox.update(add_rescue_path()).await;
         sandbox.update(set_key(0, 0, &mine)).await;
         sandbox.update(set_key(2, 0, &pasted)).await;
+        sandbox.update(our_key(0, 1)).await;
         sandbox.check(|step| {
-            let shape = pick_ours(step, 0, 1);
+            let shape = step.custom_shape().unwrap();
             assert!(shape.cosigner && !shape.rescue);
             assert_eq!(step.paths[2].keys[0].as_ref(), Some(&pasted));
         });
 
         let (_ctx, sandbox) = build_your_own(Network::Testnet4).await;
         sandbox.update(add_rescue_path()).await;
+        sandbox.update(our_key(2, 0)).await;
         sandbox.check(|step| {
-            let shape = pick_ours(step, 2, 0);
             assert_eq!(
-                shape,
-                talia_keys::VaultShape {
+                step.custom_shape(),
+                Some(talia_keys::VaultShape {
                     config: talia_keys::VaultConfig::Single,
                     cosigner: false,
                     rescue: true,
                     heirs: vec![],
-                }
+                })
             );
         });
     }
 
     #[tokio::test]
-    async fn keys_for_a_slot_the_client_filled_meanwhile_are_refused() {
+    async fn our_cosigner_stays_last_and_its_cross_gives_the_slot_back() {
         let (_ctx, sandbox) = build_your_own(Network::Testnet4).await;
-        let (mine, mine2) = (test_key(1, "Mine"), test_key(2, "Mine 2"));
-        let cosigner = test_key(4, "21st Capital co-signer");
+        sandbox.update(add_key(0)).await;
+        sandbox.update(our_key(0, 0)).await;
+        sandbox.update(add_key(0)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths[0].keys.len(), 3);
+            assert_eq!(step.custom_cosigner_slot(), Some(2));
+        });
+        sandbox.update(delete_key(0, 2)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.paths[0].keys.len(), 2);
+            assert_eq!(step.custom_cosigner_slot(), None);
+            assert_eq!(step.custom_shape(), None);
+        });
+    }
+
+    #[tokio::test]
+    async fn a_changed_vault_drops_our_keys_or_refuses_a_late_answer() {
+        let (_ctx, sandbox) = build_your_own(Network::Testnet4).await;
+        let (mine, mine2, own_recovery) = (
+            test_key(1, "Mine"),
+            test_key(2, "Mine 2"),
+            test_key(3, "My recovery"),
+        );
+        let (cosigner, cosigner2) = (
+            test_key(4, "21st Capital co-signer"),
+            test_key(6, "21st Capital co-signer"),
+        );
+        sandbox.update(add_key(0)).await;
         sandbox.update(add_key(0)).await;
         sandbox.update(set_key(0, 0, &mine)).await;
-        sandbox.check(|step| {
-            pick_ours(step, 0, 1);
-        });
         sandbox.update(set_key(0, 1, &mine2)).await;
+        sandbox.update(set_key(1, 0, &own_recovery)).await;
+        sandbox.update(our_key(0, 2)).await;
+        sandbox.check(|step| {
+            assert_eq!(ask_website(step).config, talia_keys::VaultConfig::Multi2of2);
+        });
+        // 2 of 3 instead of 3 of 3 while the website is open: refused.
+        sandbox.update(threshold(0, 2)).await;
         sandbox.update(fetched(Some(&cosigner), None)).await;
         sandbox.check(|step| {
             assert!(matches!(step.keys_flow, KeysFlow::Failed(_)));
-            assert_eq!(step.paths[0].keys[1].as_ref(), Some(&mine2));
+            assert!(step.paths[0].keys[2].is_none());
             assert!(step.our_keys.is_empty());
+        });
+        // Fetched for the 2 of 3; back to 3 of 3, our key leaves its slot.
+        sandbox.check(|step| {
+            assert_eq!(ask_website(step).config, talia_keys::VaultConfig::Multi2of3);
+        });
+        sandbox.update(fetched(Some(&cosigner2), None)).await;
+        sandbox.check(|step| assert_eq!(step.paths[0].keys[2].as_ref(), Some(&cosigner2)));
+        sandbox.update(threshold(0, 3)).await;
+        sandbox.check(|step| {
+            assert!(step.paths[0].keys[2].is_none());
+            assert!(step.our_keys.is_empty());
+            assert!(matches!(step.keys_flow, KeysFlow::Idle));
+            assert_eq!(step.custom_cosigner_slot(), Some(2));
         });
     }
 }

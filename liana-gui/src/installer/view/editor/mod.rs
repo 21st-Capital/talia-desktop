@@ -246,6 +246,42 @@ pub fn undefined_key<'a>(
     .into()
 }
 
+/// Build your own: a slot reserved for one of 21st Capital's keys, filled by
+/// "Get my 21st Capital keys". The cross gives the slot back.
+pub fn our_key<'a>(
+    name: Option<&'a str>,
+    title: String,
+    removable: bool,
+) -> Element<'a, message::DefineKey> {
+    let delete_button = removable.then_some(btn_remove(Some(message::DefineKey::Delete)));
+    let label: Element<'a, message::DefineKey> = match name {
+        Some(name) => p1_bold(name).into(),
+        None => Column::new()
+            .spacing(5)
+            .push(p1_bold(title))
+            .push(new::caption(t!("installer-talia-slot-pending")).style(theme::text::secondary))
+            .into(),
+    };
+    card::simple(
+        Row::new()
+            .spacing(10)
+            .width(Length::Fill)
+            .align_y(Alignment::Center)
+            .push(
+                icon::round_key_icon()
+                    .size(H3_SIZE)
+                    .color(liana_ui::color::ORANGE),
+            )
+            .push(Container::new(label).width(Length::Fill))
+            .push_maybe(
+                name.is_some()
+                    .then(|| icon::check_icon().style(theme::text::success)),
+            )
+            .push_maybe(delete_button),
+    )
+    .into()
+}
+
 /// returns y,m,d,h,m
 fn duration_from_sequence(sequence: u16) -> (u32, u32, u32, u32, u32) {
     let mut n_minutes = sequence as u32 * 10;
