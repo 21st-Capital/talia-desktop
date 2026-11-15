@@ -2,6 +2,7 @@
 # (free for this public repository). Started by hand only (Actions tab, "Run
 # workflow"). Not code-signed (decided 2026-11-14): Windows shows "Windows
 # protected your PC" on first start; "More info" > "Run anyway".
+# The start-test job then opens the download on a clean Windows machine.
 name: Talia Desktop for Windows
 
 on:
@@ -39,3 +40,56 @@ jobs:
           name: talia-desktop-windows
           path: dist/
           if-no-files-found: error
+
+  # Starts the download above on a clean Windows machine, the way a client
+  # would: it must open its window and keep running. Screenshots are kept as
+  # the "talia-desktop-windows-screens" artifact. Does not cover the "Windows
+  # protected your PC" prompt (that only appears for files from a browser).
+  start-test:
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - name: Get the download
+        uses: actions/download-artifact@v4
+        with:
+          name: talia-desktop-windows
+          path: dist
+
+      - name: Start Talia Desktop and take screenshots
+        shell: pwsh
+        run: |
+          Add-Type -AssemblyName System.Windows.Forms, System.Drawing
+          function Shot($name) {
+            $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+            $img = New-Object System.Drawing.Bitmap $b.Width, $b.Height
+            $g = [System.Drawing.Graphics]::FromImage($img)
+            $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size)
+            $img.Save("screens\$name.png", [System.Drawing.Imaging.ImageFormat]::Png)
+            $g.Dispose(); $img.Dispose()
+          }
+          New-Item -ItemType Directory -Force screens | Out-Null
+          $exe = Get-ChildItem dist\*.exe | Select-Object -First 1
+          Write-Host "Starting $($exe.Name)"
+          $p = Start-Process -FilePath $exe.FullName -PassThru -RedirectStandardError screens\stderr.txt -RedirectStandardOutput screens\stdout.txt
+          Start-Sleep -Seconds 10; Shot "after-10s"
+          Start-Sleep -Seconds 20; Shot "after-30s"
+          if ($p.HasExited) {
+            Write-Host "::error::Talia Desktop closed by itself (exit code $($p.ExitCode))"
+            Get-Content screens\stderr.txt -Tail 40 -ErrorAction SilentlyContinue
+            exit 1
+          }
+          $p.Refresh()
+          $title = $p.MainWindowTitle
+          Write-Host "Window title: '$title'"
+          Write-Host "Data folder:"
+          Get-ChildItem "$env:APPDATA\Liana" -Recurse -ErrorAction SilentlyContinue |
+            Select-Object -First 20 | ForEach-Object { Write-Host "  $($_.FullName)" }
+          Stop-Process -Id $p.Id -Force
+          if (-not $title) { Write-Host "::error::Talia Desktop is running but shows no window"; exit 1 }
+
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: talia-desktop-windows-screens
+          path: screens/
