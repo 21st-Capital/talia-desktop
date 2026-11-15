@@ -1714,8 +1714,8 @@ installer-talia-event-heir => "After 8 to 15 months*" => "Nach 8 bis 15 Monaten*
 installer-talia-event-rescue => "After 15 months*" => "Nach 15 Monaten*"
 
 installer-talia-explain-2-2
-=> "Both keys are needed to spend, so losing one would lock your coins. A backup gets them back: an heir's key or the 21st Capital Rescue Key. Every vault needs at least one."
-=> "Zum Ausgeben braucht es beide Schlüssel. Geht einer verloren, wären Ihre Coins gesperrt. Ein Backup holt sie zurück: der Schlüssel eines Erben oder der 21st Capital Rescue-Schlüssel. Jeder Vault braucht mindestens eines davon.";;
+=> "Both keys are needed to spend, so losing one would lock your coins. A way back gets them back: a backup way in after a few months, an heir's key or the 21st Capital Rescue Key. Every vault needs at least one."
+=> "Zum Ausgeben braucht es beide Schlüssel. Geht einer verloren, wären Ihre Coins gesperrt. Ein Weg zurück holt sie wieder: ein Ersatzzugang nach einigen Monaten, der Schlüssel eines Erben oder der 21st Capital Rescue-Schlüssel. Jeder Vault braucht mindestens einen davon.";;
 
 installer-talia-explain-multi
 => "You can add heirs, each with their own key that works after 8 to 15 months, and the 21st Capital Rescue Key, which works after 15 months. Every vault needs at least one of them as a backup."
