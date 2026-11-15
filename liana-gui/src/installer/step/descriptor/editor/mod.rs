@@ -720,9 +720,28 @@ impl DefineDescriptor {
             Message::DefineDescriptor(message::DefineDescriptor::AddSafetyNetPath) => {
                 if !self.paths.iter().any(|p| p.kind() == PathKind::SafetyNet) {
                     self.paths.push(Path::new_safety_net_path());
+                    // Build your own: the Rescue Key comes from our website
+                    // unless the client puts another key there (decided
+                    // 2026-11-15).
+                    if self.talia.is_none() && talia_keys::contract_network(self.network).is_some()
+                    {
+                        self.custom_rescue = true;
+                    }
                 }
             }
             Message::DefineDescriptor(message::DefineDescriptor::KeysEdited(coordinates, key)) => {
+                // Build your own: a key put in a reserved slot ends the
+                // reservation.
+                if !matches!(key, key::SelectedKey::None) {
+                    for (i, j) in &coordinates {
+                        if *i == 0 && Some(*j) == self.custom_cosigner_slot() {
+                            self.custom_cosigner = false;
+                        }
+                        if Some(*i) == self.custom_rescue_path() {
+                            self.custom_rescue = false;
+                        }
+                    }
+                }
                 match key {
                     key::SelectedKey::Existing(fingerprint) => {
                         if let Some(existing_key) = self.keys.get(&fingerprint) {
@@ -1952,8 +1971,11 @@ mod tests {
             assert!(!data.manual_only);
             assert_eq!(step.paths[2].kind(), PathKind::SafetyNet);
             assert_eq!(step.paths[2].sequence.as_u16(), 65_535);
+            // "Add Rescue Key" reserves its slot for ours at once; Edit on it
+            // offers a pasted or imported key instead.
+            assert_eq!(step.custom_rescue_path(), Some(2));
             let data = step.path_data(PathKind::SafetyNet, vec![(2, 0)]);
-            assert_eq!(data.ours, Some(key::OurKeyOffer::Rescue));
+            assert_eq!(data.ours, None);
             assert!(data.token_kind.is_empty());
             assert!(data.manual_only);
         });
@@ -1972,6 +1994,44 @@ mod tests {
         sandbox.check(|step| {
             assert_eq!(step.path_data(PathKind::Primary, vec![(0, 1)]).ours, None);
             assert_eq!(step.path_data(PathKind::SafetyNet, vec![(2, 0)]).ours, None);
+            assert_eq!(step.custom_rescue_path(), None);
+        });
+    }
+
+    #[tokio::test]
+    async fn a_pasted_key_replaces_the_reserved_rescue_key() {
+        let (_ctx, sandbox) = build_your_own(Network::Testnet4).await;
+        let mine = test_key(1, "Mine");
+        let pasted = test_key(5, "Rescue Key, pasted");
+        let (cosigner, rescue) = (
+            test_key(4, "21st Capital co-signer"),
+            test_key(7, "21st Capital Rescue Key"),
+        );
+        sandbox.update(add_key(0)).await;
+        sandbox.update(set_key(0, 0, &mine)).await;
+        sandbox.update(our_key(0, 1)).await;
+        sandbox.update(add_rescue_path()).await;
+        sandbox.check(|step| {
+            let shape = ask_website(step);
+            assert!(shape.cosigner && shape.rescue);
+        });
+        sandbox
+            .update(fetched(Some(&cosigner), Some(&rescue)))
+            .await;
+        // Edit on the Rescue Key's slot, then a pasted key.
+        sandbox.update(set_key(2, 0, &pasted)).await;
+        sandbox.check(|step| {
+            assert_eq!(step.custom_rescue_path(), None);
+            assert_eq!(step.paths[2].keys[0].as_ref(), Some(&pasted));
+            // Our co-signer came as a pair with our Rescue Key: it goes too,
+            // and the next press fetches the co-signer alone.
+            assert!(step.paths[0].keys[1].is_none());
+            assert!(step.our_keys.is_empty());
+            let shape = step.custom_shape().unwrap();
+            assert!(shape.cosigner && !shape.rescue);
+            // Edit on the pasted key offers ours again.
+            let data = step.path_data(PathKind::SafetyNet, vec![(2, 0)]);
+            assert_eq!(data.ours, Some(key::OurKeyOffer::Rescue));
         });
     }
 

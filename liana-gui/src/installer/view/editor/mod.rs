@@ -247,12 +247,14 @@ pub fn undefined_key<'a>(
 }
 
 /// Build your own: a slot reserved for one of 21st Capital's keys, filled by
-/// "Get my 21st Capital keys". The cross gives the slot back.
+/// "Get my 21st Capital keys". Edit puts another key there instead (a pasted
+/// one, say); the cross gives the slot back.
 pub fn our_key<'a>(
     name: Option<&'a str>,
     title: String,
     removable: bool,
 ) -> Element<'a, message::DefineKey> {
+    let edit_button = btn_edit(Some(message::DefineKey::Edit));
     let delete_button = removable.then_some(btn_remove(Some(message::DefineKey::Delete)));
     let label: Element<'a, message::DefineKey> = match name {
         Some(name) => p1_bold(name).into(),
@@ -277,6 +279,7 @@ pub fn our_key<'a>(
                 name.is_some()
                     .then(|| icon::check_icon().style(theme::text::success)),
             )
+            .push(edit_button)
             .push_maybe(delete_button),
     )
     .into()
