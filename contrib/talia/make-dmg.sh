@@ -2,7 +2,8 @@
 # Pack "Talia Desktop.app" into the install .dmg: the app, an Applications
 # shortcut and the drag-across background (contrib/talia/macos/dmg/).
 # Usage: contrib/talia/make-dmg.sh <path to Talia Desktop.app> <out.dmg> [volume name]
-# Needs a Python with dmgbuild (pip install dmgbuild); PYTHON can point at it.
+# Needs a Python with dmgbuild 1.x (pip install 'dmgbuild<2': 2.0 dropped the UDRW
+# format this script writes first); PYTHON can point at it.
 # Sign and notarise the app BEFORE packing it.
 set -euo pipefail
 
