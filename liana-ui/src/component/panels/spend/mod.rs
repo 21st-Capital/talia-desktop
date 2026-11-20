@@ -259,7 +259,17 @@ pub enum SmartFee<M> {
         on_low: M,
         on_medium: Option<M>,
         on_high: M,
+        /// Talia: each preset's rate in sat/vB, shown on its button.
+        rates: FeeRates,
     },
+}
+
+/// Talia: the Slow / Medium / High rates in sat/vB.
+#[derive(Debug, Clone, Copy)]
+pub struct FeeRates {
+    pub low: u64,
+    pub medium: Option<u64>,
+    pub high: u64,
 }
 
 pub fn fee_rate_row<'a, M: Clone + 'static, F: Fn(Amount) -> FiatAmount>(
@@ -295,19 +305,24 @@ pub fn fee_rate_row<'a, M: Clone + 'static, F: Fn(Amount) -> FiatAmount>(
         .into()
     };
 
-    let level_buttons =
-        |level: FeeLevel, on_low: M, on_medium: Option<M>, on_high: M| -> Element<'a, M> {
-            let low = button::btn_low(level == FeeLevel::Low, Some(on_low));
-            let high = button::btn_high(level == FeeLevel::High, Some(on_high));
-            let mut buttons = row![low].spacing(5).align_y(Alignment::Center);
-            if let Some(on_medium) = on_medium {
-                buttons = buttons.push(button::btn_medium(
-                    level == FeeLevel::Medium,
-                    Some(on_medium),
-                ));
-            }
-            buttons.push(high).into()
-        };
+    let level_buttons = |level: FeeLevel,
+                         on_low: M,
+                         on_medium: Option<M>,
+                         on_high: M,
+                         rates: FeeRates|
+     -> Element<'a, M> {
+        let low = button::btn_low(level == FeeLevel::Low, Some(rates.low), Some(on_low));
+        let high = button::btn_high(level == FeeLevel::High, Some(rates.high), Some(on_high));
+        let mut buttons = row![low].spacing(5).align_y(Alignment::Center);
+        if let Some(on_medium) = on_medium {
+            buttons = buttons.push(button::btn_medium(
+                level == FeeLevel::Medium,
+                rates.medium,
+                Some(on_medium),
+            ));
+        }
+        buttons.push(high).into()
+    };
 
     let is_smart = matches!(smart_fee, Some(SmartFee::Smart { .. }));
     let (selector, entry): (Option<Element<'a, M>>, Element<'a, M>) = match smart_fee {
@@ -319,9 +334,10 @@ pub fn fee_rate_row<'a, M: Clone + 'static, F: Fn(Amount) -> FiatAmount>(
             on_low,
             on_medium,
             on_high,
+            rates,
         }) => (
             Some(mode_selector(false, on_manual)),
-            level_buttons(level, on_low, on_medium, on_high),
+            level_buttons(level, on_low, on_medium, on_high, rates),
         ),
     };
 
@@ -351,8 +367,13 @@ pub fn fee_rate_row<'a, M: Clone + 'static, F: Fn(Amount) -> FiatAmount>(
                 .wrap(),
         ]
     } else {
+        // Talia: the preset buttons carry their rate on a second line.
         column![row![label, selector, entry, fee]
-            .height(40.0)
+            .height(if is_smart {
+                Length::Shrink
+            } else {
+                Length::Fixed(40.0)
+            })
             .align_y(Alignment::Center)
             .spacing(h_spacer)]
     };

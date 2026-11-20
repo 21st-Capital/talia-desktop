@@ -3,7 +3,9 @@ use std::fmt::Display;
 use super::{
     modal::BTN_W,
     text::{
-        new::{button_text, button_text_compact, caption, d2, BUTTON_TEXT_COMPACT_SPEC},
+        new::{
+            button_text, button_text_compact, caption, d2, small_caption, BUTTON_TEXT_COMPACT_SPEC,
+        },
         text,
     },
     tooltip,
@@ -477,29 +479,63 @@ pub fn btn_secondary<'a, T: Clone + 'a>(
     btn
 }
 
+/// Talia: a fee preset shows its rate under its name, as Talia on the iPhone
+/// does (decided 2026-11-20). Without a rate it is Liana's one-line button.
+const FEERATE_BTN_PADDING: [u16; 2] = [5 /* Top/Bottom */, 8 /* Left/Right */];
+
 fn btn_feerate<'a, T: Clone + 'a>(
     label: impl Display,
+    rate: Option<u64>,
     selected: bool,
     msg: Option<T>,
 ) -> Button<'a, T> {
-    let btn = if selected {
-        button_compact(label, theme::button::feerate, msg)
+    let style: fn(&Theme, Status) -> Style = if selected {
+        theme::button::feerate
     } else {
-        button_compact(label, theme::button::feerate_unselected, msg)
+        theme::button::feerate_unselected
     };
-    btn.width(BtnWidth::S)
+    let Some(rate) = rate else {
+        return button_compact(label, style, msg).width(BtnWidth::S);
+    };
+    let face = iced::widget::column![
+        button_text_compact(label),
+        small_caption(t!("spend-fee-level-rate", rate = rate.to_string())),
+    ]
+    .align_x(Horizontal::Center);
+    Button::new(
+        container(face)
+            .align_x(Horizontal::Center)
+            .width(Length::Fill)
+            .padding(FEERATE_BTN_PADDING),
+    )
+    .style(style)
+    .padding(0)
+    .on_press_maybe(msg)
+    .width(BtnWidth::S)
 }
 
-pub fn btn_low<'a, T: Clone + 'a>(selected: bool, msg: Option<T>) -> Button<'a, T> {
-    btn_feerate(t!("btn-fee-level-low"), selected, msg)
+pub fn btn_low<'a, T: Clone + 'a>(
+    selected: bool,
+    rate: Option<u64>,
+    msg: Option<T>,
+) -> Button<'a, T> {
+    btn_feerate(t!("btn-fee-level-low"), rate, selected, msg)
 }
 
-pub fn btn_medium<'a, T: Clone + 'a>(selected: bool, msg: Option<T>) -> Button<'a, T> {
-    btn_feerate(t!("btn-fee-level-medium"), selected, msg)
+pub fn btn_medium<'a, T: Clone + 'a>(
+    selected: bool,
+    rate: Option<u64>,
+    msg: Option<T>,
+) -> Button<'a, T> {
+    btn_feerate(t!("btn-fee-level-medium"), rate, selected, msg)
 }
 
-pub fn btn_high<'a, T: Clone + 'a>(selected: bool, msg: Option<T>) -> Button<'a, T> {
-    btn_feerate(t!("btn-fee-level-high"), selected, msg)
+pub fn btn_high<'a, T: Clone + 'a>(
+    selected: bool,
+    rate: Option<u64>,
+    msg: Option<T>,
+) -> Button<'a, T> {
+    btn_feerate(t!("btn-fee-level-high"), rate, selected, msg)
 }
 
 fn btn_with_tooltip<'a, T: Clone + 'a>(

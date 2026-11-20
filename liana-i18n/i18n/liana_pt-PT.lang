@@ -85,7 +85,7 @@ btn-export => "Export" => "Exportar"
 
 btn-fee-level-high => "High" => "Elevada"
 
-btn-fee-level-low => "Low" => "Baixa"
+btn-fee-level-low => "Slow" => "Baixa"
 
 btn-fee-level-medium => "Medium" => "Média"
 
@@ -2625,9 +2625,11 @@ spend-dust-select-more-coins
 
 spend-fee => "Fee:" => "Taxa:"
 
+spend-fee-level-rate => "{$rate} sat/vB" => "{$rate} sat/vB"
+
 spend-fee-manual => "Manual" => "Manual"
 
-spend-fee-rate => "Fee ({$feerate} sats/vb):" => "Taxa ({$feerate} sats/vb):"
+spend-fee-rate => "Fee ({$feerate} sat/vB):" => "Taxa ({$feerate} sat/vB):"
 
 spend-fee-smart-select => "Smart select" => "Seleção inteligente"
 
@@ -2637,7 +2639,7 @@ spend-fee-smart-select-tooltip
 
 spend-feerate => "Feerate:" => "Taxa:"
 
-spend-feerate-example => "e.g. 5 (in sats/vb)" => "ex.: 5 (em sats/vb)"
+spend-feerate-example => "e.g. 5 (in sat/vB)" => "ex.: 5 (em sat/vB)"
 
 spend-feerate-max-warning
 => "Feerate must be an integer less than or equal to {$max_feerate} sats/vbyte"

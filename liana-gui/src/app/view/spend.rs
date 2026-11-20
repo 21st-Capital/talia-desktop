@@ -178,6 +178,11 @@ pub fn create_spend_tx<'a>(
             on_high: Message::CreateSpend(CreateSpendMessage::SelectFeeLevel(
                 spend::FeeLevel::High,
             )),
+            rates: spend::FeeRates {
+                low: est.low,
+                medium: est.medium,
+                high: est.high,
+            },
         },
     });
     let to_fiat = fiat_converter.map(|conv| move |a: Amount| conv.convert(a));

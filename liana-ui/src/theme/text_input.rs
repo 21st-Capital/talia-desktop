@@ -27,19 +27,31 @@ pub fn invalid(theme: &Theme, status: Status) -> Style {
     text_input(&theme.colors.text_inputs.invalid, status)
 }
 
+/// Talia takes the placeholder from its field palette, so it stays readable on the
+/// field fill; Liana Business keeps its own.
+fn placeholder(theme: &Theme, style: Style) -> iced::Color {
+    if theme.is_business() {
+        crate::color::FORM_PLACEHOLDER
+    } else {
+        style.placeholder
+    }
+}
+
 pub fn form(theme: &Theme, status: Status) -> Style {
+    let style = primary(theme, status);
     Style {
-        placeholder: crate::color::FORM_PLACEHOLDER,
-        ..primary(theme, status)
+        placeholder: placeholder(theme, style),
+        ..style
     }
 }
 
 pub fn fee(theme: &Theme, status: Status) -> Style {
+    let style = primary(theme, status);
     Style {
         background: Background::Color(crate::color::TRANSPARENT),
         border: Border::default(),
-        placeholder: crate::color::FORM_PLACEHOLDER,
-        ..primary(theme, status)
+        placeholder: placeholder(theme, style),
+        ..style
     }
 }
 

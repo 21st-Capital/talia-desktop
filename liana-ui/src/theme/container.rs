@@ -123,6 +123,20 @@ pub fn tab_menu_panel(theme: &Theme) -> Style {
 }
 
 pub fn form_field(theme: &Theme) -> Style {
+    // Talia: the feerate box is drawn exactly like every other text field.
+    if !theme.is_business() {
+        let field = theme.colors.text_inputs.primary.active;
+        return Style {
+            background: Some(Background::Color(field.background)),
+            border: Border {
+                radius: 4.0.into(),
+                width: 1.0,
+                color: field.border.unwrap_or(color::TRANSPARENT),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+    }
     let fill = theme.colors.general.form_field_background;
     let glass = !theme.is_business() && gloss::is_glass(fill);
     Style {

@@ -44,7 +44,7 @@ use crate::{
         settings::{LianaSettings, SettingsTrait, SettingsUI, WalletId},
         wallet::Wallet,
     },
-    daemon::{embedded::EmbeddedDaemon, Daemon, DaemonBackend, DaemonError},
+    daemon::{embedded::EmbeddedDaemon, Daemon, DaemonBackend, DaemonError, FeerateEstimate},
     dir::LianaDirectory,
     node::{bitcoind::Bitcoind, NodeType},
 };
@@ -167,7 +167,17 @@ pub struct App<S: SettingsTrait = LianaSettings> {
     internal_bitcoind: Option<Bitcoind>,
 
     panels: Panels<S>,
+
+    /// Talia: Send fee presets from mempool.space (see `services::fees`), kept apart
+    /// from Liana Connect's so a price update never wipes them.
+    mempool_feerate: Option<FeerateEstimate>,
+    mempool_feerate_asked: Option<std::time::Instant>,
+    backend_feerate: Option<FeerateEstimate>,
 }
+
+/// Talia: how often the fee presets are asked for again while a Send screen is open
+/// (the iPhone app keeps them for a minute too).
+const FEE_PRESETS_REFRESH: Duration = Duration::from_secs(60);
 
 /// Type alias for the standard Liana application.
 pub type LianaApp = App<LianaSettings>;
@@ -217,6 +227,9 @@ impl<S: SettingsTrait> App<S> {
                 daemon,
                 wallet,
                 internal_bitcoind,
+                mempool_feerate: None,
+                mempool_feerate_asked: None,
+                backend_feerate: None,
             },
             cmd,
         )
@@ -237,6 +250,15 @@ impl<S: SettingsTrait> App<S> {
 
     pub fn cache(&self) -> &Cache {
         &self.cache
+    }
+
+    /// Talia: mempool.space's presets (as on the iPhone) win; Liana Connect's are the
+    /// fallback. Returns whether the presets the screens see changed.
+    fn refresh_feerate_estimate(&mut self) -> bool {
+        let est = self.mempool_feerate.or(self.backend_feerate);
+        let changed = self.cache.feerate_estimate != est;
+        self.cache.feerate_estimate = est;
+        changed
     }
 
     pub fn wallet(&self) -> &Wallet {
@@ -408,6 +430,23 @@ impl<S: SettingsTrait> App<S> {
             ));
         }
 
+        // Talia: Send fee presets from mempool.space while a Send or recovery screen is
+        // open, asked for again each minute. The request carries no wallet data.
+        if matches!(
+            self.panels.current,
+            Menu::CreateSpendTx | Menu::Recovery | Menu::RefreshCoins(_)
+        ) && crate::services::fees::supported(self.cache.network)
+            && self
+                .mempool_feerate_asked
+                .is_none_or(|asked| asked.elapsed() >= FEE_PRESETS_REFRESH)
+        {
+            self.mempool_feerate_asked = Some(tick);
+            tasks.push(Task::perform(
+                crate::services::fees::fetch(self.cache.network),
+                Message::TaliaFees,
+            ));
+        }
+
         // Fiat price fetching from backend (for remote backend wallets).
         let is_remote = self.daemon.backend().is_remote();
         let has_fiat_setting = self
@@ -489,9 +528,23 @@ impl<S: SettingsTrait> App<S> {
 
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
+            Message::TaliaFees(est) => {
+                // A failed refresh keeps the last presets that arrived.
+                if est.is_some() {
+                    self.mempool_feerate = est;
+                }
+                if self.refresh_feerate_estimate() {
+                    return self.panels.current_mut().update(
+                        self.daemon.clone(),
+                        &self.cache,
+                        Message::FeePresetsUpdated,
+                    );
+                }
+                Task::none()
+            }
             Message::Fiat(FiatMessage::GetPriceResult(fiat_price, feerate)) => {
-                let feerate_changed = self.cache.feerate_estimate != feerate;
-                self.cache.feerate_estimate = feerate;
+                self.backend_feerate = feerate;
+                let feerate_changed = self.refresh_feerate_estimate();
                 let relevant = self.wallet.fiat_price_is_relevant(&fiat_price);
                 tracing::trace!(
                     "Fiat: GetPriceResult received, relevant={}, res={:?}",

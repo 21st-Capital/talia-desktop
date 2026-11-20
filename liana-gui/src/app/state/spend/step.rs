@@ -218,7 +218,8 @@ impl DefineSpend {
             is_valid: false,
             is_duplicate: false,
             feerate: form::Value::default(),
-            fee_mode: FeeMode::Smart(FeeLevel::Low),
+            // Talia: Medium first, as on the iPhone.
+            fee_mode: FeeMode::Smart(FeeLevel::Medium),
             fee_amount: None,
             amount_left_to_select: None,
             warning: None,
@@ -299,6 +300,24 @@ impl DefineSpend {
             }
         }
         false
+    }
+
+    /// Puts the chosen preset's rate in the feerate box when a preset is selected.
+    /// Returns whether the box changed.
+    fn apply_fee_preset(&mut self, cache: &Cache) -> bool {
+        let (FeeMode::Smart(level), Some(est)) = (self.fee_mode, cache.feerate_estimate) else {
+            return false;
+        };
+        let value = match level {
+            FeeLevel::Low => est.low,
+            FeeLevel::Medium => est.medium.unwrap_or(est.low),
+            FeeLevel::High => est.high,
+        };
+        let text = value.to_string();
+        let changed = self.feerate.value != text;
+        self.feerate.value = text;
+        self.feerate.valid = (MIN_FEERATE_VB..=MAX_FEERATE_VB).contains(&value);
+        changed
     }
 
     fn check_valid(&mut self) {
@@ -701,7 +720,7 @@ impl Step for DefineSpend {
                         self.warning = None;
                     }
                     view::CreateSpendMessage::FeeModeSmart => {
-                        self.fee_mode = FeeMode::Smart(FeeLevel::Low);
+                        self.fee_mode = FeeMode::Smart(FeeLevel::Medium);
                         self.warning = None;
                     }
                     view::CreateSpendMessage::SelectFeeLevel(level) => {
@@ -810,16 +829,7 @@ impl Step for DefineSpend {
                     _ => {}
                 }
 
-                if let (FeeMode::Smart(level), Some(est)) = (self.fee_mode, cache.feerate_estimate)
-                {
-                    let value = match level {
-                        FeeLevel::Low => est.low,
-                        FeeLevel::Medium => est.medium.unwrap_or(est.low),
-                        FeeLevel::High => est.high,
-                    };
-                    self.feerate.value = value.to_string();
-                    self.feerate.valid = (MIN_FEERATE_VB..=MAX_FEERATE_VB).contains(&value);
-                }
+                self.apply_fee_preset(cache);
 
                 // Attempt to select coins automatically if:
                 // - all form values have been added and validated
@@ -867,6 +877,14 @@ impl Step for DefineSpend {
                 }
                 (Err(e), _) | (Ok(_), Err(e)) => self.warning = Some(e),
             },
+            // Talia: presets that arrive (or change) while the screen is open fill the
+            // feerate box at once, without waiting for the next edit.
+            Message::FeePresetsUpdated => {
+                if self.apply_fee_preset(cache) {
+                    self.redraft(daemon);
+                    self.check_valid();
+                }
+            }
             _ => {}
         };
         Task::none()

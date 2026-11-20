@@ -34,6 +34,10 @@ pub enum Message {
     CacheUpdated,
     RbfChecked(Result<CheckRbfResult, String>),
     Fiat(FiatMessage),
+    /// Talia: the Send screen's fee presets fetched from mempool.space (`None` = no answer).
+    TaliaFees(Option<FeerateEstimate>),
+    /// Talia: sent to the open panel when the fee presets in the cache changed.
+    FeePresetsUpdated,
     UpdatePanelCache(/* is current panel */ bool),
     View(view::Message),
     LoadDaemonConfig(Box<DaemonConfig>),
