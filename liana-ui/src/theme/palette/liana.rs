@@ -47,7 +47,12 @@ color!(BTN_SECONDARY_RIM, 0x3F534B);
 // colours, because a see-through card shows whatever Liana draws behind it.
 color!(CARD_BGD, 0x173029);
 color!(CARD_EDGE, 0x273E38);
-color!(FIELD_BGD, 0x233A34);
+// Text fields (option B2, picked 2026-11-19): a solid box clearly lighter than the cards
+// and the page, with a light edge, so every field shows wherever it sits.
+color!(FIELD_BGD, 0x35554B);
+color!(FIELD_EDGE, 0x5A776C);
+const FIELD_PLACEHOLDER: Color = TIMELINE_LOCKED_INK;
+const FIELD_TEXT: Color = BTN_SECONDARY_INK;
 // The sidebar and the top bar, and the sidebar's hovered and selected item.
 color!(MENU_BGD, 0x01120F);
 color!(MENU_HOVER_BGD, 0x12221E);
@@ -756,35 +761,35 @@ impl Palette {
             text_inputs: TextInputs {
                 primary: TextInput {
                     active: TextInputPalette {
-                        background: color::TRANSPARENT,
+                        background: FIELD_BGD,
                         icon: color::TRANSPARENT,
-                        placeholder: color::GREY_3,
-                        value: color::GREY_2,
+                        placeholder: FIELD_PLACEHOLDER,
+                        value: FIELD_TEXT,
                         selection: color::TRANSPARENT_GREEN,
-                        border: Some(color::GREY_7),
+                        border: Some(FIELD_EDGE),
                     },
                     disabled: TextInputPalette {
-                        background: color::TRANSPARENT,
+                        background: FIELD_BGD,
                         icon: color::TRANSPARENT,
-                        placeholder: color::GREY_3,
-                        value: color::GREY_2,
+                        placeholder: FIELD_PLACEHOLDER,
+                        value: FIELD_TEXT,
                         selection: color::TRANSPARENT_GREEN,
-                        border: Some(color::GREY_7),
+                        border: Some(FIELD_EDGE),
                     },
                 },
                 invalid: TextInput {
                     active: TextInputPalette {
-                        background: color::TRANSPARENT,
+                        background: FIELD_BGD,
                         icon: color::TRANSPARENT,
-                        placeholder: color::GREY_3,
-                        value: color::GREY_2,
+                        placeholder: FIELD_PLACEHOLDER,
+                        value: FIELD_TEXT,
                         selection: color::TRANSPARENT_GREEN,
                         border: Some(color::RED),
                     },
                     disabled: TextInputPalette {
-                        background: color::TRANSPARENT,
+                        background: FIELD_BGD,
                         icon: color::TRANSPARENT,
-                        placeholder: color::GREY_3,
+                        placeholder: FIELD_PLACEHOLDER,
                         value: color::TRANSPARENT,
                         selection: color::TRANSPARENT_GREEN,
                         border: Some(color::RED),

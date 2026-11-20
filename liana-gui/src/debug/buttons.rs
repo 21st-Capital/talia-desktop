@@ -251,10 +251,10 @@ fn widths() -> Vec<Entry> {
 #[rustfmt::skip]
 fn feerate_links() -> Vec<Entry> {
     vec![
-        opt("btn_low(false, msg)",                |m| btn::btn_low(false, m)),
-        opt("btn_low(true, msg)",                 |m| btn::btn_low(true, m)),
-        opt("btn_medium(true, msg)",              |m| btn::btn_medium(true, m)),
-        opt("btn_high(true, msg)",                |m| btn::btn_high(true, m)),
+        opt("btn_low(false, msg)",                |m| btn::btn_low(false, Some(1), m)),
+        opt("btn_low(true, msg)",                 |m| btn::btn_low(true, Some(1), m)),
+        opt("btn_medium(true, msg)",              |m| btn::btn_medium(true, Some(2), m)),
+        opt("btn_high(true, msg)",                |m| btn::btn_high(true, Some(12), m)),
         opt("subtle_link(\"Sample\", msg)",       |m| btn::subtle_link("Sample", m)),
         opt("subtle_link_small(\"Sample\", msg)", |m| btn::subtle_link_small("Sample", m)),
         opt("btn_help_link(\"Sample\", msg)",     |m| btn::btn_help_link("Sample", m)),
