@@ -432,10 +432,32 @@ impl DefineSpend {
             outpoints
         } else if !self.is_user_coin_selection && self.send_max_to_recipient.is_some() {
             // If user has not selected coins, send the max available from all owned coins.
-            self.coins
+            let owned: Vec<_> = self
+                .coins
                 .iter()
                 .filter_map(|(c, _)| coin_is_owned(c).then_some(c.outpoint))
-                .collect()
+                .collect();
+            if owned.is_empty() {
+                // Talia: no owned coin to send (e.g. the only coin is an unconfirmed
+                // deposit from someone else). Asking the daemon anyway sends no coins and,
+                // when the max recipient is the only one, no destinations either, which it
+                // reads as a self-transfer without coins ("No provided outpoint for
+                // self-send"). Show the same state as a balance below the dust limit.
+                handle_max_under_dust(
+                    &mut self.fee_amount,
+                    self.is_user_coin_selection,
+                    self.recovery_timelock.is_none(),
+                    &mut self.coins,
+                    recipient_with_max,
+                    &mut self.amount_left_to_select,
+                    &mut self.warning,
+                    None,
+                    total_recipients,
+                    self.network,
+                );
+                return;
+            }
+            owned
         } else {
             Vec::new() // pass empty list for auto-selection
         };
@@ -484,6 +506,10 @@ impl DefineSpend {
             }
         }) {
             Ok(CreateSpendResult::Success { psbt, .. }) => {
+                // Talia: the draft went through, so an error banner left by an earlier
+                // attempt is out of date. Kept, it blocked Continue until the fee setting
+                // was touched (its handlers are the ones that clear the banner).
+                self.warning = None;
                 self.fee_amount = Some(psbt.fee().expect("Valid fees"));
                 // Update selected coins for auto-selection (non-recovery case).
                 if !self.is_user_coin_selection && self.recovery_timelock.is_none() {
@@ -553,6 +579,9 @@ fn handle_max_under_dust(
     network: Network,
 ) {
     *fee_amount = None;
+    // Talia: the screen shows why it cannot continue (dust warning or amount left to
+    // select), so an older error banner is out of date in both cases.
+    *warning = None;
     let missing = missing.unwrap_or(DUST_OUTPUT_SATS);
     let mut selected_coins = 0;
     // To be sure, we exclude recovery transactions here, although they
@@ -591,7 +620,6 @@ fn handle_max_under_dust(
             recipient.estimated_max = Some(Amount::from_sat(DUST_OUTPUT_SATS - missing));
         }
     } else {
-        *warning = None;
         *amount_left_to_select = Some(Amount::from_sat(missing));
     }
 }
@@ -1421,4 +1449,168 @@ fn recovery_paths(wallet: &Wallet, coins: &[Coin], tip_height: i32) -> Vec<Recov
             }
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{
+        daemon::{client::Lianad, DaemonError, FeerateEstimate},
+        utils::mock::Daemon as MockDaemon,
+    };
+
+    use liana::descriptors::LianaDescriptor;
+    use serde_json::json;
+
+    const DESC: &str = "wsh(or_d(multi(2,[f714c228/48'/1'/0'/2']tpubDEwJnTwfKoMvu8AXXBPydBVWDpzNP5tatjjZ56q4TQioGL7iL9xzTbMoCCQ3tfGihtff7vtR4xsjcRuhZ7HWARVAkGZ1HZcpBhVdou76k7j/<0;1>/*,[2522f23c/48'/1'/0'/2']tpubDEoTU4bDW1EXN1rnLXnRfue1a7DeqjJcs39PkEeLcVXhVKzCnFo9yQX2EeeXJ6kh4hgbz5o9v7YAc1EE97AEJpJbKNmDxE3ZQo4msGPSp2J/<0;1>/*),and_v(v:thresh(1,pkh([f714c228/48'/1'/0'/2']tpubDEwJnTwfKoMvu8AXXBPydBVWDpzNP5tatjjZ56q4TQioGL7iL9xzTbMoCCQ3tfGihtff7vtR4xsjcRuhZ7HWARVAkGZ1HZcpBhVdou76k7j/<2;3>/*),a:pkh([2522f23c/48'/1'/0'/2']tpubDEoTU4bDW1EXN1rnLXnRfue1a7DeqjJcs39PkEeLcVXhVKzCnFo9yQX2EeeXJ6kh4hgbz5o9v7YAc1EE97AEJpJbKNmDxE3ZQo4msGPSp2J/<2;3>/*)),older(65535))))#9s8ekrce";
+
+    fn send_message(msg: view::CreateSpendMessage) -> Message {
+        Message::View(view::Message::CreateSpend(msg))
+    }
+
+    /// "Send max" (Alles versenden) when the wallet's only coin is an unconfirmed deposit from
+    /// someone else: there is no owned coin to send, so the screen shows the dust warning and
+    /// never asks the daemon (it used to answer "No provided outpoint for self-send").
+    #[test]
+    fn send_max_without_owned_coins_asks_no_spend() {
+        // `redraft` blocks on the current runtime, so the test runs outside of one.
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
+        let _guard = rt.enter();
+        // No request is mocked: any call to the daemon fails the test.
+        let daemon: Arc<dyn Daemon + Sync + Send> =
+            Arc::new(Lianad::new(MockDaemon::new(Vec::new()).run()));
+
+        let unconfirmed_from_others: Coin = serde_json::from_value(json!({
+            "amount": 8944,
+            "outpoint": "fa5bf9974ae9ab08b64da24f17e80a5689540a7e73335faea05bbc563bfe31cd:1",
+            "address": "tb1qjeqflw8e3rn60mc6x6c2ece3ekufv4xeytjtu35hwpctrmgn4w0s3dcxh5",
+            "block_height": null,
+            "derivation_index": 0,
+            "is_immature": false,
+            "is_change": false,
+            "is_from_self": false,
+        }))
+        .unwrap();
+        let wallet = Arc::new(Wallet::new(LianaDescriptor::from_str(DESC).unwrap()));
+        let mut step = DefineSpend::new(
+            Network::Testnet,
+            wallet,
+            &[unconfirmed_from_others],
+            1000,
+            None,
+            true,
+        );
+        let cache = Cache {
+            network: Network::Testnet,
+            feerate_estimate: Some(FeerateEstimate {
+                low: 1,
+                medium: Some(1),
+                high: 1,
+            }),
+            ..Cache::default()
+        };
+
+        let _ = step.update(
+            daemon.clone(),
+            &cache,
+            send_message(view::CreateSpendMessage::RecipientEdited(
+                0,
+                "address",
+                "tb1qk59m7lq0ljkssjws36c99qzr8d9u66mevzcy53pz8m45ece8qhzs6alndx".to_string(),
+            )),
+        );
+        let _ = step.update(
+            daemon.clone(),
+            &cache,
+            send_message(view::CreateSpendMessage::SendMaxToRecipient(0)),
+        );
+
+        assert!(step.warning.is_none(), "{:?}", step.warning);
+        assert_eq!(
+            step.recipients[0].dust_warning,
+            Some(DustWarning::SelectMoreCoins)
+        );
+        assert!(!step.is_valid);
+    }
+
+    /// An error banner from one draft attempt goes once a later draft works. It used to
+    /// stay, and with it Continue stayed off, until the fee setting was touched.
+    #[test]
+    fn a_working_draft_clears_an_earlier_error() {
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .unwrap();
+        let _guard = rt.enter();
+        let psbt = "cHNidP8BAIkCAAAAAc0x/jtWvFugrl8zc34KVIlWCugXT6JNtgir6UqX+Vv6AQAAAAD9////AkBCDwAAAAAAIgAgtQu/fA/8rQhJ0I6wUoBDO0vNa3lgsEpEIj7rTOMnBcXuIEkBAAAAACIAIOdCiXh7yL2V/f6S6KMTOzgqKkqyIXgmFuwDnmXbIiosAAAAAAABAP04AQIAAAAAAQKYYriMs/PtSqm6LPNWWFYskTL6nWZegJdwxYcVCRn8vwEAAAAA/f///87D7dkdgMd1Laj/v6xspNRtrQXGP+8BPFMLqkeBb6MRAQAAAAD9////AuGQDgAAAAAAIlEg7DgdNxI7WybaPUZXcMCh+uN1E4X8E5DzJIlj83S+tIMQZFgBAAAAACIAIJZAn7j5iOen7xo2sKzjMc24llTZIuS+RpdwcLHtE6ufAUCksqYUJBbHB9x8eHdoRvRqiGzG4wQXpmY96vh14zAJEM2CS/oZaNVC4Wj8rY2cdjAvZj9dlVZFPbOxx9g5tFxUAUA24s2KJ7sjSHUAcUSd4yqRK/G3CZM8qhkhyHhGDSS0zZvZaIcgoqOPe23gH32wAI9Aax1gJUDv4kKOqOx64ltg9BADAAEBKxBkWAEAAAAAIgAglkCfuPmI56fvGjawrOMxzbiWVNki5L5Gl3Bwse0Tq58BBYZSIQIeYxzruE4/cvi6zbRmB1asJO0bMfUutoH0bpubw1zAZSEDLZSmORZKW/k5A+4QxJR2/H+vcV8U0WPX9SvS+MRMffNSrnNkdqkUmNf1mL657o/oxxnHkIrtdNkbge+IrGt2qRSIigBO15eaB9dj93ihNpAX9HHDuoisbJNRiAP//wCyaCIGAh5jHOu4Tj9y+LrNtGYHVqwk7Rsx9S62gfRum5vDXMBlHPcUwigwAACAAQAAgAAAAIACAACAAAAAAAAAAAAiBgIr7HqsyKEvERWQsmsv6FleMuXThpI77+TVkQ3TSOOLURz3FMIoMAAAgAEAAIAAAACAAgAAgAIAAAAAAAAAIgYDLZSmORZKW/k5A+4QxJR2/H+vcV8U0WPX9SvS+MRMffMcJSLyPDAAAIABAACAAAAAgAIAAIAAAAAAAAAAACIGA/h0pUXGHq1+kSuTYVTO8RHKfQLJlhfNtm+qdcIIr09jHCUi8jwwAACAAQAAgAAAAIACAACAAgAAAAAAAAAAIgICGAO/4xFiX/S5DXTV6uARFTcMwP1hto8BtPkdn3gIjf0c9xTCKDAAAIABAACAAAAAgAIAAIACAAAAAgAAACICAuNOSbsNRv31XkF2ygwCOuCnsJNRLhV0isJ/VRdj1k7IHPcUwigwAACAAQAAgAAAAIACAACAAAAAAAIAAAAiAgOpBJHEchNOeXuQwuLHlwOfkAyfoGvrYfb4pCFLKEPw2hwlIvI8MAAAgAEAAIAAAACAAgAAgAIAAAACAAAAIgIDyLkJiZTjLCysDOQotYs9us5CEYev4kyTYW2uL2r5H1McJSLyPDAAAIABAACAAAAAgAIAAIAAAAAAAgAAAAAiAgIlvGBvHRPmmVP6sn9g/akW2VJAvbJagMnZ/24gLdITsxz3FMIoMAAAgAEAAIAAAACAAgAAgAMAAAADAAAAIgIDNmVQOMMezQgABjk1zjfc3I2eKFJ4xLqT55jG4BP4p0Ec9xTCKDAAAIABAACAAAAAgAIAAIABAAAAAwAAACICA4Subm7T6yYCMWLgDtMy92hOgjanJefukbCOSVEHlX0IHCUi8jwwAACAAQAAgAAAAIACAACAAQAAAAMAAAAiAgPpsETw12nxLEM6OSOPfxp4YYj8NtRcLdqBpi3S4/BTuRwlIvI8MAAAgAEAAIAAAACAAgAAgAMAAAADAAAAAA==";
+        let daemon: Arc<dyn Daemon + Sync + Send> = Arc::new(Lianad::new(
+            MockDaemon::new(vec![
+                (
+                    None,
+                    Err(DaemonError::Unexpected("a passing error".to_string())),
+                ),
+                (None, Ok(json!({ "psbt": psbt, "warnings": [] }))),
+            ])
+            .run(),
+        ));
+
+        let confirmed: Coin = serde_json::from_value(json!({
+            "amount": 22570000,
+            "outpoint": "fa5bf9974ae9ab08b64da24f17e80a5689540a7e73335faea05bbc563bfe31cd:1",
+            "address": "tb1qjeqflw8e3rn60mc6x6c2ece3ekufv4xeytjtu35hwpctrmgn4w0s3dcxh5",
+            "block_height": 900,
+            "derivation_index": 0,
+            "is_immature": false,
+            "is_change": false,
+            "is_from_self": false,
+        }))
+        .unwrap();
+        let wallet = Arc::new(Wallet::new(LianaDescriptor::from_str(DESC).unwrap()));
+        let mut step = DefineSpend::new(Network::Testnet, wallet, &[confirmed], 1000, None, true);
+        let cache = Cache {
+            network: Network::Testnet,
+            feerate_estimate: Some(FeerateEstimate {
+                low: 1,
+                medium: Some(1),
+                high: 1,
+            }),
+            ..Cache::default()
+        };
+        for (field, value) in [
+            (
+                "address",
+                "tb1qk59m7lq0ljkssjws36c99qzr8d9u66mevzcy53pz8m45ece8qhzs6alndx",
+            ),
+            ("label", "Rent"),
+            ("amount", "0.001"),
+        ] {
+            let _ = step.update(
+                daemon.clone(),
+                &cache,
+                send_message(view::CreateSpendMessage::RecipientEdited(
+                    0,
+                    field,
+                    value.to_string(),
+                )),
+            );
+        }
+        // The first draft failed: banner up.
+        assert!(step.warning.is_some());
+
+        // Automatic fees untouched; the amount is edited and the draft works.
+        let _ = step.update(
+            daemon.clone(),
+            &cache,
+            send_message(view::CreateSpendMessage::RecipientEdited(
+                0,
+                "amount",
+                "0.002".to_string(),
+            )),
+        );
+        assert!(matches!(step.fee_mode, FeeMode::Smart(FeeLevel::Medium)));
+        assert!(step.warning.is_none(), "{:?}", step.warning);
+        assert_eq!(step.amount_left_to_select, Some(Amount::from_sat(0)));
+        assert!(step.is_valid);
+    }
 }
