@@ -67,6 +67,9 @@ macOS itself make it (`background_bookmark.py`).
    checks for a new team can take many hours; if the wait runs out, the script keeps the
    signed app (`talia-desktop-mac-signed.app`). Once `xcrun stapler staple` on it works,
    run the script again on that app: it skips straight to the .dmg.
+   Before publishing, open the Intel half on an Apple-chip Mac through Rosetta:
+   `arch -x86_64 "<app>/Contents/MacOS/Talia Desktop"` must show the window (the first
+   start of a new build can take a few seconds while Rosetta translates it).
 2. Windows: GitHub > Actions > "Talia Desktop for Windows" > Run workflow; rename the
    artifact to `talia-desktop-windows.exe`. Not code-signed (decided 2026-11-14).
 3. Publish a GitHub release with `talia-desktop-mac.dmg`, `talia-desktop-windows.exe` and
